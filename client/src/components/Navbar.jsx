@@ -205,14 +205,14 @@ const Navbar = () => {
     {
       label: 'Login',
       icon: LogIn,
-      path: '/login',
+      path: '/auth',
       color: 'text-rose-600',
       bgColor: 'bg-rose-50 hover:bg-rose-100'
     },
     {
       label: 'Register',
       icon: UserPlus,
-      path: '/register',
+      path: '/auth',
       color: 'text-white',
       bgColor: 'bg-gradient-to-r from-rose-500 to-rose-400 hover:from-rose-600 hover:to-rose-500'
     }
