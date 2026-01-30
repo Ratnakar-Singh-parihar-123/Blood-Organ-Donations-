@@ -9,6 +9,7 @@ import OrganPages from "./pages/organ";
 import BloodPages from "./pages/blood";
 import NotFound from "./pages/NotFoundPage";
 import AuthenticationPage from "./pages/auth/AuthenticationPage";
+import AboutPage from "./pages/about/AboutPage"
 
 function App() {
   return (
@@ -20,6 +21,7 @@ function App() {
         <Route path="/blood" element={<BloodPages />} />
         <Route path="/organ" element={<OrganPages />} />
         <Route path="/auth" element={<AuthenticationPage />} />
+        <Route path="/about" element={<AboutPage />} />
         <Route path="*" element={<NotFound />} />
       </Routes>
 
