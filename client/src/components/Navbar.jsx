@@ -8,7 +8,10 @@ import {
   Filter, AlertCircle, Star, Award,
   Phone, ExternalLink, BookOpen,
   TrendingUp, Activity, History,
-  Gift, LifeBuoy, ShieldCheck
+  Gift, LifeBuoy, ShieldCheck,
+  Bookmark, LogIn, UserPlus,
+  ActivityIcon, Compass, Clock,
+  Hospital, Ambulance, Download
 } from 'lucide-react';
 
 const Navbar = () => {
@@ -23,17 +26,26 @@ const Navbar = () => {
   const [currentLocation, setCurrentLocation] = useState('Mumbai, India');
   const [notifications, setNotifications] = useState(3);
   const [searchQuery, setSearchQuery] = useState('');
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
+
+  // Check login status from localStorage
+  useEffect(() => {
+    const token = localStorage.getItem('token');
+    const user = localStorage.getItem('user');
+    setIsLoggedIn(!!token && !!user);
+  }, []);
 
   // Update active tab based on current route
   useEffect(() => {
     const path = location.pathname;
     if (path === '/') setActiveTab('home');
-    else if (path.includes('/donate')) setActiveTab('donate');
+    else if (path.includes('/donate') || path.includes('/blood')) setActiveTab('donate');
+    else if (path.includes('/organ')) setActiveTab('organ');
     else if (path.includes('/requests')) setActiveTab('requests');
     else if (path.includes('/messages')) setActiveTab('messages');
     else if (path.includes('/profile')) setActiveTab('profile');
     else if (path.includes('/find-donor')) setActiveTab('find-donor');
-    else if (path.includes('/blood-requests')) setActiveTab('blood-requests');
+    else if (path.includes('/urgent-requests')) setActiveTab('blood-requests');
     else if (path.includes('/campaigns')) setActiveTab('campaigns');
     else if (path.includes('/about')) setActiveTab('about');
   }, [location]);
@@ -48,25 +60,25 @@ const Navbar = () => {
       badge: null
     },
     { 
-      id: 'Organ', 
-      label: 'Donate', 
+      id: 'donate', 
+      label: 'Blood', 
       icon: Heart, 
+      path: '/blood',
+      badge: null
+    },
+    { 
+      id: 'organ', 
+      label: 'Organ', 
+      icon: ActivityIcon, 
       path: '/organ',
       badge: null
     },
     { 
       id: 'requests', 
-      label: 'Requests', 
+      label: 'Urgent', 
       icon: AlertCircle, 
       path: '/urgent-requests',
       badge: 5
-    },
-    { 
-      id: 'messages', 
-      label: 'Chat', 
-      icon: MessageCircle, 
-      path: '/messages',
-      badge: 2
     },
     { 
       id: 'profile', 
@@ -79,12 +91,12 @@ const Navbar = () => {
 
   // Desktop nav items with actual routing
   const desktopNavItems = [
-    { 
-      id: 'home', 
-      label: 'Home', 
-      icon: Home,
-      path: '/' 
-    },
+    // { 
+    //   id: 'home', 
+    //   label: 'Home', 
+    //   icon: Home,
+    //   path: '/' 
+    // },
     { 
       id: 'find-donor', 
       label: 'Find Donor', 
@@ -104,10 +116,10 @@ const Navbar = () => {
       icon: Droplets,
       path: '/blood' 
     },
-     { 
+    { 
       id: 'organ-donation', 
       label: 'Organ', 
-      icon: Droplets,
+      icon: ActivityIcon,
       path: '/organ' 
     },
     // { 
@@ -121,6 +133,12 @@ const Navbar = () => {
       label: 'About', 
       icon: Shield,
       path: '/about' 
+    },
+     { 
+      id: 'Register', 
+      label: 'Register', 
+      icon: Shield,
+      path: '/auth' 
     }
   ];
 
@@ -142,6 +160,12 @@ const Navbar = () => {
       label: 'Achievements', 
       icon: Award,
       path: '/achievements',
+      color: 'text-gray-700' 
+    },
+    { 
+      label: 'Saved Donors', 
+      icon: Bookmark,
+      path: '/saved',
       color: 'text-gray-700' 
     },
     { 
@@ -176,24 +200,46 @@ const Navbar = () => {
     }
   ];
 
+  // Auth options for non-logged in users
+  const authItems = [
+    {
+      label: 'Login',
+      icon: LogIn,
+      path: '/login',
+      color: 'text-rose-600',
+      bgColor: 'bg-rose-50 hover:bg-rose-100'
+    },
+    {
+      label: 'Register',
+      icon: UserPlus,
+      path: '/register',
+      color: 'text-white',
+      bgColor: 'bg-gradient-to-r from-rose-500 to-rose-400 hover:from-rose-600 hover:to-rose-500'
+    }
+  ];
+
   // Quick links for search overlay
   const quickLinks = [
-    { label: 'Blood Donation Process', path: '/process' },
-    { label: 'Donor Eligibility', path: '/eligibility' },
-    { label: 'Find Blood Bank', path: '/blood-banks' },
-    { label: 'Emergency Services', path: '/emergency' },
-    { label: 'Blood Type Info', path: '/blood-types' },
-    { label: 'Donor Stories', path: '/stories' }
+    { label: 'Blood Donation Process', path: '/process', icon: Droplets },
+    { label: 'Organ Donation Info', path: '/organ-info', icon: ActivityIcon },
+    { label: 'Donor Eligibility', path: '/eligibility', icon: ShieldCheck },
+    { label: 'Find Blood Bank', path: '/blood-banks', icon: Hospital },
+    { label: 'Emergency Services', path: '/emergency', icon: Ambulance },
+    { label: 'Blood Type Info', path: '/blood-types', icon: BookOpen },
+    { label: 'Donor Stories', path: '/stories', icon: Users },
+    { label: 'Download Certificate', path: '/certificate', icon: Download }
   ];
 
   // Popular searches
   // const popularSearches = [
   //   'O+ blood donors near me',
   //   'Blood donation camps today',
-  //   'Platelet donation process',
-  //   'Donor health checkup',
+  //   'Organ donation process',
   //   'Emergency A- blood required',
-  //   'Blood bank contact numbers'
+  //   'Platelet donation',
+  //   'Blood bank contact numbers',
+  //   'Kidney donation information',
+  //   'Liver transplant donors'
   // ];
 
   // Handle tab click
@@ -247,6 +293,26 @@ const Navbar = () => {
   // Handle emergency request
   const handleEmergency = () => {
     navigate('/emergency-request');
+  };
+
+  // Handle login
+  const handleLogin = () => {
+    navigate('/login');
+  };
+
+  // Handle register
+  const handleRegister = () => {
+    navigate('/register');
+  };
+
+  // Handle logout
+  const handleLogout = () => {
+    localStorage.removeItem('token');
+    localStorage.removeItem('user');
+    setIsLoggedIn(false);
+    setIsProfileOpen(false);
+    navigate('/');
+    alert('Logged out successfully!');
   };
 
   return (
@@ -305,8 +371,6 @@ const Navbar = () => {
               ))}
             </div>
 
-            {/* Search Bar */}
-           
 
             {/* CTA & Actions */}
             <div className="flex items-center space-x-3">
@@ -322,19 +386,24 @@ const Navbar = () => {
                               border border-gray-100 p-4 opacity-0 invisible group-hover:opacity-100 
                               group-hover:visible transition-all duration-300 z-50">
                   <h4 className="font-semibold text-gray-700 mb-3">Select Location</h4>
-                  {['Mumbai', 'Delhi', 'Bangalore', 'Chennai', 'Hyderabad', 'Kolkata', 'Pune'].map((city) => (
-                    <button
-                      key={city}
-                      onClick={() => handleLocationChange(city)}
-                      className={`w-full text-left px-3 py-2 rounded-lg mb-1 ${
-                        currentLocation.includes(city) 
-                          ? 'bg-rose-50 text-rose-600' 
-                          : 'hover:bg-gray-50 text-gray-600'
-                      }`}
-                    >
-                      {city}
-                    </button>
-                  ))}
+                  <div className="space-y-1">
+                    {['Mumbai', 'Delhi', 'Bangalore', 'Chennai', 'Hyderabad', 'Kolkata', 'Pune'].map((city) => (
+                      <button
+                        key={city}
+                        onClick={() => handleLocationChange(city)}
+                        className={`w-full text-left px-3 py-2 rounded-lg flex items-center justify-between ${
+                          currentLocation.includes(city) 
+                            ? 'bg-rose-50 text-rose-600' 
+                            : 'hover:bg-gray-50 text-gray-600'
+                        }`}
+                      >
+                        <span>{city}</span>
+                        {currentLocation.includes(city) && (
+                          <ShieldCheck className="h-4 w-4 text-rose-500" />
+                        )}
+                      </button>
+                    ))}
+                  </div>
                 </div>
               </div>
               
@@ -346,7 +415,7 @@ const Navbar = () => {
                          hover:shadow-red-300 hover:scale-105 transition-all duration-300 
                          flex items-center space-x-2"
               >
-                <AlertCircle className="h-5 w-5" />
+                <Ambulance className="h-5 w-5" />
                 <span>Emergency</span>
                 <div className="absolute -top-1 -right-1 w-3 h-3 bg-white rounded-full animate-ping"></div>
               </button>
@@ -368,100 +437,127 @@ const Navbar = () => {
                 </button>
               </div>
 
-              {/* Profile Dropdown */}
-              <div className="relative profile-dropdown">
-                <button 
-                  onClick={() => setIsProfileOpen(!isProfileOpen)}
-                  className="flex items-center space-x-2 p-1.5 rounded-full hover:bg-gray-100 transition-colors"
-                >
-                  <div className="w-10 h-10 rounded-full bg-gradient-to-r from-rose-400 to-rose-300 
-                                flex items-center justify-center text-white font-semibold shadow">
-                    AS
-                  </div>
-                  <ChevronDown className={`h-4 w-4 text-gray-500 transition-transform ${
-                    isProfileOpen ? 'rotate-180' : ''
-                  }`} />
-                </button>
-
-                {/* Profile Dropdown Menu */}
-                {isProfileOpen && (
-                  <div className="absolute top-full right-0 mt-2 w-80 bg-white rounded-2xl shadow-2xl 
-                                border border-gray-100 p-4 z-50 animate-fadeIn">
-                    {/* Profile Header */}
-                    <div className="flex items-center space-x-3 pb-4 border-b border-gray-100">
-                      <div className="w-12 h-12 rounded-full bg-gradient-to-r from-rose-400 to-rose-300 
-                                    flex items-center justify-center text-white font-bold text-lg shadow">
-                        AS
-                      </div>
-                      <div className="flex-1">
-                        <h3 className="font-bold text-gray-800">Aarav Sharma</h3>
-                        <div className="flex items-center space-x-2 mt-1">
-                          <span className="text-xs bg-rose-100 text-rose-700 px-2 py-0.5 rounded-full">
-                            Active Donor
-                          </span>
-                          <span className="text-xs text-gray-500">5 Donations</span>
-                        </div>
-                      </div>
-                      <button 
-                        onClick={() => navigate('/profile')}
-                        className="p-2 hover:bg-gray-100 rounded-lg"
-                      >
-                        <ExternalLink className="h-4 w-4 text-gray-500" />
-                      </button>
+              {/* Auth Buttons / Profile Dropdown */}
+              {isLoggedIn ? (
+                <div className="relative profile-dropdown">
+                  <button 
+                    onClick={() => setIsProfileOpen(!isProfileOpen)}
+                    className="flex items-center space-x-2 p-1.5 rounded-full hover:bg-gray-100 transition-colors"
+                  >
+                    <div className="w-10 h-10 rounded-full bg-gradient-to-r from-rose-400 to-rose-300 
+                                  flex items-center justify-center text-white font-semibold shadow">
+                      AS
                     </div>
+                    <ChevronDown className={`h-4 w-4 text-gray-500 transition-transform ${
+                      isProfileOpen ? 'rotate-180' : ''
+                    }`} />
+                  </button>
 
-                    {/* Profile Items */}
-                    <div className="py-3 max-h-60 overflow-y-auto">
-                      {profileItems.map((item, idx) => (
-                        <button
-                          key={idx}
+                  {/* Profile Dropdown Menu */}
+                  {isProfileOpen && (
+                    <div className="absolute top-full right-0 mt-2 w-80 bg-white rounded-2xl shadow-2xl 
+                                  border border-gray-100 p-4 z-50 animate-fadeIn">
+                      {/* Profile Header */}
+                      <div className="flex items-center space-x-3 pb-4 border-b border-gray-100">
+                        <div className="w-12 h-12 rounded-full bg-gradient-to-r from-rose-400 to-rose-300 
+                                      flex items-center justify-center text-white font-bold text-lg shadow">
+                          AS
+                        </div>
+                        <div className="flex-1">
+                          <h3 className="font-bold text-gray-800">Aarav Sharma</h3>
+                          <div className="flex items-center space-x-2 mt-1">
+                            <span className="text-xs bg-rose-100 text-rose-700 px-2 py-0.5 rounded-full">
+                              <Star className="h-3 w-3 inline mr-1" fill="currentColor" />
+                              Gold Donor
+                            </span>
+                            <span className="text-xs text-gray-500">5 Donations</span>
+                          </div>
+                        </div>
+                        <button 
                           onClick={() => {
-                            if (item.path === '/logout') {
-                              // Handle logout
-                              alert('Logging out...');
-                            } else {
-                              navigate(item.path);
-                            }
+                            navigate('/profile');
                             setIsProfileOpen(false);
                           }}
-                          className={`w-full flex items-center space-x-3 px-3 py-2.5 rounded-lg hover:bg-gray-50 
-                                   transition-colors ${item.color || 'text-gray-700'}`}
+                          className="p-2 hover:bg-gray-100 rounded-lg"
                         >
-                          <item.icon className="h-4 w-4" />
-                          <span>{item.label}</span>
-                        </button>
-                      ))}
-                    </div>
-
-                    {/* Quick Stats */}
-                    <div className="pt-3 border-t border-gray-100">
-                      <div className="grid grid-cols-3 gap-2">
-                        <button 
-                          onClick={() => navigate('/donations')}
-                          className="text-center p-2 bg-rose-50 rounded-lg hover:bg-rose-100 transition-colors"
-                        >
-                          <div className="text-lg font-bold text-rose-600">5</div>
-                          <div className="text-xs text-gray-600">Donations</div>
-                        </button>
-                        <button 
-                          onClick={() => navigate('/achievements')}
-                          className="text-center p-2 bg-blue-50 rounded-lg hover:bg-blue-100 transition-colors"
-                        >
-                          <div className="text-lg font-bold text-blue-600">3</div>
-                          <div className="text-xs text-gray-600">Lives Saved</div>
-                        </button>
-                        <button 
-                          onClick={() => navigate('/rewards')}
-                          className="text-center p-2 bg-emerald-50 rounded-lg hover:bg-emerald-100 transition-colors"
-                        >
-                          <div className="text-lg font-bold text-emerald-600">12</div>
-                          <div className="text-xs text-gray-600">Points</div>
+                          <ExternalLink className="h-4 w-4 text-gray-500" />
                         </button>
                       </div>
+
+                      {/* Profile Items */}
+                      <div className="py-3 max-h-60 overflow-y-auto">
+                        {profileItems.map((item, idx) => (
+                          <button
+                            key={idx}
+                            onClick={() => {
+                              if (item.path === '/logout') {
+                                handleLogout();
+                              } else {
+                                navigate(item.path);
+                                setIsProfileOpen(false);
+                              }
+                            }}
+                            className={`w-full flex items-center space-x-3 px-3 py-2.5 rounded-lg hover:bg-gray-50 
+                                     transition-colors ${item.color}`}
+                          >
+                            <item.icon className="h-4 w-4" />
+                            <span>{item.label}</span>
+                          </button>
+                        ))}
+                      </div>
+
+                      {/* Quick Stats */}
+                      <div className="pt-3 border-t border-gray-100">
+                        <div className="grid grid-cols-3 gap-2">
+                          <button 
+                            onClick={() => navigate('/donations')}
+                            className="text-center p-2 bg-rose-50 rounded-lg hover:bg-rose-100 transition-colors"
+                          >
+                            <div className="text-lg font-bold text-rose-600">5</div>
+                            <div className="text-xs text-gray-600">Donations</div>
+                          </button>
+                          <button 
+                            onClick={() => navigate('/achievements')}
+                            className="text-center p-2 bg-blue-50 rounded-lg hover:bg-blue-100 transition-colors"
+                          >
+                            <div className="text-lg font-bold text-blue-600">3</div>
+                            <div className="text-xs text-gray-600">Lives Saved</div>
+                          </button>
+                          <button 
+                            onClick={() => navigate('/rewards')}
+                            className="text-center p-2 bg-emerald-50 rounded-lg hover:bg-emerald-100 transition-colors"
+                          >
+                            <div className="text-lg font-bold text-emerald-600">12</div>
+                            <div className="text-xs text-gray-600">Points</div>
+                          </button>
+                        </div>
+                      </div>
                     </div>
-                  </div>
-                )}
-              </div>
+                  )}
+                </div>
+              ) : (
+                // Show login/register buttons if not logged in
+                <div className="flex items-center space-x-3">
+                  <button
+                    onClick={handleLogin}
+                    className="px-5 py-2.5 text-rose-600 hover:text-rose-700 font-medium rounded-full 
+                             hover:bg-rose-50 transition-all duration-300 flex items-center space-x-2"
+                  >
+                    <LogIn className="h-5 w-5" />
+                    <span>Login</span>
+                  </button>
+                  <button
+                    onClick={handleRegister}
+                    className="px-5 py-2.5 bg-gradient-to-r from-rose-500 to-rose-400 text-white 
+                             rounded-full font-semibold shadow-lg shadow-rose-200 hover:shadow-xl 
+                             hover:shadow-rose-300 hover:scale-105 transition-all duration-300 
+                             hover:from-rose-600 hover:to-rose-500 flex items-center space-x-2"
+                  >
+                    <UserPlus className="h-5 w-5" />
+                    <span>Register</span>
+                  </button>
+                </div>
+              )}
             </div>
           </div>
         </div>
@@ -471,16 +567,16 @@ const Navbar = () => {
       <nav className="lg:hidden fixed bottom-0 left-0 right-0 z-40 bg-white/98 backdrop-blur-xl 
                      border-t border-gray-100 shadow-2xl py-3 px-4">
         <div className="flex justify-around items-center relative">
-          {/* Floating Donate Button */}
+          {/* Floating Emergency Button */}
           <button 
-            onClick={() => navigate('/donate')}
+            onClick={handleEmergency}
             className="absolute -top-8 left-1/2 transform -translate-x-1/2 
-                     bg-gradient-to-r from-rose-500 to-rose-400 text-white 
-                     p-4 rounded-full shadow-2xl shadow-rose-300/50 hover:shadow-rose-400/50 
+                     bg-gradient-to-r from-red-500 to-rose-500 text-white 
+                     p-4 rounded-full shadow-2xl shadow-red-300/50 hover:shadow-red-400/50 
                      hover:scale-110 active:scale-95 transition-all duration-300 
                      border-4 border-white z-50 animate-pulse-slow"
           >
-            <Heart className="h-6 w-6" fill="white" />
+            <Ambulance className="h-6 w-6" />
           </button>
 
           {mobileNavItems.map((item) => {
@@ -601,33 +697,51 @@ const Navbar = () => {
           </div>
         </div>
 
-        {/* Emergency Badge */}
-        <button 
-          onClick={handleEmergency}
-          className="mt-3 flex items-center justify-between bg-gradient-to-r from-rose-500 to-rose-400 
-                    rounded-xl p-3 shadow-lg w-full"
-        >
+        {/* Location and Auth */}
+        <div className="mt-3 flex items-center justify-between">
           <div className="flex items-center space-x-2">
-            <AlertCircle className="h-4 w-4 text-white" />
-            <span className="text-white text-sm font-medium">Emergency Requests: 5</span>
+            <MapPin className="h-4 w-4 text-rose-500" />
+            <span className="text-sm text-gray-600">{currentLocation}</span>
           </div>
-          <div className="bg-white text-rose-600 text-xs font-semibold px-3 py-1 rounded-lg">
-            View
-          </div>
-        </button>
+          
+          {!isLoggedIn && (
+            <div className="flex items-center space-x-2">
+              <button
+                onClick={handleLogin}
+                className="px-3 py-1.5 text-rose-600 hover:text-rose-700 font-medium rounded-full 
+                         hover:bg-rose-50 transition-all duration-300 text-sm"
+              >
+                Login
+              </button>
+              <button
+                onClick={handleRegister}
+                className="px-3 py-1.5 bg-gradient-to-r from-rose-500 to-rose-400 text-white 
+                         rounded-full font-medium shadow shadow-rose-200 hover:shadow-rose-300 
+                         hover:scale-105 transition-all duration-300 text-sm"
+              >
+                Register
+              </button>
+            </div>
+          )}
+        </div>
       </div>
 
       {/* MOBILE SEARCH OVERLAY */}
       {isSearchOpen && (
         <div className="lg:hidden fixed inset-0 z-50 bg-white pt-16 animate-slideUp">
           <div className="p-4 h-full flex flex-col">
+            {/* Search Header */}
             <div className="flex items-center justify-between mb-6">
-              <h2 className="text-xl font-bold text-gray-800">Search</h2>
+              <div className="flex items-center space-x-3">
+                <Search className="h-5 w-5 text-gray-500" />
+                <h2 className="text-xl font-bold text-gray-800">Search</h2>
+              </div>
               <button onClick={() => setIsSearchOpen(false)}>
                 <X className="h-6 w-6 text-gray-500" />
               </button>
             </div>
             
+            {/* Search Input */}
             <div className="relative mb-6">
               <form onSubmit={handleSearch}>
                 <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400" />
@@ -643,16 +757,20 @@ const Navbar = () => {
               </form>
             </div>
 
+            {/* Search Content */}
             <div className="flex-1 overflow-y-auto space-y-6">
               {/* Quick Search */}
               <div>
-                <h3 className="font-semibold text-gray-700 mb-3">Quick Search</h3>
+                <h3 className="font-semibold text-gray-700 mb-3 flex items-center space-x-2">
+                  <Compass className="h-4 w-4" />
+                  <span>Quick Search</span>
+                </h3>
                 <div className="flex flex-wrap gap-2">
-                  {['O+', 'A-', 'B+', 'AB-', 'Platelets', 'Plasma'].map((type) => (
+                  {['O+', 'A-', 'B+', 'AB-', 'Platelets', 'Plasma', 'Organ', 'Emergency'].map((type) => (
                     <button
                       key={type}
                       onClick={() => {
-                        setSearchQuery(type + ' blood');
+                        setSearchQuery(type);
                         handleSearch(new Event('submit'));
                       }}
                       className="px-4 py-2 bg-rose-50 text-rose-600 rounded-full font-medium hover:bg-rose-100"
@@ -664,8 +782,11 @@ const Navbar = () => {
               </div>
 
               {/* Popular Searches */}
-              <div>
-                <h3 className="font-semibold text-gray-700 mb-3">Popular Searches</h3>
+              {/* <div>
+                <h3 className="font-semibold text-gray-700 mb-3 flex items-center space-x-2">
+                  <TrendingUp className="h-4 w-4" />
+                  <span>Popular Searches</span>
+                </h3>
                 <div className="space-y-2">
                   {popularSearches.map((item, idx) => (
                     <button 
@@ -681,11 +802,14 @@ const Navbar = () => {
                     </button>
                   ))}
                 </div>
-              </div>
+              </div> */}
 
               {/* Quick Links */}
               <div>
-                <h3 className="font-semibold text-gray-700 mb-3">Quick Links</h3>
+                <h3 className="font-semibold text-gray-700 mb-3 flex items-center space-x-2">
+                  <BookOpen className="h-4 w-4" />
+                  <span>Quick Links</span>
+                </h3>
                 <div className="space-y-2">
                   {quickLinks.map((link, idx) => (
                     <button
@@ -696,12 +820,25 @@ const Navbar = () => {
                       }}
                       className="w-full text-left p-3 rounded-lg hover:bg-rose-50 flex items-center justify-between"
                     >
-                      <span className="text-gray-600">{link.label}</span>
+                      <div className="flex items-center space-x-3">
+                        <link.icon className="h-4 w-4 text-gray-500" />
+                        <span className="text-gray-600">{link.label}</span>
+                      </div>
                       <ExternalLink className="h-4 w-4 text-gray-400" />
                     </button>
                   ))}
                 </div>
               </div>
+            </div>
+
+            {/* Close Button */}
+            <div className="mt-6 pt-6 border-t border-gray-100">
+              <button
+                onClick={() => setIsSearchOpen(false)}
+                className="w-full py-3 bg-gray-100 text-gray-700 rounded-xl font-medium hover:bg-gray-200"
+              >
+                Close Search
+              </button>
             </div>
           </div>
         </div>
@@ -723,7 +860,7 @@ const Navbar = () => {
                   </div>
                   <div>
                     <h1 className="font-bold text-xl text-gray-800">LifeStream</h1>
-                    <p className="text-sm text-gray-500">Donor ID: LS7842</p>
+                    <p className="text-sm text-gray-500">Save Lives, Donate Today</p>
                   </div>
                 </div>
                 <button onClick={() => setIsMobileMenuOpen(false)} className="p-2 rounded-full hover:bg-gray-100">
@@ -731,32 +868,56 @@ const Navbar = () => {
                 </button>
               </div>
 
-              {/* Profile Summary */}
-              <button 
-                onClick={() => {
-                  navigate('/profile');
-                  setIsMobileMenuOpen(false);
-                }}
-                className="mb-6 p-4 bg-gradient-to-r from-rose-50 to-pink-50 rounded-2xl text-left hover:opacity-90 transition-opacity"
-              >
-                <div className="flex items-center justify-between">
-                  <div>
-                    <h3 className="font-bold text-gray-800">Aarav Sharma</h3>
-                    <div className="flex items-center space-x-2 mt-1">
-                      <Star className="h-4 w-4 text-amber-500" fill="currentColor" />
-                      <span className="text-sm text-gray-600">Gold Donor • 5 Donations</span>
+              {/* User Info */}
+              {isLoggedIn ? (
+                <button 
+                  onClick={() => {
+                    navigate('/profile');
+                    setIsMobileMenuOpen(false);
+                  }}
+                  className="mb-6 p-4 bg-gradient-to-r from-rose-50 to-pink-50 rounded-2xl text-left hover:opacity-90 transition-opacity"
+                >
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <h3 className="font-bold text-gray-800">Aarav Sharma</h3>
+                      <div className="flex items-center space-x-2 mt-1">
+                        <Star className="h-4 w-4 text-amber-500" fill="currentColor" />
+                        <span className="text-sm text-gray-600">Gold Donor • 5 Donations</span>
+                      </div>
+                    </div>
+                    <div className="text-right">
+                      <div className="text-2xl font-bold text-rose-600">12</div>
+                      <div className="text-xs text-gray-500">Points</div>
                     </div>
                   </div>
-                  <div className="text-right">
-                    <div className="text-2xl font-bold text-rose-600">12</div>
-                    <div className="text-xs text-gray-500">Points</div>
+                </button>
+              ) : (
+                <div className="mb-6 p-4 bg-gradient-to-r from-rose-50 to-pink-50 rounded-2xl">
+                  <h3 className="font-bold text-gray-800 mb-3">Join LifeStream</h3>
+                  <p className="text-sm text-gray-600 mb-4">
+                    Register to save lives and join our community of heroes.
+                  </p>
+                  <div className="flex space-x-3">
+                    <button
+                      onClick={handleLogin}
+                      className="flex-1 py-2 bg-white text-rose-600 border border-rose-300 rounded-lg font-medium"
+                    >
+                      Login
+                    </button>
+                    <button
+                      onClick={handleRegister}
+                      className="flex-1 py-2 bg-gradient-to-r from-rose-500 to-rose-400 text-white rounded-lg font-medium"
+                    >
+                      Register
+                    </button>
                   </div>
                 </div>
-              </button>
+              )}
 
               {/* Menu Items */}
               <div className="flex-1 overflow-y-auto">
                 <div className="space-y-1">
+                  <h4 className="text-sm font-semibold text-gray-500 mb-2 px-4">Main Menu</h4>
                   {desktopNavItems.map((item) => (
                     <button 
                       key={item.id}
@@ -776,20 +937,41 @@ const Navbar = () => {
                   
                   <div className="border-t border-gray-100 my-4"></div>
                   
-                  {profileItems.slice(0, 5).map((item) => (
-                    <button 
-                      key={item.label}
-                      onClick={() => {
-                        navigate(item.path);
-                        setIsMobileMenuOpen(false);
-                      }}
-                      className="w-full text-left p-4 rounded-xl hover:bg-gray-50 
-                               text-gray-600 flex items-center space-x-4"
-                    >
-                      <item.icon className="h-5 w-5 text-gray-500" />
-                      <span>{item.label}</span>
-                    </button>
-                  ))}
+                  <h4 className="text-sm font-semibold text-gray-500 mb-2 px-4">My Account</h4>
+                  {isLoggedIn ? (
+                    profileItems.slice(0, 6).map((item) => (
+                      <button 
+                        key={item.label}
+                        onClick={() => {
+                          if (item.path === '/logout') {
+                            handleLogout();
+                          } else {
+                            navigate(item.path);
+                            setIsMobileMenuOpen(false);
+                          }
+                        }}
+                        className="w-full text-left p-4 rounded-xl hover:bg-gray-50 
+                                 text-gray-600 flex items-center space-x-4"
+                      >
+                        <item.icon className="h-5 w-5 text-gray-500" />
+                        <span>{item.label}</span>
+                      </button>
+                    ))
+                  ) : (
+                    authItems.map((item) => (
+                      <button 
+                        key={item.label}
+                        onClick={() => {
+                          navigate(item.path);
+                          setIsMobileMenuOpen(false);
+                        }}
+                        className={`w-full text-left p-4 rounded-xl flex items-center space-x-4 ${item.bgColor}`}
+                      >
+                        <item.icon className="h-5 w-5" />
+                        <span className={item.color}>{item.label}</span>
+                      </button>
+                    ))
+                  )}
                 </div>
               </div>
 
@@ -797,23 +979,23 @@ const Navbar = () => {
               <div className="pt-4 border-t border-gray-100 space-y-3">
                 <button 
                   onClick={handleEmergency}
-                  className="w-full py-3.5 bg-gradient-to-r from-rose-500 to-rose-400 
+                  className="w-full py-3.5 bg-gradient-to-r from-red-500 to-rose-500 
                            text-white rounded-xl font-bold text-lg shadow-lg active:scale-95 
-                           transition-transform"
+                           transition-transform flex items-center justify-center space-x-2"
                 >
-                  Emergency Request
+                  <Ambulance className="h-5 w-5" />
+                  <span>Emergency Request</span>
                 </button>
-                <button 
-                  onClick={() => {
-                    // Handle logout
-                    alert('Logging out...');
-                    setIsMobileMenuOpen(false);
-                  }}
-                  className="w-full py-3 bg-white text-rose-600 border-2 border-rose-200 
-                           rounded-xl font-semibold hover:bg-rose-50 transition-colors"
-                >
-                  Logout
-                </button>
+                
+                {isLoggedIn && (
+                  <button 
+                    onClick={handleLogout}
+                    className="w-full py-3 bg-white text-red-600 border-2 border-red-200 
+                             rounded-xl font-semibold hover:bg-red-50 transition-colors"
+                  >
+                    Logout
+                  </button>
+                )}
               </div>
             </div>
           </div>
@@ -824,7 +1006,7 @@ const Navbar = () => {
       <div className="lg:hidden h-24"></div>
 
       {/* Custom animations */}
-      <style jsx global>{`
+      <style>{`
         @keyframes pulse-slow {
           0%, 100% { transform: scale(1); opacity: 1; }
           50% { transform: scale(1.05); opacity: 0.9; }
@@ -835,7 +1017,7 @@ const Navbar = () => {
         }
         @keyframes slideIn {
           from { transform: translateX(100%); }
-          to { transform: translateX(0); }
+          to { transform: translateY(0); }
         }
         @keyframes slideUp {
           from { transform: translateY(100%); }
@@ -860,6 +1042,22 @@ const Navbar = () => {
         }
         .animate-ping {
           animation: ping 1s cubic-bezier(0, 0, 0.2, 1) infinite;
+        }
+        
+        /* Scrollbar Styling */
+        .overflow-y-auto::-webkit-scrollbar {
+          width: 4px;
+        }
+        .overflow-y-auto::-webkit-scrollbar-track {
+          background: #f1f1f1;
+          border-radius: 10px;
+        }
+        .overflow-y-auto::-webkit-scrollbar-thumb {
+          background: #fca5a5;
+          border-radius: 10px;
+        }
+        .overflow-y-auto::-webkit-scrollbar-thumb:hover {
+          background: #f87171;
         }
       `}</style>
     </>

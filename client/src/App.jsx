@@ -8,6 +8,7 @@ import HomePage from "./pages/home";
 import OrganPages from "./pages/organ";
 import BloodPages from "./pages/blood";
 import NotFound from "./pages/NotFoundPage";
+import AuthenticationPage from "./pages/auth/AuthenticationPage";
 
 function App() {
   return (
@@ -18,6 +19,7 @@ function App() {
         <Route path="/" element={<HomePage />} />
         <Route path="/blood" element={<BloodPages />} />
         <Route path="/organ" element={<OrganPages />} />
+        <Route path="/auth" element={<AuthenticationPage />} />
         <Route path="*" element={<NotFound />} />
       </Routes>
 
