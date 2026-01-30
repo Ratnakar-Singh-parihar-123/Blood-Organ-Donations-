@@ -142,7 +142,7 @@ const AboutPage = () => {
         <div 
           className="absolute inset-0 z-0"
           style={{
-            backgroundImage: 'url("https://images.unsplash.com/photo-1588776814546-1ffcf47267a5?ixlib=rb-4.0.3&auto=format&fit=crop&w=1920&q=80")',
+            backgroundImage: 'url("https://www.emro.who.int/images/stories/media/world-blood-donor-day-2025-banner.png")',
             backgroundSize: 'cover',
             backgroundPosition: 'center',
             transform: `translateY(${scrollY * 0.5}px)`
@@ -161,9 +161,9 @@ const AboutPage = () => {
               <span className="text-sm font-medium text-gray-700">Over 50,000 Lives Impacted</span>
             </div>
 
-            <h1 className="text-4xl sm:text-6xl lg:text-7xl font-bold text-red-500 leading-tight">
+            <h1 className="text-4xl sm:text-6xl lg:text-7xl font-bold text-white leading-tight">
               <span className="block">Together,</span>
-              <span className="block bg-gradient-to-r from-green-700 via-rose-500 to-rose-400 bg-clip-text text-transparent">
+              <span className="block bg-gradient-to-r from-green-900 via-white-900 to-rose-900 bg-clip-text text-transparent">
                 We Save Lives
               </span>
             </h1>
