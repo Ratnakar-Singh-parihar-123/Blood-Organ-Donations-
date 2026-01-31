@@ -1,34 +1,61 @@
-const mongoose = require('mongoose');
-const bcrypt = require('bcrypt');
+const mongoose = require("mongoose");
+const bcrypt = require("bcryptjs");
 
-const bloodDonorSchema = new mongoose.Schema({
-   name: {
-        type: String,
-        required: [true, 'Name is required'], 
-        trim: true
+const bloodDonorSchema = new mongoose.Schema(
+  {
+    fullName: {
+      type: String,
+      required: true,
+      trim: true,
     },
-     email: {
-        type: String,
-        required: [true, 'Email is required'],
-        unique: true,
-        lowercase: true,
-        trim: true,
-        match: [/^\w+([\.-]?\w+)*@\w+([\.-]?\w+)*(\.\w{2,3})+$/, 'Please enter a valid email']
+    age: {
+      type: Number,
+      required: true,
     },
-     password: {
-        type: String,
-        required: [true, 'Password is required'],
-        minlength: 6,
-        select: false
+    bloodGroup: {
+      type: String,
+      required: true,
+      enum: ["A+", "A-", "B+", "B-", "O+", "O-", "AB+", "AB-"],
     },
     phone: {
-        type: String,
-        required: [true, 'Phone number is required'],
-        match: [/^\+?[\d\s\-\(\)]+$/, 'Please enter a valid phone number']
+      type: String,
+      required: true,
     },
-    role: {
-        type: String,
-        enum: ['donor', 'patient', 'admin'],
-        default: 'patient'
+    email: {
+      type: String,
+      required: true,
+      unique: true,
+      lowercase: true,
     },
-})
+    password: {
+      type: String,
+      required: [true, 'Password is required'],
+      minlength: 6,
+      select: false
+    },
+    donationDate: {
+      type: Date,
+    },
+    address: {
+      type: String,
+    },
+  },
+  { timestamps: true }
+);
+
+
+// 🔐 PASSWORD HASH (before save)
+// 🔹 Pre-save hook without next()
+bloodDonorSchema.pre('save', async function () {
+    if (!this.isModified('password')) return; // Only hash if password changed
+    const salt = await bcrypt.genSalt(10);
+    this.password = await bcrypt.hash(this.password, salt);
+});
+
+// Compare password method
+bloodDonorSchema.methods.comparePassword = async function (candidatePassword) {
+    return await bcrypt.compare(candidatePassword, this.password);
+};
+
+
+module.exports = mongoose.model("BloodDonor", bloodDonorSchema);

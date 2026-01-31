@@ -2,8 +2,11 @@ const express = require('express');
 const cors = require('cors');
 require('dotenv').config();
 
+
 // Import routes & DB
 const authRoutes = require('./routes/authRoutes');
+const blooddonorRoutes = require('./routes/bloodDonor')
+const organdonorRoutes = require('./routes/organDonor')
 const connectDB = require('./config/database');
 
 // Initialize express
@@ -31,6 +34,8 @@ app.get('/health', (req, res) => {
 
 // Mount auth routes
 app.use('/api/auth', authRoutes);
+app.use('/api/blood-donors', blooddonorRoutes);
+app.use('/api/organ-donors', organdonorRoutes);
 
 // 404 handler – safe version (DO NOT use '*')
 app.use((req, res, next) => {

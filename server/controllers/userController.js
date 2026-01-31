@@ -1,5 +1,6 @@
 const User = require('../models/User');
 const { generateToken } = require('../utils/jwt');
+const sendEmail = require("../utils/sendEmail");
 
 // @desc    Register user
 // @route   POST /api/auth/register
@@ -150,9 +151,79 @@ const getMe = async (req, res) => {
     }
 };
 
+// SEND OTP
+const forgotPassword = async (req, res) => {
+  const { email } = req.body;
+
+  const user = await User.findOne({ email });
+  if (!user)
+    return res.status(404).json({ message: "User not found" });
+
+  const otp = Math.floor(100000 + Math.random() * 900000).toString();
+
+  user.resetOTP = otp;
+  user.resetOTPExpire = Date.now() + 10 * 60 * 1000; // 10 min
+  await user.save();
+
+  await sendEmail(
+    email,
+    "Password Reset OTP",
+    `Your OTP is ${otp}. It will expire in 10 minutes.`
+  );
+
+  res.json({ message: "OTP sent to email" });
+};
+
+const verifyOTP = async (req, res) => {
+  const { email, otp } = req.body;
+
+  const user = await User.findOne({
+    email,
+    resetOTP: otp,
+    resetOTPExpire: { $gt: Date.now() },
+  });
+
+  if (!user)
+    return res.status(400).json({ message: "Invalid or expired OTP" });
+
+  res.json({ message: "OTP verified successfully" });
+};
+
+
+
+const resetPassword = async (req, res) => {
+  const { email, otp, newPassword } = req.body;
+
+  const user = await User.findOne({
+    email,
+    resetOTP: otp,
+    resetOTPExpire: { $gt: Date.now() },
+  });
+
+  if (!user)
+    return res.status(400).json({ message: "Invalid or expired OTP" });
+
+  user.password = newPassword;
+  user.resetOTP = undefined;
+  user.resetOTPExpire = undefined;
+
+  await user.save();
+
+  res.json({ message: "Password changed successfully" });
+};
+
+
+// notifications 
+// const 
+
+
 module.exports = {
     register,
     login,
     logout,
-    getMe
+    getMe,
+    forgotPassword,
+    verifyOTP,
+    resetPassword
+    
 };

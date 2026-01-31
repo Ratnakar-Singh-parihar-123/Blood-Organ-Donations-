@@ -4,7 +4,7 @@ const bcrypt = require('bcryptjs');
 const userSchema = new mongoose.Schema({
     name: {
         type: String,
-        required: [true, 'Name is required'], 
+        required: [true, 'Name is required'],
         trim: true
     },
     email: {
@@ -31,6 +31,9 @@ const userSchema = new mongoose.Schema({
         enum: ['donor', 'patient', 'admin'],
         default: 'patient'
     },
+    resetOTP: String,
+    resetOTPExpire: Date,
+
     createdAt: { type: Date, default: Date.now }
 });
 

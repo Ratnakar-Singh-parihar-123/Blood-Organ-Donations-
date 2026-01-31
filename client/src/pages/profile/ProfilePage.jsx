@@ -1,1527 +1,1117 @@
 import React, { useState, useEffect } from 'react';
+import { useNavigate, Link } from 'react-router-dom';
 import {
-  User,
-  Mail,
-  Phone,
-  MapPin,
-  Calendar,
-  Shield,
-  Bell,
-  Heart,
-  Droplets,
-  Clock,
-  CheckCircle,
-  Edit,
-  Save,
-  X,
-  ChevronRight,
-  Users,
-  Award,
-  TrendingUp,
-  AlertCircle,
-  Star,
-  Upload,
-  Eye,
-  EyeOff,
-  Settings,
-  LogOut,
-  ClipboardCheck,
-  Activity,
-  Home,
-  Menu,
-  Search,
-  Lock,
-  ChevronLeft,
-  FileText,
-  Smartphone
+  // Common Icons
+  User, Mail, Phone, Calendar, MapPin, Edit2, Save, X, 
+  CheckCircle, AlertCircle, Loader2, Home, LogOut,
+  Shield, Download, Bell, Settings, Heart,
+  
+  // Blood Donor Icons
+  Droplets, Activity, Award, History, Star, Gift, Clock,
+  
+  // Organ Donor Icons
+  ActivityIcon, FileText,
+  
+  // Patient Icons
+  Ambulance, Hospital, Users as UsersIcon, AlertTriangle,
+  
+  // User Icons
+  Users, Globe, TrendingUp, BookOpen
 } from 'lucide-react';
 
 const ProfilePage = () => {
+  const navigate = useNavigate();
+  const [loading, setLoading] = useState(true);
   const [isEditing, setIsEditing] = useState(false);
-  const [isAvailable, setIsAvailable] = useState(true);
-  const [isMobile, setIsMobile] = useState(false);
-  const [showMobileMenu, setShowMobileMenu] = useState(false);
-  const [userData, setUserData] = useState({
-    name: 'Dr. Sarah Johnson',
-    role: 'blood_donor',
-    email: 'sarah.johnson@example.com',
-    phone: '+91 9876543210',
-    bloodGroup: 'O+',
-    location: 'Mumbai, Maharashtra',
-    age: 32,
-    weight: '65 kg',
-    lastDonation: '2024-01-15',
-    totalDonations: 8,
-    verified: {
-      email: true,
-      phone: true,
-      identity: true,
-      medical: true
-    },
-    preferences: {
-      notifications: true,
-      emergencyAlerts: true,
-      locationSharing: true,
-      autoScheduling: false
-    }
-  });
-  const [editData, setEditData] = useState({ ...userData });
-  const [activeTab, setActiveTab] = useState('profile');
-  const [showPassword, setShowPassword] = useState(false);
-  const [password, setPassword] = useState('');
-  const [activeSection, setActiveSection] = useState('');
+  const [saving, setSaving] = useState(false);
+  const [message, setMessage] = useState({ type: '', text: '' });
+  
+  // State for user data
+  const [userType, setUserType] = useState(null);
+  const [userData, setUserData] = useState(null);
+  const [formData, setFormData] = useState({});
 
-  // Check if mobile
+  // Load user data on component mount
   useEffect(() => {
-    const checkMobile = () => {
-      setIsMobile(window.innerWidth < 1024);
-    };
-    checkMobile();
-    window.addEventListener('resize', checkMobile);
-    return () => window.removeEventListener('resize', checkMobile);
+    loadUserData();
   }, []);
 
-  // Scroll to active section
-  useEffect(() => {
-    if (activeSection) {
-      const element = document.getElementById(activeSection);
-      if (element) {
-        element.scrollIntoView({ behavior: 'smooth', block: 'start' });
-      }
-    }
-  }, [activeSection]);
+  const loadUserData = () => {
+    setLoading(true);
+    
+    // Check all possible user types
+    const userTypes = [
+      { key: 'bloodDonor', label: 'Blood Donor', color: 'from-red-500 to-rose-500', icon: Droplets },
+      { key: 'organDonor', label: 'Organ Donor', color: 'from-emerald-500 to-green-500', icon: ActivityIcon },
+      { key: 'patient', label: 'Patient/Family', color: 'from-amber-500 to-orange-500', icon: Ambulance },
+      { key: 'user', label: 'General User', color: 'from-blue-500 to-cyan-500', icon: Users }
+    ];
 
-  // Mock donation history
-  const donationHistory = [
-    {
-      id: 1,
-      type: 'blood',
-      date: '2024-01-15',
-      hospital: 'Apollo Hospital',
-      units: 1,
-      status: 'completed',
-      recipient: 'Emergency Surgery',
-      time: '10:30 AM'
-    },
-    {
-      id: 2,
-      type: 'blood',
-      date: '2023-11-22',
-      hospital: 'Fortis Hospital',
-      units: 1,
-      status: 'completed',
-      recipient: 'Accident Victim',
-      time: '2:45 PM'
-    },
-    {
-      id: 3,
-      type: 'plasma',
-      date: '2023-09-10',
-      hospital: 'AIIMS Delhi',
-      units: 1,
-      status: 'completed',
-      recipient: 'COVID-19 Patient',
-      time: '11:15 AM'
-    }
-  ];
-
-  // Mock upcoming appointments
-  const upcomingAppointments = [
-    {
-      id: 1,
-      type: 'blood',
-      date: '2024-02-20',
-      hospital: 'Max Healthcare',
-      status: 'scheduled',
-      time: '9:00 AM'
-    }
-  ];
-
-  // Role configuration
-  const roles = {
-    blood_donor: {
-      label: 'Blood Donor',
-      icon: Droplets,
-      color: 'from-rose-500 to-pink-500',
-      bgColor: 'bg-gradient-to-r from-rose-500 to-pink-500',
-      textColor: 'text-rose-600'
-    },
-    organ_donor: {
-      label: 'Organ Donor',
-      icon: Heart,
-      color: 'from-purple-500 to-indigo-500',
-      bgColor: 'bg-gradient-to-r from-purple-500 to-indigo-500',
-      textColor: 'text-purple-600'
-    },
-    receiver: {
-      label: 'Receiver',
-      icon: User,
-      color: 'from-blue-500 to-cyan-500',
-      bgColor: 'bg-gradient-to-r from-blue-500 to-cyan-500',
-      textColor: 'text-blue-600'
-    },
-    hospital: {
-      label: 'Hospital Staff',
-      icon: Shield,
-      color: 'from-emerald-500 to-green-500',
-      bgColor: 'bg-gradient-to-r from-emerald-500 to-green-500',
-      textColor: 'text-emerald-600'
-    }
-  };
-
-  const currentRole = roles[userData.role];
-
-  // Tabs for mobile
-  const tabs = [
-    { id: 'profile', label: 'Profile', icon: User },
-    { id: 'activity', label: 'Activity', icon: Activity },
-    { id: 'settings', label: 'Settings', icon: Settings },
-    { id: 'documents', label: 'Documents', icon: FileText }
-  ];
-
-  // Mobile menu sections
-  const mobileSections = [
-    { id: 'profile-card', label: 'Profile Overview', icon: User },
-    { id: 'verification', label: 'Verification', icon: Shield },
-    { id: 'appointments', label: 'Appointments', icon: Calendar },
-    { id: 'donations', label: 'Donations', icon: Droplets },
-    { id: 'preferences', label: 'Preferences', icon: Settings }
-  ];
-
-  // Handle edit toggle
-  const handleEditToggle = () => {
-    if (isEditing) {
-      // Save changes
-      setUserData(editData);
-      setIsEditing(false);
-    } else {
-      setEditData(userData);
-      setIsEditing(true);
-    }
-  };
-
-  // Handle input changes
-  const handleInputChange = (field, value) => {
-    setEditData(prev => ({
-      ...prev,
-      [field]: value
-    }));
-  };
-
-  // Handle preference toggle
-  const handlePreferenceToggle = (preference) => {
-    setUserData(prev => ({
-      ...prev,
-      preferences: {
-        ...prev.preferences,
-        [preference]: !prev.preferences[preference]
-      }
-    }));
-  };
-
-  // Blood groups
-  const bloodGroups = ['A+', 'A-', 'B+', 'B-', 'O+', 'O-', 'AB+', 'AB-'];
-
-  // Status text based on availability and role
-  const getStatusText = () => {
-    if (!isAvailable) return 'Currently Unavailable';
-    if (userData.role === 'blood_donor') return 'Available for Donation';
-    if (userData.role === 'organ_donor') return 'Registered Organ Donor';
-    if (userData.role === 'receiver') return 'Active Patient';
-    return 'Hospital Staff';
-  };
-
-  // Format date
-  const formatDate = (dateString) => {
-    const options = { day: 'numeric', month: 'short', year: 'numeric' };
-    return new Date(dateString).toLocaleDateString('en-IN', options);
-  };
-
-  return (
-    <div className="min-h-screen bg-gradient-to-b from-gray-50 to-white">
+    for (const type of userTypes) {
+      const token = localStorage.getItem(`${type.key}Token`);
+      const data = localStorage.getItem(type.key);
       
-      {/* Mobile Header */}
-      {isMobile && (
-        <div className="sticky top-0 z-50 bg-white border-b border-gray-200 shadow-sm">
-          <div className="px-4 py-3">
-            <div className="flex items-center justify-between">
-              <div className="flex items-center space-x-3">
-                <button className="p-2">
-                  <ChevronLeft className="h-5 w-5 text-gray-700" />
-                </button>
-                <div>
-                  <h1 className="text-lg font-bold text-gray-900">My Profile</h1>
-                  <p className="text-xs text-gray-600">{currentRole.label}</p>
-                </div>
-              </div>
-              <div className="flex items-center space-x-2">
-                <button className="p-2">
-                  <Search className="h-5 w-5 text-gray-600" />
-                </button>
-                <button 
-                  onClick={() => setShowMobileMenu(!showMobileMenu)}
-                  className="p-2"
+      if (token && data) {
+        try {
+          const parsedData = JSON.parse(data);
+          setUserType({
+            id: type.key,
+            label: type.label,
+            color: type.color,
+            icon: type.icon
+          });
+          setUserData(parsedData);
+          setFormData(parsedData);
+          
+          // Set default values for missing fields
+          const defaults = getUserTypeDefaults(type.key);
+          setUserData(prev => ({ ...defaults, ...prev }));
+          setFormData(prev => ({ ...defaults, ...prev }));
+          
+          setLoading(false);
+          return;
+        } catch (error) {
+          console.error('Error parsing user data:', error);
+        }
+      }
+    }
+    
+    // No user found, redirect to login
+    navigate('/select-role');
+    setLoading(false);
+  };
+
+  const getUserTypeDefaults = (type) => {
+    const defaults = {
+      bloodDonor: {
+        name: '',
+        email: '',
+        phone: '',
+        bloodGroup: '',
+        age: '',
+        weight: '',
+        lastDonationDate: '',
+        address: '',
+        city: '',
+        donationCount: 0,
+        points: 0,
+        level: 'Beginner',
+        status: 'active'
+      },
+      organDonor: {
+        name: '',
+        email: '',
+        phone: '',
+        age: '',
+        organsToDonate: [],
+        medicalHistory: '',
+        familyConsent: false,
+        legalDocument: false,
+        registrationDate: new Date().toISOString(),
+        status: 'pending'
+      },
+      patient: {
+        name: '',
+        email: '',
+        phone: '',
+        patientType: 'self',
+        bloodGroup: '',
+        medicalCondition: '',
+        urgencyLevel: 'normal',
+        hospitalName: '',
+        doctorName: '',
+        emergencyContact: '',
+        address: '',
+        status: 'active'
+      },
+      user: {
+        name: '',
+        email: '',
+        phone: '',
+        userType: 'supporter',
+        interests: [],
+        notifications: true,
+        location: '',
+        occupation: '',
+        organization: '',
+        joinDate: new Date().toISOString(),
+        status: 'active'
+      }
+    };
+    
+    return defaults[type] || {};
+  };
+
+  const handleInputChange = (e) => {
+    const { name, value, type, checked } = e.target;
+    
+    if (type === 'checkbox') {
+      if (name === 'organsToDonate' || name === 'interests') {
+        // Handle array checkboxes
+        const currentArray = formData[name] || [];
+        const updatedArray = currentArray.includes(value)
+          ? currentArray.filter(item => item !== value)
+          : [...currentArray, value];
+        setFormData(prev => ({ ...prev, [name]: updatedArray }));
+      } else {
+        // Handle boolean checkboxes
+        setFormData(prev => ({ ...prev, [name]: checked }));
+      }
+    } else {
+      setFormData(prev => ({ ...prev, [name]: value }));
+    }
+    
+    setMessage({ type: '', text: '' });
+  };
+
+  const handleSave = async () => {
+    setSaving(true);
+    setMessage({ type: '', text: '' });
+
+    try {
+      // Validate required fields
+      const errors = validateForm();
+      if (errors.length > 0) {
+        setMessage({ type: 'error', text: errors[0] });
+        setSaving(false);
+        return;
+      }
+
+      // Simulate API call (replace with actual API)
+      await new Promise(resolve => setTimeout(resolve, 1000));
+
+      // Update local storage
+      const updatedData = { 
+        ...formData, 
+        updatedAt: new Date().toISOString(),
+        lastUpdated: new Date().toLocaleString()
+      };
+      
+      localStorage.setItem(userType.id, JSON.stringify(updatedData));
+      localStorage.setItem(userType.id + 'Data', JSON.stringify(updatedData));
+      
+      setUserData(updatedData);
+      setIsEditing(false);
+      setMessage({ 
+        type: 'success', 
+        text: 'Profile updated successfully!' 
+      });
+
+      // Clear message after 3 seconds
+      setTimeout(() => setMessage({ type: '', text: '' }), 3000);
+    } catch (error) {
+      setMessage({ 
+        type: 'error', 
+        text: error.message || 'Failed to update profile. Please try again.' 
+      });
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  const validateForm = () => {
+    const errors = [];
+    
+    if (!formData.name?.trim()) errors.push('Name is required');
+    if (!formData.email?.trim()) errors.push('Email is required');
+    if (!formData.phone?.trim()) errors.push('Phone number is required');
+    
+    // Type-specific validations
+    if (userType.id === 'bloodDonor') {
+      if (!formData.bloodGroup) errors.push('Blood group is required');
+      if (formData.age && (formData.age < 18 || formData.age > 65)) {
+        errors.push('Age must be between 18 and 65');
+      }
+    }
+    
+    if (userType.id === 'organDonor') {
+      if (!formData.familyConsent) errors.push('Family consent is required');
+      if (!formData.legalDocument) errors.push('Legal documentation agreement is required');
+    }
+    
+    return errors;
+  };
+
+  const handleLogout = () => {
+    // Clear all user data
+    const types = ['bloodDonor', 'organDonor', 'patient', 'user'];
+    types.forEach(type => {
+      localStorage.removeItem(`${type}Token`);
+      localStorage.removeItem(type);
+      localStorage.removeItem(`${type}Data`);
+    });
+    
+    navigate('/select-role');
+  };
+
+  // Get stats based on user type
+  const getUserStats = () => {
+    if (!userData) return [];
+    
+    const baseStats = [
+      { label: 'Account Status', value: userData.status || 'Active', icon: CheckCircle, color: 'text-emerald-500', bg: 'bg-emerald-50' },
+      { label: 'Member Since', value: new Date(userData.registrationDate || userData.joinDate || Date.now()).toLocaleDateString(), icon: Calendar, color: 'text-blue-500', bg: 'bg-blue-50' }
+    ];
+
+    switch (userType.id) {
+      case 'bloodDonor':
+        return [
+          { label: 'Total Donations', value: userData.donationCount || 0, icon: Droplets, color: 'text-red-500', bg: 'bg-red-50' },
+          { label: 'Lives Saved', value: (userData.donationCount || 0) * 3, icon: Heart, color: 'text-rose-500', bg: 'bg-rose-50' },
+          { label: 'Points', value: userData.points || 0, icon: Award, color: 'text-amber-500', bg: 'bg-amber-50' },
+          { label: 'Donor Level', value: userData.level || 'Beginner', icon: Star, color: 'text-purple-500', bg: 'bg-purple-50' }
+        ];
+      
+      case 'organDonor':
+        return [
+          { label: 'Organs Pledged', value: (userData.organsToDonate || []).length, icon: ActivityIcon, color: 'text-emerald-500', bg: 'bg-emerald-50' },
+          { label: 'Status', value: userData.status === 'approved' ? 'Approved' : 'Pending Review', icon: Shield, color: 'text-blue-500', bg: 'bg-blue-50' },
+          ...baseStats
+        ];
+      
+      case 'patient':
+        return [
+          { label: 'Urgency Level', value: userData.urgencyLevel || 'Normal', icon: AlertTriangle, color: userData.urgencyLevel === 'emergency' ? 'text-red-500' : 'text-amber-500', bg: userData.urgencyLevel === 'emergency' ? 'bg-red-50' : 'bg-amber-50' },
+          { label: 'Hospital', value: userData.hospitalName || 'Not specified', icon: Hospital, color: 'text-blue-500', bg: 'bg-blue-50' },
+          ...baseStats
+        ];
+      
+      case 'user':
+        return [
+          { label: 'User Type', value: userData.userType || 'Supporter', icon: Users, color: 'text-blue-500', bg: 'bg-blue-50' },
+          { label: 'Interests', value: (userData.interests || []).length, icon: BookOpen, color: 'text-purple-500', bg: 'bg-purple-50' },
+          ...baseStats
+        ];
+      
+      default:
+        return baseStats;
+    }
+  };
+
+  // Get quick actions based on user type
+  const getQuickActions = () => {
+    const baseActions = [
+      { label: 'Notification Settings', icon: Bell, onClick: () => {}, color: 'text-gray-600' },
+      { label: 'Privacy Settings', icon: Shield, onClick: () => {}, color: 'text-blue-600' },
+      { label: 'Download Data', icon: Download, onClick: () => {}, color: 'text-emerald-600' }
+    ];
+
+    switch (userType.id) {
+      case 'bloodDonor':
+        return [
+          { label: 'Schedule Donation', icon: Calendar, onClick: () => {}, color: 'text-red-600' },
+          { label: 'View Donation History', icon: History, onClick: () => {}, color: 'text-rose-600' },
+          { label: 'Redeem Rewards', icon: Gift, onClick: () => {}, color: 'text-amber-600' },
+          ...baseActions
+        ];
+      
+      case 'organDonor':
+        return [
+          { label: 'Update Medical Info', icon: FileText, onClick: () => {}, color: 'text-emerald-600' },
+          { label: 'Download Pledge Certificate', icon: Download, onClick: () => {}, color: 'text-green-600' },
+          ...baseActions
+        ];
+      
+      case 'patient':
+        return [
+          { label: 'Request Help', icon: AlertTriangle, onClick: () => {}, color: 'text-red-600' },
+          { label: 'Find Donors', icon: UsersIcon, onClick: () => {}, color: 'text-blue-600' },
+          { label: 'Hospital Contacts', icon: Hospital, onClick: () => {}, color: 'text-amber-600' },
+          ...baseActions
+        ];
+      
+      case 'user':
+        return [
+          { label: 'Explore Events', icon: Calendar, onClick: () => {}, color: 'text-blue-600' },
+          { label: 'Volunteer Opportunities', icon: Users, onClick: () => {}, color: 'text-cyan-600' },
+          { label: 'Community Forum', icon: Globe, onClick: () => {}, color: 'text-purple-600' },
+          ...baseActions
+        ];
+      
+      default:
+        return baseActions;
+    }
+  };
+
+  // Render specific form fields based on user type
+  const renderUserTypeFields = () => {
+    if (!userType) return null;
+
+    switch (userType.id) {
+      case 'bloodDonor':
+        return (
+          <>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">Blood Group *</label>
+                <select
+                  name="bloodGroup"
+                  value={formData.bloodGroup || ''}
+                  onChange={handleInputChange}
+                  className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-red-300 focus:border-transparent"
+                  disabled={!isEditing}
                 >
-                  <Menu className="h-5 w-5 text-gray-600" />
-                </button>
+                  <option value="">Select Blood Group</option>
+                  {['A+', 'A-', 'B+', 'B-', 'O+', 'O-', 'AB+', 'AB-'].map(group => (
+                    <option key={group} value={group}>{group}</option>
+                  ))}
+                </select>
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">Age</label>
+                <input
+                  type="number"
+                  name="age"
+                  value={formData.age || ''}
+                  onChange={handleInputChange}
+                  className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-red-300 focus:border-transparent"
+                  disabled={!isEditing}
+                  min="18"
+                  max="65"
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">Weight (kg)</label>
+                <input
+                  type="number"
+                  name="weight"
+                  value={formData.weight || ''}
+                  onChange={handleInputChange}
+                  className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-red-300 focus:border-transparent"
+                  disabled={!isEditing}
+                  min="45"
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">Last Donation Date</label>
+                <input
+                  type="date"
+                  name="lastDonationDate"
+                  value={formData.lastDonationDate || ''}
+                  onChange={handleInputChange}
+                  className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-red-300 focus:border-transparent"
+                  disabled={!isEditing}
+                />
               </div>
             </div>
-          </div>
+          </>
+        );
 
-          {/* Mobile Tabs */}
-          <div className="flex overflow-x-auto border-t border-gray-100">
-            {tabs.map((tab) => (
-              <button
-                key={tab.id}
-                onClick={() => setActiveTab(tab.id)}
-                className={`flex-1 min-w-0 px-4 py-3 text-center transition-colors ${
-                  activeTab === tab.id
-                    ? 'text-rose-500 border-b-2 border-rose-500 bg-rose-50'
-                    : 'text-gray-600 hover:text-gray-900'
-                }`}
-              >
-                <div className="flex flex-col items-center space-y-1">
-                  <tab.icon className="h-4 w-4" />
-                  <span className="text-xs font-medium">{tab.label}</span>
-                </div>
-              </button>
-            ))}
-          </div>
-        </div>
-      )}
-
-      {/* Desktop Header */}
-      {!isMobile && (
-        <div className="bg-gradient-to-r from-rose-50 via-pink-50 to-rose-50 border-b border-rose-100">
-          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
-            <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
-              <div className="flex items-center space-x-3">
-                <button className="p-2 hover:bg-white/50 rounded-lg transition-colors">
-                  <Home className="h-6 w-6 text-gray-700" />
-                </button>
-                <div>
-                  <h1 className="text-2xl font-bold text-gray-900">My Profile</h1>
-                  <p className="text-gray-600">Manage your account and donation preferences</p>
-                </div>
-              </div>
-              <div className="flex items-center space-x-3">
-                <button className="p-3 bg-white rounded-xl border border-gray-200 shadow-sm hover:shadow-md transition-shadow">
-                  <Settings className="h-5 w-5 text-gray-600" />
-                </button>
-                <button className="p-3 bg-white rounded-xl border border-gray-200 shadow-sm hover:shadow-md transition-shadow">
-                  <LogOut className="h-5 w-5 text-gray-600" />
-                </button>
-              </div>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* Mobile Navigation Menu */}
-      {isMobile && showMobileMenu && (
-        <div className="fixed inset-0 z-50 bg-black/50 backdrop-blur-sm">
-          <div className="absolute right-0 top-0 bottom-0 w-64 bg-white shadow-xl">
-            <div className="p-4 border-b border-gray-200">
-              <div className="flex items-center justify-between">
-                <h2 className="font-bold text-gray-900">Quick Navigation</h2>
-                <button 
-                  onClick={() => setShowMobileMenu(false)}
-                  className="p-2"
-                >
-                  <X className="h-5 w-5 text-gray-600" />
-                </button>
-              </div>
-            </div>
-            <div className="p-2">
-              {mobileSections.map((section) => (
-                <button
-                  key={section.id}
-                  onClick={() => {
-                    setActiveSection(section.id);
-                    setShowMobileMenu(false);
-                  }}
-                  className="w-full flex items-center space-x-3 p-3 hover:bg-gray-50 rounded-lg transition-colors"
-                >
-                  <section.icon className="h-5 w-5 text-gray-500" />
-                  <span className="text-gray-700">{section.label}</span>
-                </button>
-              ))}
-            </div>
-          </div>
-        </div>
-      )}
-
-      <main className="max-w-7xl mx-auto px-4 py-4 sm:py-8">
-        {isMobile ? (
-          /* Mobile Layout */
-          <div className="space-y-6">
-            {/* Profile Card (Mobile) */}
-            <div id="profile-card" className="bg-white rounded-2xl shadow-lg border border-gray-200 overflow-hidden">
-              <div className={`${currentRole.bgColor} p-6 text-white`}>
-                <div className="flex flex-col items-center text-center">
-                  {/* Profile Avatar */}
-                  <div className="relative mb-4">
-                    <div className="w-24 h-24 rounded-full bg-white/20 backdrop-blur-sm border-4 border-white/50 flex items-center justify-center">
-                      <User className="h-12 w-12 text-white" />
-                    </div>
-                    <button className="absolute bottom-0 right-0 bg-white p-2 rounded-full shadow-lg">
-                      <Edit className="h-4 w-4 text-rose-500" />
-                    </button>
-                  </div>
-
-                  {/* User Info */}
-                  <h2 className="text-xl font-bold mb-1">{userData.name}</h2>
-                  <div className="inline-flex items-center space-x-2 bg-white/20 backdrop-blur-sm px-3 py-1 rounded-full mb-3">
-                    <currentRole.icon className="h-3 w-3" />
-                    <span className="text-sm font-medium">{currentRole.label}</span>
-                  </div>
-
-                  {/* Availability Toggle */}
-                  <div className="w-full bg-white/20 backdrop-blur-sm rounded-xl p-3">
-                    <div className="flex items-center justify-between">
-                      <div className="text-left">
-                        <div className="text-sm font-semibold">{getStatusText()}</div>
-                        <div className="text-xs text-white/90">
-                          {isAvailable ? 'Ready to help' : 'Taking a break'}
-                        </div>
-                      </div>
-                      <button
-                        onClick={() => setIsAvailable(!isAvailable)}
-                        className={`relative inline-flex h-6 w-12 items-center rounded-full transition-colors ${
-                          isAvailable ? 'bg-emerald-500' : 'bg-gray-400'
-                        }`}
-                      >
-                        <span
-                          className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
-                            isAvailable ? 'translate-x-7' : 'translate-x-1'
-                          }`}
-                        />
-                      </button>
-                    </div>
-                  </div>
-                </div>
-              </div>
-
-              {/* Quick Stats */}
-              <div className="p-4 bg-gradient-to-br from-gray-50 to-white">
-                <div className="grid grid-cols-3 gap-3">
-                  <div className="text-center p-3 bg-white rounded-xl border border-gray-200">
-                    <div className="text-lg font-bold text-gray-900">{userData.totalDonations}</div>
-                    <div className="text-xs text-gray-600">Donations</div>
-                  </div>
-                  <div className="text-center p-3 bg-white rounded-xl border border-gray-200">
-                    <div className="text-lg font-bold text-gray-900">{userData.totalDonations * 3}</div>
-                    <div className="text-xs text-gray-600">Lives Saved</div>
-                  </div>
-                  <div className="text-center p-3 bg-white rounded-xl border border-gray-200">
-                    <div className="text-lg font-bold text-gray-900">24</div>
-                    <div className="text-xs text-gray-600">Months</div>
-                  </div>
-                </div>
+      case 'organDonor':
+        const organs = ['Kidney', 'Liver', 'Heart', 'Lungs', 'Pancreas', 'Eyes', 'Bone Marrow'];
+        return (
+          <>
+            <div className="mb-6">
+              <label className="block text-sm font-medium text-gray-700 mb-2">Organs to Donate</label>
+              <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
+                {organs.map(organ => (
+                  <label key={organ} className={`flex items-center space-x-2 p-3 rounded-lg border ${isEditing ? 'cursor-pointer hover:bg-gray-50' : ''}`}>
+                    <input
+                      type="checkbox"
+                      name="organsToDonate"
+                      value={organ}
+                      checked={(formData.organsToDonate || []).includes(organ)}
+                      onChange={handleInputChange}
+                      className="h-4 w-4 text-emerald-500 rounded disabled:opacity-50"
+                      disabled={!isEditing}
+                    />
+                    <span className="text-sm text-gray-700">{organ}</span>
+                  </label>
+                ))}
               </div>
             </div>
 
-            {/* Tab Content - Mobile */}
-            {activeTab === 'profile' && (
-              <div className="space-y-6">
-                {/* Personal Info Card */}
-                <div className="bg-white rounded-2xl shadow-lg border border-gray-200 p-4">
-                  <div className="flex items-center justify-between mb-4">
-                    <h3 className="font-bold text-gray-900">Personal Information</h3>
-                    <button
-                      onClick={handleEditToggle}
-                      className="flex items-center space-x-1 px-3 py-1.5 bg-gradient-to-r from-rose-500 to-rose-400 text-white rounded-lg font-medium text-sm"
-                    >
-                      {isEditing ? (
-                        <>
-                          <Save className="h-3 w-3" />
-                          <span>Save</span>
-                        </>
-                      ) : (
-                        <>
-                          <Edit className="h-3 w-3" />
-                          <span>Edit</span>
-                        </>
-                      )}
-                    </button>
-                  </div>
-
-                  <div className="space-y-4">
-                    {/* Name */}
-                    <div>
-                      <label className="block text-xs font-medium text-gray-700 mb-1">
-                        Full Name
-                      </label>
-                      <div className="relative">
-                        <User className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
-                        <input
-                          type="text"
-                          value={isEditing ? editData.name : userData.name}
-                          onChange={(e) => handleInputChange('name', e.target.value)}
-                          disabled={!isEditing}
-                          className="w-full pl-10 pr-3 py-2.5 bg-gray-50 border border-gray-200 rounded-lg focus:outline-none focus:ring-1 focus:ring-rose-300 focus:border-transparent disabled:opacity-70 text-sm"
-                        />
-                      </div>
-                    </div>
-
-                    {/* Email & Phone */}
-                    <div className="grid grid-cols-1 gap-3">
-                      <div>
-                        <label className="block text-xs font-medium text-gray-700 mb-1">
-                          Email
-                        </label>
-                        <div className="relative">
-                          <Mail className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
-                          <input
-                            type="email"
-                            value={isEditing ? editData.email : userData.email}
-                            onChange={(e) => handleInputChange('email', e.target.value)}
-                            disabled={!isEditing}
-                            className="w-full pl-10 pr-3 py-2.5 bg-gray-50 border border-gray-200 rounded-lg focus:outline-none focus:ring-1 focus:ring-rose-300 focus:border-transparent disabled:opacity-70 text-sm"
-                          />
-                        </div>
-                      </div>
-
-                      <div>
-                        <label className="block text-xs font-medium text-gray-700 mb-1">
-                          Phone
-                        </label>
-                        <div className="relative">
-                          <Phone className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
-                          <input
-                            type="tel"
-                            value={isEditing ? editData.phone : userData.phone}
-                            onChange={(e) => handleInputChange('phone', e.target.value)}
-                            disabled={!isEditing}
-                            className="w-full pl-10 pr-3 py-2.5 bg-gray-50 border border-gray-200 rounded-lg focus:outline-none focus:ring-1 focus:ring-rose-300 focus:border-transparent disabled:opacity-70 text-sm"
-                          />
-                        </div>
-                      </div>
-                    </div>
-
-                    {/* Blood Group & Location */}
-                    <div className="grid grid-cols-2 gap-3">
-                      <div>
-                        <label className="block text-xs font-medium text-gray-700 mb-1">
-                          Blood Group
-                        </label>
-                        <div className="relative">
-                          <Droplets className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
-                          {isEditing ? (
-                            <select
-                              value={editData.bloodGroup}
-                              onChange={(e) => handleInputChange('bloodGroup', e.target.value)}
-                              className="w-full pl-10 pr-3 py-2.5 bg-gray-50 border border-gray-200 rounded-lg focus:outline-none focus:ring-1 focus:ring-rose-300 focus:border-transparent text-sm"
-                            >
-                              <option value="">Select</option>
-                              {bloodGroups.map(group => (
-                                <option key={group} value={group}>{group}</option>
-                              ))}
-                            </select>
-                          ) : (
-                            <div className="w-full pl-10 pr-3 py-2.5 bg-gray-50 border border-gray-200 rounded-lg">
-                              <span className="font-bold text-rose-600 text-sm">{userData.bloodGroup}</span>
-                            </div>
-                          )}
-                        </div>
-                      </div>
-
-                      <div>
-                        <label className="block text-xs font-medium text-gray-700 mb-1">
-                          Location
-                        </label>
-                        <div className="relative">
-                          <MapPin className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
-                          <input
-                            type="text"
-                            value={isEditing ? editData.location : userData.location}
-                            onChange={(e) => handleInputChange('location', e.target.value)}
-                            disabled={!isEditing}
-                            className="w-full pl-10 pr-3 py-2.5 bg-gray-50 border border-gray-200 rounded-lg focus:outline-none focus:ring-1 focus:ring-rose-300 focus:border-transparent disabled:opacity-70 text-sm"
-                          />
-                        </div>
-                      </div>
-                    </div>
-
-                    {/* Age & Weight */}
-                    <div className="grid grid-cols-2 gap-3">
-                      <div>
-                        <label className="block text-xs font-medium text-gray-700 mb-1">
-                          Age
-                        </label>
-                        <div className="relative">
-                          <Calendar className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
-                          <input
-                            type="number"
-                            value={isEditing ? editData.age : userData.age}
-                            onChange={(e) => handleInputChange('age', e.target.value)}
-                            disabled={!isEditing}
-                            className="w-full pl-10 pr-3 py-2.5 bg-gray-50 border border-gray-200 rounded-lg focus:outline-none focus:ring-1 focus:ring-rose-300 focus:border-transparent disabled:opacity-70 text-sm"
-                          />
-                        </div>
-                      </div>
-
-                      <div>
-                        <label className="block text-xs font-medium text-gray-700 mb-1">
-                          Weight
-                        </label>
-                        <input
-                          type="text"
-                          value={isEditing ? editData.weight : userData.weight}
-                          onChange={(e) => handleInputChange('weight', e.target.value)}
-                          disabled={!isEditing}
-                          className="w-full px-3 py-2.5 bg-gray-50 border border-gray-200 rounded-lg focus:outline-none focus:ring-1 focus:ring-rose-300 focus:border-transparent disabled:opacity-70 text-sm"
-                        />
-                      </div>
-                    </div>
-
-                    {/* Password Change (Editing Mode Only) */}
-                    {isEditing && (
-                      <div className="pt-4 border-t border-gray-200">
-                        <h4 className="text-sm font-semibold text-gray-900 mb-3">Change Password</h4>
-                        <div className="space-y-3">
-                          <div>
-                            <label className="block text-xs font-medium text-gray-700 mb-1">
-                              New Password
-                            </label>
-                            <div className="relative">
-                              <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
-                              <input
-                                type={showPassword ? "text" : "password"}
-                                value={password}
-                                onChange={(e) => setPassword(e.target.value)}
-                                className="w-full pl-10 pr-10 py-2.5 bg-gray-50 border border-gray-200 rounded-lg focus:outline-none focus:ring-1 focus:ring-rose-300 focus:border-transparent text-sm"
-                                placeholder="New password"
-                              />
-                              <button
-                                type="button"
-                                onClick={() => setShowPassword(!showPassword)}
-                                className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400"
-                              >
-                                {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
-                              </button>
-                            </div>
-                          </div>
-                          <div>
-                            <label className="block text-xs font-medium text-gray-700 mb-1">
-                              Confirm Password
-                            </label>
-                            <input
-                              type="password"
-                              className="w-full px-3 py-2.5 bg-gray-50 border border-gray-200 rounded-lg focus:outline-none focus:ring-1 focus:ring-rose-300 focus:border-transparent text-sm"
-                              placeholder="Confirm password"
-                            />
-                          </div>
-                        </div>
-                      </div>
-                    )}
-                  </div>
-                </div>
-
-                {/* Verification Status */}
-                <div id="verification" className="bg-white rounded-2xl shadow-lg border border-gray-200 p-4">
-                  <div className="flex items-center space-x-2 mb-4">
-                    <Shield className="h-5 w-5 text-emerald-500" />
-                    <div>
-                      <h3 className="font-bold text-gray-900">Verification Status</h3>
-                      <p className="text-xs text-gray-600">Account security level</p>
-                    </div>
-                  </div>
-
-                  <div className="space-y-3">
-                    {Object.entries(userData.verified).map(([key, value]) => (
-                      <div key={key} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
-                        <div className="flex items-center space-x-3">
-                          <div className={`p-2 rounded-lg ${value ? 'bg-emerald-100' : 'bg-gray-100'}`}>
-                            <CheckCircle className={`h-3 w-3 ${value ? 'text-emerald-500' : 'text-gray-400'}`} />
-                          </div>
-                          <div>
-                            <div className="text-sm font-medium text-gray-900 capitalize">{key}</div>
-                            <div className="text-xs text-gray-500">{value ? 'Verified' : 'Pending'}</div>
-                          </div>
-                        </div>
-                        {value ? (
-                          <CheckCircle className="h-4 w-4 text-emerald-500" />
-                        ) : (
-                          <button className="text-xs text-rose-500 font-medium">
-                            Verify
-                          </button>
-                        )}
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              </div>
-            )}
-
-            {activeTab === 'activity' && (
-              <div className="space-y-6">
-                {/* Donation History */}
-                <div id="donations" className="bg-white rounded-2xl shadow-lg border border-gray-200 p-4">
-                  <div className="flex items-center justify-between mb-4">
-                    <div>
-                      <h3 className="font-bold text-gray-900">Donation History</h3>
-                      <p className="text-xs text-gray-600">Your life-saving contributions</p>
-                    </div>
-                    <button className="text-xs text-rose-500 font-medium">
-                      View All
-                    </button>
-                  </div>
-
-                  <div className="space-y-4">
-                    {donationHistory.map((donation) => (
-                      <div key={donation.id} className="p-3 bg-gradient-to-r from-gray-50 to-white rounded-xl border border-gray-200">
-                        <div className="flex items-start space-x-3">
-                          <div className={`p-2 rounded-lg ${donation.type === 'blood' ? 'bg-rose-100' : 'bg-blue-100'}`}>
-                            {donation.type === 'blood' ? (
-                              <Droplets className="h-4 w-4 text-rose-500" />
-                            ) : (
-                              <Heart className="h-4 w-4 text-blue-500" fill="#3b82f6" />
-                            )}
-                          </div>
-                          <div className="flex-1">
-                            <div className="flex justify-between items-start mb-1">
-                              <div>
-                                <h4 className="font-semibold text-gray-900 text-sm">
-                                  {donation.type === 'blood' ? 'Blood Donation' : 'Plasma Donation'}
-                                </h4>
-                                <p className="text-xs text-gray-600">{donation.hospital}</p>
-                              </div>
-                              <span className="text-xs bg-emerald-100 text-emerald-700 px-2 py-1 rounded-full">
-                                Completed
-                              </span>
-                            </div>
-                            <div className="flex justify-between items-center">
-                              <div className="text-xs text-gray-500">
-                                {formatDate(donation.date)} • {donation.time}
-                              </div>
-                              <div className="text-xs font-medium text-gray-900">
-                                {donation.units} unit{donation.units > 1 ? 's' : ''}
-                              </div>
-                            </div>
-                            <div className="mt-2 text-xs text-gray-700">
-                              Helped: <span className="font-medium">{donation.recipient}</span>
-                            </div>
-                          </div>
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-
-                  {/* Impact Summary */}
-                  <div className="mt-6 p-4 bg-gradient-to-r from-rose-50 to-pink-50 rounded-xl border border-rose-200">
-                    <div className="flex items-center justify-between mb-3">
-                      <h4 className="font-semibold text-gray-900 text-sm">Your Impact</h4>
-                      <TrendingUp className="h-4 w-4 text-rose-500" />
-                    </div>
-                    <div className="grid grid-cols-2 gap-3">
-                      <div className="text-center p-2 bg-white rounded-lg border border-rose-200">
-                        <div className="text-lg font-bold text-rose-600">{userData.totalDonations}</div>
-                        <div className="text-xs text-gray-600">Donations</div>
-                      </div>
-                      <div className="text-center p-2 bg-white rounded-lg border border-rose-200">
-                        <div className="text-lg font-bold text-rose-600">{userData.totalDonations * 3}</div>
-                        <div className="text-xs text-gray-600">Lives Saved</div>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-
-                {/* Upcoming Appointments */}
-                {upcomingAppointments.length > 0 && (
-                  <div id="appointments" className="bg-white rounded-2xl shadow-lg border border-gray-200 p-4">
-                    <div className="flex items-center justify-between mb-4">
-                      <h3 className="font-bold text-gray-900">Upcoming Appointments</h3>
-                      <Calendar className="h-5 w-5 text-gray-400" />
-                    </div>
-                    <div className="space-y-3">
-                      {upcomingAppointments.map((appointment) => (
-                        <div key={appointment.id} className="p-3 bg-gradient-to-r from-rose-50 to-pink-50 rounded-xl border border-rose-200">
-                          <div className="flex items-center justify-between mb-2">
-                            <div className="flex items-center space-x-2">
-                              <Clock className="h-4 w-4 text-rose-500" />
-                              <span className="font-medium text-gray-900 text-sm">
-                                {appointment.type === 'blood' ? 'Blood Donation' : 'Organ Screening'}
-                              </span>
-                            </div>
-                            <span className="text-xs bg-white px-2 py-1 rounded-full border border-rose-200 text-rose-600">
-                              Scheduled
-                            </span>
-                          </div>
-                          <div className="text-xs text-gray-600 mb-1">{appointment.hospital}</div>
-                          <div className="flex items-center justify-between text-xs">
-                            <span className="text-gray-500">{formatDate(appointment.date)} • {appointment.time}</span>
-                            <button className="text-rose-500 font-medium">
-                              Details →
-                            </button>
-                          </div>
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-                )}
-              </div>
-            )}
-
-            {activeTab === 'settings' && (
-              <div id="preferences" className="space-y-6">
-                {/* Availability Settings */}
-                <div className="bg-white rounded-2xl shadow-lg border border-gray-200 p-4">
-                  <div className="flex items-center space-x-2 mb-4">
-                    <Clock className="h-5 w-5 text-rose-500" />
-                    <div>
-                      <h3 className="font-bold text-gray-900">Availability</h3>
-                      <p className="text-xs text-gray-600">Set your donation availability</p>
-                    </div>
-                  </div>
-                  <div className="space-y-3">
-                    <div className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
-                      <div>
-                        <div className="font-medium text-gray-900 text-sm">Available for Donation</div>
-                        <div className="text-xs text-gray-600">Receive emergency requests</div>
-                      </div>
-                      <button
-                        onClick={() => setIsAvailable(!isAvailable)}
-                        className={`relative inline-flex h-5 w-10 items-center rounded-full transition-colors ${
-                          isAvailable ? 'bg-emerald-500' : 'bg-gray-400'
-                        }`}
-                      >
-                        <span
-                          className={`inline-block h-3 w-3 transform rounded-full bg-white transition-transform ${
-                            isAvailable ? 'translate-x-6' : 'translate-x-1'
-                          }`}
-                        />
-                      </button>
-                    </div>
-                  </div>
-                </div>
-
-                {/* Notification Settings */}
-                <div className="bg-white rounded-2xl shadow-lg border border-gray-200 p-4">
-                  <div className="flex items-center space-x-2 mb-4">
-                    <Bell className="h-5 w-5 text-rose-500" />
-                    <div>
-                      <h3 className="font-bold text-gray-900">Notifications</h3>
-                      <p className="text-xs text-gray-600">How we communicate with you</p>
-                    </div>
-                  </div>
-                  <div className="space-y-3">
-                    {Object.entries(userData.preferences).map(([key, value]) => (
-                      <div key={key} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
-                        <div>
-                          <div className="font-medium text-gray-900 text-sm capitalize">{key.replace(/([A-Z])/g, ' $1')}</div>
-                          <div className="text-xs text-gray-600">
-                            {key === 'emergencyAlerts' && 'Critical blood/organ requests'}
-                            {key === 'notifications' && 'General updates'}
-                            {key === 'locationSharing' && 'Share location'}
-                            {key === 'autoScheduling' && 'Auto appointments'}
-                          </div>
-                        </div>
-                        <button
-                          onClick={() => handlePreferenceToggle(key)}
-                          className={`relative inline-flex h-5 w-10 items-center rounded-full transition-colors ${
-                            value ? 'bg-rose-500' : 'bg-gray-400'
-                          }`}
-                        >
-                          <span
-                            className={`inline-block h-3 w-3 transform rounded-full bg-white transition-transform ${
-                              value ? 'translate-x-6' : 'translate-x-1'
-                            }`}
-                          />
-                        </button>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-
-                {/* Supportive CTA - Mobile */}
-                <div className="bg-gradient-to-r from-rose-50 to-pink-50 rounded-2xl p-6 border border-rose-200">
-                  <div className="text-center">
-                    <h3 className="text-lg font-bold text-gray-900 mb-2">
-                      {userData.role === 'organ_donor' 
-                        ? 'Share Your Legacy' 
-                        : 'Ready to Save Lives?'}
-                    </h3>
-                    <p className="text-gray-600 text-sm mb-4">
-                      {userData.role === 'organ_donor'
-                        ? 'Register as an organ donor and save up to 8 lives'
-                        : 'Keep your profile updated to respond faster in emergencies'}
-                    </p>
-                    <button className="w-full py-3 bg-gradient-to-r from-rose-500 to-rose-400 text-white rounded-xl font-semibold text-sm hover:shadow-lg transition-all flex items-center justify-center space-x-2">
-                      {userData.role === 'organ_donor' ? (
-                        <>
-                          <Heart className="h-4 w-4" fill="white" />
-                          <span>Register Organ Donor</span>
-                        </>
-                      ) : (
-                        <>
-                          <Droplets className="h-4 w-4" />
-                          <span>Schedule Donation</span>
-                        </>
-                      )}
-                    </button>
-                  </div>
-                </div>
-              </div>
-            )}
-          </div>
-        ) : (
-          /* Desktop Layout */
-          <div className="grid lg:grid-cols-3 gap-8">
-            {/* Left Column - Profile Card & Stats */}
-            <div className="lg:col-span-1 space-y-8">
-              
-              {/* Profile Card */}
-              <div className="bg-white rounded-2xl shadow-lg border border-gray-200 overflow-hidden">
-                {/* Profile Header */}
-                <div className={`${currentRole.bgColor} p-8 text-white`}>
-                  <div className="flex flex-col items-center text-center">
-                    {/* Profile Avatar */}
-                    <div className="relative mb-6">
-                      <div className="w-32 h-32 rounded-full bg-white/20 backdrop-blur-sm border-4 border-white/50 flex items-center justify-center">
-                        <User className="h-16 w-16 text-white" />
-                      </div>
-                      <button className="absolute bottom-2 right-2 bg-white p-2 rounded-full shadow-lg hover:shadow-xl transition-shadow">
-                        <Edit className="h-4 w-4 text-rose-500" />
-                      </button>
-                    </div>
-
-                    {/* User Info */}
-                    <h2 className="text-2xl font-bold mb-2">{userData.name}</h2>
-                    <div className="inline-flex items-center space-x-2 bg-white/20 backdrop-blur-sm px-4 py-2 rounded-full mb-4">
-                      <currentRole.icon className="h-4 w-4" />
-                      <span className="font-medium">{currentRole.label}</span>
-                    </div>
-
-                    {/* Availability Toggle */}
-                    <div className="w-full bg-white/20 backdrop-blur-sm rounded-xl p-4">
-                      <div className="flex items-center justify-between">
-                        <div className="text-left">
-                          <div className="font-semibold">{getStatusText()}</div>
-                          <div className="text-sm text-white/90">
-                            {isAvailable ? 'Ready to help in emergencies' : 'Taking a break'}
-                          </div>
-                        </div>
-                        <button
-                          onClick={() => setIsAvailable(!isAvailable)}
-                          className={`relative inline-flex h-8 w-16 items-center rounded-full transition-colors ${
-                            isAvailable ? 'bg-emerald-500' : 'bg-gray-400'
-                          }`}
-                        >
-                          <span
-                            className={`inline-block h-6 w-6 transform rounded-full bg-white transition-transform ${
-                              isAvailable ? 'translate-x-9' : 'translate-x-1'
-                            }`}
-                          />
-                        </button>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-
-                {/* Quick Stats */}
-                <div className="p-6 bg-gradient-to-br from-gray-50 to-white">
-                  <div className="grid grid-cols-3 gap-4">
-                    <div className="text-center">
-                      <div className="text-2xl font-bold text-gray-900">{userData.totalDonations}</div>
-                      <div className="text-sm text-gray-600">Donations</div>
-                    </div>
-                    <div className="text-center">
-                      <div className="text-2xl font-bold text-gray-900">3</div>
-                      <div className="text-sm text-gray-600">Lives Saved</div>
-                    </div>
-                    <div className="text-center">
-                      <div className="text-2xl font-bold text-gray-900">24</div>
-                      <div className="text-sm text-gray-600">Months Active</div>
-                    </div>
-                  </div>
-                </div>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">Age *</label>
+                <input
+                  type="number"
+                  name="age"
+                  value={formData.age || ''}
+                  onChange={handleInputChange}
+                  className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-emerald-300 focus:border-transparent"
+                  disabled={!isEditing}
+                  min="18"
+                />
               </div>
 
-              {/* Verification Status */}
-              <div className="bg-white rounded-2xl shadow-lg border border-gray-200 p-6">
-                <div className="flex items-center space-x-3 mb-6">
-                  <Shield className="h-6 w-6 text-emerald-500" />
-                  <div>
-                    <h3 className="font-bold text-gray-900">Verification Status</h3>
-                    <p className="text-sm text-gray-600">Your account security level</p>
-                  </div>
-                </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">Medical History</label>
+                <textarea
+                  name="medicalHistory"
+                  value={formData.medicalHistory || ''}
+                  onChange={handleInputChange}
+                  className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-emerald-300 focus:border-transparent resize-none"
+                  disabled={!isEditing}
+                  rows="3"
+                  placeholder="Any medical conditions or history..."
+                />
+              </div>
+            </div>
 
-                <div className="space-y-4">
-                  {Object.entries(userData.verified).map(([key, value]) => (
-                    <div key={key} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
-                      <div className="flex items-center space-x-3">
-                        <div className={`p-2 rounded-lg ${
-                          value ? 'bg-emerald-100' : 'bg-gray-100'
-                        }`}>
-                          <CheckCircle className={`h-4 w-4 ${
-                            value ? 'text-emerald-500' : 'text-gray-400'
-                          }`} />
-                        </div>
-                        <div>
-                          <div className="font-medium text-gray-900 capitalize">{key}</div>
-                          <div className="text-xs text-gray-500">
-                            {value ? 'Verified' : 'Pending'}
-                          </div>
-                        </div>
-                      </div>
-                      {value ? (
-                        <CheckCircle className="h-5 w-5 text-emerald-500" />
-                      ) : (
-                        <button className="text-sm text-rose-500 hover:text-rose-600 font-medium">
-                          Verify
-                        </button>
-                      )}
-                    </div>
+            <div className="space-y-4 mt-6">
+              <label className={`flex items-start space-x-3 ${isEditing ? 'cursor-pointer' : ''}`}>
+                <input
+                  type="checkbox"
+                  name="familyConsent"
+                  checked={formData.familyConsent || false}
+                  onChange={handleInputChange}
+                  className="h-4 w-4 text-emerald-500 rounded mt-0.5 disabled:opacity-50"
+                  disabled={!isEditing}
+                />
+                <span className="text-sm text-gray-700">
+                  I have discussed organ donation with my family and have their consent
+                </span>
+              </label>
+
+              <label className={`flex items-start space-x-3 ${isEditing ? 'cursor-pointer' : ''}`}>
+                <input
+                  type="checkbox"
+                  name="legalDocument"
+                  checked={formData.legalDocument || false}
+                  onChange={handleInputChange}
+                  className="h-4 w-4 text-emerald-500 rounded mt-0.5 disabled:opacity-50"
+                  disabled={!isEditing}
+                />
+                <span className="text-sm text-gray-700">
+                  I agree to complete the required legal documentation for organ donation
+                </span>
+              </label>
+            </div>
+          </>
+        );
+
+      case 'patient':
+        const urgencyLevels = [
+          { value: 'normal', label: 'Normal', color: 'bg-blue-100 text-blue-800' },
+          { value: 'urgent', label: 'Urgent', color: 'bg-amber-100 text-amber-800' },
+          { value: 'emergency', label: 'Emergency', color: 'bg-red-100 text-red-800' }
+        ];
+
+        const patientTypes = [
+          { value: 'self', label: 'Self' },
+          { value: 'family', label: 'Family Member' },
+          { value: 'friend', label: 'Friend' }
+        ];
+
+        return (
+          <>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">Patient Type</label>
+                <div className="grid grid-cols-3 gap-2">
+                  {patientTypes.map(type => (
+                    <label key={type.value} className={`flex items-center justify-center p-3 rounded-lg border ${isEditing ? 'cursor-pointer hover:bg-gray-50' : ''}`}>
+                      <input
+                        type="radio"
+                        name="patientType"
+                        value={type.value}
+                        checked={formData.patientType === type.value}
+                        onChange={handleInputChange}
+                        className="sr-only"
+                        disabled={!isEditing}
+                      />
+                      <span className={`font-medium ${formData.patientType === type.value ? 'text-amber-600' : 'text-gray-700'}`}>
+                        {type.label}
+                      </span>
+                    </label>
                   ))}
                 </div>
+              </div>
 
-                <div className="mt-6 p-4 bg-gradient-to-r from-blue-50 to-cyan-50 rounded-xl border border-blue-200">
-                  <div className="flex items-center space-x-3">
-                    <Shield className="h-5 w-5 text-blue-500" />
-                    <div className="text-sm text-gray-700">
-                      Verified donors get priority in emergency matching
-                    </div>
-                  </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">Blood Group (if known)</label>
+                <select
+                  name="bloodGroup"
+                  value={formData.bloodGroup || ''}
+                  onChange={handleInputChange}
+                  className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-amber-300 focus:border-transparent"
+                  disabled={!isEditing}
+                >
+                  <option value="">Select Blood Group</option>
+                  {['A+', 'A-', 'B+', 'B-', 'O+', 'O-', 'AB+', 'AB-'].map(group => (
+                    <option key={group} value={group}>{group}</option>
+                  ))}
+                </select>
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">Medical Condition</label>
+                <input
+                  type="text"
+                  name="medicalCondition"
+                  value={formData.medicalCondition || ''}
+                  onChange={handleInputChange}
+                  className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-amber-300 focus:border-transparent"
+                  disabled={!isEditing}
+                  placeholder="e.g., Blood Cancer, Surgery, Accident"
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">Urgency Level</label>
+                <div className="grid grid-cols-3 gap-2">
+                  {urgencyLevels.map(level => (
+                    <label key={level.value} className={`flex items-center justify-center p-3 rounded-lg border ${isEditing ? 'cursor-pointer hover:bg-gray-50' : ''}`}>
+                      <input
+                        type="radio"
+                        name="urgencyLevel"
+                        value={level.value}
+                        checked={formData.urgencyLevel === level.value}
+                        onChange={handleInputChange}
+                        className="sr-only"
+                        disabled={!isEditing}
+                      />
+                      <span className={`font-medium ${formData.urgencyLevel === level.value ? 'text-amber-600' : 'text-gray-700'}`}>
+                        {level.label}
+                      </span>
+                    </label>
+                  ))}
                 </div>
               </div>
 
-              {/* Upcoming Appointments */}
-              {upcomingAppointments.length > 0 && (
-                <div className="bg-white rounded-2xl shadow-lg border border-gray-200 p-6">
-                  <div className="flex items-center justify-between mb-6">
-                    <h3 className="font-bold text-gray-900">Upcoming Appointments</h3>
-                    <Calendar className="h-5 w-5 text-gray-400" />
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">Hospital Name</label>
+                <input
+                  type="text"
+                  name="hospitalName"
+                  value={formData.hospitalName || ''}
+                  onChange={handleInputChange}
+                  className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-amber-300 focus:border-transparent"
+                  disabled={!isEditing}
+                  placeholder="e.g., City General Hospital"
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">Emergency Contact</label>
+                <input
+                  type="text"
+                  name="emergencyContact"
+                  value={formData.emergencyContact || ''}
+                  onChange={handleInputChange}
+                  className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-amber-300 focus:border-transparent"
+                  disabled={!isEditing}
+                  placeholder="Name and phone number"
+                />
+              </div>
+            </div>
+          </>
+        );
+
+      case 'user':
+        const interestsList = [
+          'Blood Donation', 'Organ Donation', 'Awareness Programs', 'Fundraising',
+          'Volunteering', 'Event Management', 'Medical Support', 'Community Outreach'
+        ];
+
+        const userTypes = [
+          { value: 'supporter', label: 'Supporter', icon: Heart },
+          { value: 'volunteer', label: 'Volunteer', icon: Users },
+          { value: 'organization', label: 'Organization', icon: Globe },
+          { value: 'healthcare', label: 'Healthcare Worker', icon: TrendingUp }
+        ];
+
+        return (
+          <>
+            <div className="mb-6">
+              <label className="block text-sm font-medium text-gray-700 mb-2">User Type</label>
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-2">
+                {userTypes.map(type => {
+                  const IconComponent = type.icon;
+                  return (
+                    <label key={type.value} className={`flex flex-col items-center justify-center p-3 rounded-lg border ${isEditing ? 'cursor-pointer hover:bg-gray-50' : ''}`}>
+                      <input
+                        type="radio"
+                        name="userType"
+                        value={type.value}
+                        checked={formData.userType === type.value}
+                        onChange={handleInputChange}
+                        className="sr-only"
+                        disabled={!isEditing}
+                      />
+                      <IconComponent className={`h-5 w-5 mb-2 ${formData.userType === type.value ? 'text-blue-500' : 'text-gray-400'}`} />
+                      <span className={`text-xs font-medium ${formData.userType === type.value ? 'text-blue-600' : 'text-gray-700'}`}>
+                        {type.label}
+                      </span>
+                    </label>
+                  );
+                })}
+              </div>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">Location</label>
+                <input
+                  type="text"
+                  name="location"
+                  value={formData.location || ''}
+                  onChange={handleInputChange}
+                  className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-300 focus:border-transparent"
+                  disabled={!isEditing}
+                  placeholder="City, State"
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">Occupation</label>
+                <input
+                  type="text"
+                  name="occupation"
+                  value={formData.occupation || ''}
+                  onChange={handleInputChange}
+                  className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-300 focus:border-transparent"
+                  disabled={!isEditing}
+                  placeholder="e.g., Student, Teacher, Doctor"
+                />
+              </div>
+
+              <div className="md:col-span-2">
+                <label className="block text-sm font-medium text-gray-700 mb-2">Organization (if applicable)</label>
+                <input
+                  type="text"
+                  name="organization"
+                  value={formData.organization || ''}
+                  onChange={handleInputChange}
+                  className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-300 focus:border-transparent"
+                  disabled={!isEditing}
+                  placeholder="e.g., ABC Hospital, XYZ NGO"
+                />
+              </div>
+            </div>
+
+            <div className="mb-6">
+              <label className="block text-sm font-medium text-gray-700 mb-2">Areas of Interest</label>
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+                {interestsList.map(interest => (
+                  <label key={interest} className={`flex items-center space-x-2 ${isEditing ? 'cursor-pointer hover:bg-gray-50 p-2 rounded' : ''}`}>
+                    <input
+                      type="checkbox"
+                      name="interests"
+                      value={interest}
+                      checked={(formData.interests || []).includes(interest)}
+                      onChange={handleInputChange}
+                      className="h-4 w-4 text-blue-500 rounded disabled:opacity-50"
+                      disabled={!isEditing}
+                    />
+                    <span className="text-sm text-gray-700">{interest}</span>
+                  </label>
+                ))}
+              </div>
+            </div>
+
+            <label className={`flex items-center space-x-3 ${isEditing ? 'cursor-pointer' : ''}`}>
+              <input
+                type="checkbox"
+                name="notifications"
+                checked={formData.notifications || false}
+                onChange={handleInputChange}
+                className="h-4 w-4 text-blue-500 rounded disabled:opacity-50"
+                disabled={!isEditing}
+              />
+              <span className="text-sm text-gray-700">
+                Receive notifications about donation drives and community activities
+              </span>
+            </label>
+          </>
+        );
+
+      default:
+        return null;
+    }
+  };
+
+  // Get gradient color based on user type
+  const getGradientColor = () => {
+    if (!userType) return 'from-gray-500 to-gray-600';
+    return userType.color;
+  };
+
+  if (loading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <Loader2 className="h-8 w-8 animate-spin text-rose-500" />
+      </div>
+    );
+  }
+
+  if (!userType || !userData) {
+    return null;
+  }
+
+  const IconComponent = userType.icon;
+  const stats = getUserStats();
+  const quickActions = getQuickActions();
+
+  return (
+    <div className="min-h-screen bg-gradient-to-br from-gray-50 via-white to-gray-100">
+      {/* Navigation */}
+      <nav className="bg-white shadow-sm border-b sticky top-0 z-50">
+        <div className="max-w-7xl mx-auto px-4">
+          <div className="flex items-center justify-between h-16">
+            <Link to="/" className="flex items-center space-x-3">
+              <div className={`bg-gradient-to-r ${getGradientColor()} p-2 rounded-lg`}>
+                <IconComponent className="h-6 w-6 text-white" />
+              </div>
+              <div>
+                <span className="text-xl font-bold text-gray-900">LifeStream</span>
+                <span className="text-xs text-gray-600 ml-2">Profile</span>
+              </div>
+            </Link>
+            
+            <div className="flex items-center space-x-4">
+              <Link 
+                to="/" 
+                className="flex items-center space-x-2 text-gray-600 hover:text-rose-600 transition-colors"
+              >
+                <Home className="h-5 w-5" />
+                <span className="hidden md:inline">Home</span>
+              </Link>
+              <button
+                onClick={handleLogout}
+                className="flex items-center space-x-2 px-4 py-2 bg-gray-50 text-gray-700 rounded-lg hover:bg-gray-100 transition-colors font-medium"
+              >
+                <LogOut className="h-4 w-4" />
+                <span>Logout</span>
+              </button>
+            </div>
+          </div>
+        </div>
+      </nav>
+
+      <div className="max-w-7xl mx-auto px-4 py-8">
+        {/* Header Section */}
+        <div className={`bg-gradient-to-r ${getGradientColor()} rounded-2xl shadow-xl p-6 mb-8`}>
+          <div className="flex flex-col md:flex-row items-start md:items-center justify-between">
+            <div className="flex items-center space-x-4 mb-4 md:mb-0">
+              <div className="bg-white/20 p-3 rounded-xl backdrop-blur-sm">
+                <User className="h-12 w-12 text-white" />
+              </div>
+              <div>
+                <h1 className="text-3xl font-bold text-white">{userData.name || 'User'}</h1>
+                <div className="flex items-center space-x-4 mt-2">
+                  <div className="flex items-center space-x-2 bg-white/20 px-3 py-1 rounded-full">
+                    <IconComponent className="h-4 w-4 text-white" />
+                    <span className="text-white font-medium">{userType.label}</span>
                   </div>
-                  <div className="space-y-4">
-                    {upcomingAppointments.map((appointment) => (
-                      <div key={appointment.id} className="p-4 bg-gradient-to-r from-rose-50 to-pink-50 rounded-xl border border-rose-200">
-                        <div className="flex items-center justify-between mb-2">
-                          <div className="flex items-center space-x-2">
-                            <Clock className="h-4 w-4 text-rose-500" />
-                            <span className="font-medium text-gray-900">{appointment.type === 'blood' ? 'Blood Donation' : 'Organ Screening'}</span>
-                          </div>
-                          <div className="text-sm bg-white px-3 py-1 rounded-full border border-rose-200 text-rose-600">
-                            Scheduled
-                          </div>
-                        </div>
-                        <div className="text-sm text-gray-600 mb-2">{appointment.hospital}</div>
-                        <div className="flex items-center justify-between text-sm">
-                          <span className="text-gray-500">{formatDate(appointment.date)} • {appointment.time}</span>
-                          <button className="text-rose-500 hover:text-rose-600 font-medium">
-                            View Details →
-                          </button>
-                        </div>
-                      </div>
-                    ))}
+                  <div className="flex items-center space-x-2">
+                    <CheckCircle className="h-4 w-4 text-green-300" />
+                    <span className="text-white">Verified Account</span>
                   </div>
+                </div>
+              </div>
+            </div>
+            
+            <div className="flex items-center space-x-3">
+              {!isEditing ? (
+                <button
+                  onClick={() => setIsEditing(true)}
+                  className="flex items-center space-x-2 px-4 py-2 bg-white text-gray-700 rounded-lg font-medium hover:bg-gray-50 transition-all hover:scale-105"
+                >
+                  <Edit2 className="h-4 w-4" />
+                  <span>Edit Profile</span>
+                </button>
+              ) : (
+                <div className="flex items-center space-x-2">
+                  <button
+                    onClick={handleSave}
+                    disabled={saving}
+                    className="flex items-center space-x-2 px-4 py-2 bg-white text-emerald-600 rounded-lg font-medium hover:bg-emerald-50 transition-all disabled:opacity-50 hover:scale-105"
+                  >
+                    {saving ? <Loader2 className="h-4 w-4 animate-spin" /> : <Save className="h-4 w-4" />}
+                    <span>{saving ? 'Saving...' : 'Save Changes'}</span>
+                  </button>
+                  <button
+                    onClick={() => {
+                      setIsEditing(false);
+                      setFormData({ ...userData });
+                      setMessage({ type: '', text: '' });
+                    }}
+                    className="flex items-center space-x-2 px-4 py-2 bg-white text-gray-600 rounded-lg font-medium hover:bg-gray-100 transition-all hover:scale-105"
+                  >
+                    <X className="h-4 w-4" />
+                    <span>Cancel</span>
+                  </button>
                 </div>
               )}
             </div>
+          </div>
+        </div>
 
-            {/* Right Column - Main Content */}
-            <div className="lg:col-span-2 space-y-8">
+        {/* Message Alert */}
+        {message.text && (
+          <div className={`mb-6 p-4 rounded-xl flex items-center space-x-3 animate-fadeIn ${
+            message.type === 'success' 
+              ? 'bg-emerald-50 text-emerald-700 border border-emerald-200'
+              : 'bg-red-50 text-red-700 border border-red-200'
+          }`}>
+            {message.type === 'success' ? 
+              <CheckCircle className="h-5 w-5 flex-shrink-0" /> : 
+              <AlertCircle className="h-5 w-5 flex-shrink-0" />
+            }
+            <span>{message.text}</span>
+          </div>
+        )}
+
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+          {/* Left Column - Profile Info */}
+          <div className="lg:col-span-2 space-y-8">
+            {/* Profile Form */}
+            <div className="bg-white rounded-2xl shadow-lg p-6">
+              <div className="flex items-center justify-between mb-6">
+                <h2 className="text-xl font-bold text-gray-900">Profile Information</h2>
+                <Settings className="h-5 w-5 text-gray-400" />
+              </div>
               
-              {/* Tabs Navigation */}
-              <div className="bg-white rounded-2xl shadow-lg border border-gray-200 overflow-hidden">
-                <div className="flex overflow-x-auto">
-                  {tabs.map((tab) => (
-                    <button
-                      key={tab.id}
-                      onClick={() => setActiveTab(tab.id)}
-                      className={`flex-1 px-6 py-4 font-semibold whitespace-nowrap transition-colors ${
-                        activeTab === tab.id
-                          ? 'text-rose-500 border-b-2 border-rose-500'
-                          : 'text-gray-600 hover:text-gray-900 hover:bg-gray-50'
-                      }`}
-                    >
-                      {tab.label}
-                    </button>
-                  ))}
+              <div className="space-y-6">
+                {/* Common Fields */}
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                      <div className="flex items-center space-x-2">
+                        <User className="h-4 w-4 text-gray-400" />
+                        <span>Full Name *</span>
+                      </div>
+                    </label>
+                    {isEditing ? (
+                      <input
+                        type="text"
+                        name="name"
+                        value={formData.name || ''}
+                        onChange={handleInputChange}
+                        className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-rose-300 focus:border-transparent"
+                        required
+                      />
+                    ) : (
+                      <div className="px-4 py-3 bg-gray-50 rounded-xl">{userData.name || 'Not provided'}</div>
+                    )}
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                      <div className="flex items-center space-x-2">
+                        <Mail className="h-4 w-4 text-gray-400" />
+                        <span>Email Address *</span>
+                      </div>
+                    </label>
+                    {isEditing ? (
+                      <input
+                        type="email"
+                        name="email"
+                        value={formData.email || ''}
+                        onChange={handleInputChange}
+                        className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-rose-300 focus:border-transparent"
+                        required
+                      />
+                    ) : (
+                      <div className="px-4 py-3 bg-gray-50 rounded-xl">{userData.email || 'Not provided'}</div>
+                    )}
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                      <div className="flex items-center space-x-2">
+                        <Phone className="h-4 w-4 text-gray-400" />
+                        <span>Phone Number *</span>
+                      </div>
+                    </label>
+                    {isEditing ? (
+                      <input
+                        type="tel"
+                        name="phone"
+                        value={formData.phone || ''}
+                        onChange={handleInputChange}
+                        className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-rose-300 focus:border-transparent"
+                        required
+                      />
+                    ) : (
+                      <div className="px-4 py-3 bg-gray-50 rounded-xl">{userData.phone || 'Not provided'}</div>
+                    )}
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                      <div className="flex items-center space-x-2">
+                        <MapPin className="h-4 w-4 text-gray-400" />
+                        <span>Address</span>
+                      </div>
+                    </label>
+                    {isEditing ? (
+                      <input
+                        type="text"
+                        name="address"
+                        value={formData.address || ''}
+                        onChange={handleInputChange}
+                        className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-rose-300 focus:border-transparent"
+                      />
+                    ) : (
+                      <div className="px-4 py-3 bg-gray-50 rounded-xl">{userData.address || 'Not provided'}</div>
+                    )}
+                  </div>
+                </div>
+
+                {/* User Type Specific Fields */}
+                {renderUserTypeFields()}
+
+                {/* Last Updated */}
+                <div className="pt-6 border-t border-gray-100">
+                  <p className="text-sm text-gray-500">
+                    Last updated: {userData.lastUpdated || 'Never'}
+                  </p>
                 </div>
               </div>
+            </div>
 
-              {/* Tab Content - Desktop */}
-              <div className="space-y-8">
-                {activeTab === 'profile' && (
-                  <div className="bg-white rounded-2xl shadow-lg border border-gray-200 p-6">
-                    <div className="flex items-center justify-between mb-8">
-                      <div>
-                        <h3 className="text-xl font-bold text-gray-900">Personal Information</h3>
-                        <p className="text-gray-600">Keep your profile updated for better matches</p>
+            {/* Recent Activity Section */}
+            <div className="bg-white rounded-2xl shadow-lg p-6">
+              <h2 className="text-xl font-bold text-gray-900 mb-6">Recent Activity</h2>
+              
+              <div className="space-y-4">
+                {userData.lastUpdated ? (
+                  <div className="flex items-center justify-between p-4 border border-gray-100 rounded-xl">
+                    <div className="flex items-center space-x-4">
+                      <div className="p-2 rounded-lg bg-emerald-50 text-emerald-600">
+                        <CheckCircle className="h-5 w-5" />
                       </div>
-                      <button
-                        onClick={handleEditToggle}
-                        className="flex items-center space-x-2 px-4 py-2 bg-gradient-to-r from-rose-500 to-rose-400 text-white rounded-xl font-semibold hover:shadow-lg transition-all"
-                      >
-                        {isEditing ? (
-                          <>
-                            <Save className="h-4 w-4" />
-                            <span>Save Changes</span>
-                          </>
-                        ) : (
-                          <>
-                            <Edit className="h-4 w-4" />
-                            <span>Edit Profile</span>
-                          </>
-                        )}
-                      </button>
-                    </div>
-
-                    <div className="grid md:grid-cols-2 gap-6">
-                      {/* Name */}
                       <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-2">
-                          Full Name
-                        </label>
-                        <div className="relative">
-                          <User className="absolute left-4 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400" />
-                          <input
-                            type="text"
-                            value={isEditing ? editData.name : userData.name}
-                            onChange={(e) => handleInputChange('name', e.target.value)}
-                            disabled={!isEditing}
-                            className="w-full pl-12 pr-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-rose-300 focus:border-transparent disabled:opacity-70"
-                          />
-                        </div>
-                      </div>
-
-                      {/* Email */}
-                      <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-2">
-                          Email Address
-                        </label>
-                        <div className="relative">
-                          <Mail className="absolute left-4 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400" />
-                          <input
-                            type="email"
-                            value={isEditing ? editData.email : userData.email}
-                            onChange={(e) => handleInputChange('email', e.target.value)}
-                            disabled={!isEditing}
-                            className="w-full pl-12 pr-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-rose-300 focus:border-transparent disabled:opacity-70"
-                          />
-                        </div>
-                      </div>
-
-                      {/* Phone */}
-                      <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-2">
-                          Phone Number
-                        </label>
-                        <div className="relative">
-                          <Phone className="absolute left-4 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400" />
-                          <input
-                            type="tel"
-                            value={isEditing ? editData.phone : userData.phone}
-                            onChange={(e) => handleInputChange('phone', e.target.value)}
-                            disabled={!isEditing}
-                            className="w-full pl-12 pr-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-rose-300 focus:border-transparent disabled:opacity-70"
-                          />
-                        </div>
-                      </div>
-
-                      {/* Blood Group */}
-                      <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-2">
-                          Blood Group
-                        </label>
-                        <div className="relative">
-                          <Droplets className="absolute left-4 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400" />
-                          {isEditing ? (
-                            <select
-                              value={editData.bloodGroup}
-                              onChange={(e) => handleInputChange('bloodGroup', e.target.value)}
-                              className="w-full pl-12 pr-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-rose-300 focus:border-transparent"
-                            >
-                              <option value="">Select Blood Group</option>
-                              {bloodGroups.map(group => (
-                                <option key={group} value={group}>{group}</option>
-                              ))}
-                            </select>
-                          ) : (
-                            <div className="w-full pl-12 pr-4 py-3 bg-gray-50 border border-gray-200 rounded-xl">
-                              <span className="text-lg font-bold text-rose-600">{userData.bloodGroup}</span>
-                            </div>
-                          )}
-                        </div>
-                      </div>
-
-                      {/* Location */}
-                      <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-2">
-                          Location
-                        </label>
-                        <div className="relative">
-                          <MapPin className="absolute left-4 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400" />
-                          <input
-                            type="text"
-                            value={isEditing ? editData.location : userData.location}
-                            onChange={(e) => handleInputChange('location', e.target.value)}
-                            disabled={!isEditing}
-                            className="w-full pl-12 pr-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-rose-300 focus:border-transparent disabled:opacity-70"
-                          />
-                        </div>
-                      </div>
-
-                      {/* Age */}
-                      <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-2">
-                          Age
-                        </label>
-                        <div className="relative">
-                          <Calendar className="absolute left-4 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400" />
-                          <input
-                            type="number"
-                            value={isEditing ? editData.age : userData.age}
-                            onChange={(e) => handleInputChange('age', e.target.value)}
-                            disabled={!isEditing}
-                            className="w-full pl-12 pr-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-rose-300 focus:border-transparent disabled:opacity-70"
-                          />
-                        </div>
+                        <div className="font-medium text-gray-900">Profile Updated</div>
+                        <div className="text-sm text-gray-500">You updated your profile information</div>
                       </div>
                     </div>
-
-                    {/* Password Change (Editing Mode Only) */}
-                    {isEditing && (
-                      <div className="mt-8 pt-8 border-t border-gray-200">
-                        <h4 className="text-lg font-semibold text-gray-900 mb-6">Change Password</h4>
-                        <div className="grid md:grid-cols-2 gap-6">
-                          <div>
-                            <label className="block text-sm font-medium text-gray-700 mb-2">
-                              New Password
-                            </label>
-                            <div className="relative">
-                              <Lock className="absolute left-4 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400" />
-                              <input
-                                type={showPassword ? "text" : "password"}
-                                value={password}
-                                onChange={(e) => setPassword(e.target.value)}
-                                className="w-full pl-12 pr-12 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-rose-300 focus:border-transparent"
-                                placeholder="Enter new password"
-                              />
-                              <button
-                                type="button"
-                                onClick={() => setShowPassword(!showPassword)}
-                                className="absolute right-4 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600"
-                              >
-                                {showPassword ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
-                              </button>
-                            </div>
-                          </div>
-                          <div>
-                            <label className="block text-sm font-medium text-gray-700 mb-2">
-                              Confirm Password
-                            </label>
-                            <input
-                              type="password"
-                              className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-rose-300 focus:border-transparent"
-                              placeholder="Confirm new password"
-                            />
-                          </div>
-                        </div>
-                      </div>
-                    )}
-                  </div>
-                )}
-
-                {activeTab === 'activity' && (
-                  <div className="bg-white rounded-2xl shadow-lg border border-gray-200 p-6">
-                    <div className="flex items-center justify-between mb-8">
-                      <div>
-                        <h3 className="text-xl font-bold text-gray-900">Donation Activity</h3>
-                        <p className="text-gray-600">Your donation history and impact</p>
-                      </div>
-                      <div className="flex items-center space-x-2">
-                        <button className="px-4 py-2 bg-gray-100 text-gray-700 rounded-xl font-medium hover:bg-gray-200 transition-colors">
-                          Last 6 Months
-                        </button>
-                        <button className="p-2 bg-gray-100 rounded-xl hover:bg-gray-200 transition-colors">
-                          <Activity className="h-5 w-5 text-gray-600" />
-                        </button>
-                      </div>
-                    </div>
-
-                    {donationHistory.length > 0 ? (
-                      <div className="space-y-6">
-                        {donationHistory.map((donation) => (
-                          <div key={donation.id} className="flex items-start p-6 bg-gradient-to-r from-gray-50 to-white rounded-2xl border border-gray-200 hover:shadow-md transition-shadow">
-                            <div className="p-3 bg-gradient-to-r from-rose-100 to-pink-100 rounded-xl mr-4">
-                              {donation.type === 'blood' ? (
-                                <Droplets className="h-6 w-6 text-rose-500" />
-                              ) : (
-                                <Heart className="h-6 w-6 text-rose-500" fill="#f43f5e" />
-                              )}
-                            </div>
-                            <div className="flex-1">
-                              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-3">
-                                <div>
-                                  <h4 className="font-bold text-gray-900">
-                                    {donation.type === 'blood' ? 'Blood Donation' : 'Plasma Donation'}
-                                  </h4>
-                                  <p className="text-sm text-gray-600">{donation.hospital}</p>
-                                </div>
-                                <div className="flex items-center space-x-4">
-                                  <div className="text-right">
-                                    <div className="font-semibold text-gray-900">{formatDate(donation.date)}</div>
-                                    <div className="text-sm text-gray-600">{donation.units} unit{donation.units > 1 ? 's' : ''}</div>
-                                  </div>
-                                  <div className={`px-3 py-1 rounded-full text-sm font-medium ${
-                                    donation.status === 'completed'
-                                      ? 'bg-emerald-100 text-emerald-700'
-                                      : 'bg-amber-100 text-amber-700'
-                                  }`}>
-                                    {donation.status}
-                                  </div>
-                                </div>
-                              </div>
-                              <div className="flex items-center justify-between">
-                                <div className="text-sm text-gray-600">
-                                  Helped: <span className="font-medium text-gray-900">{donation.recipient}</span>
-                                </div>
-                                <button className="text-rose-500 hover:text-rose-600 font-medium text-sm">
-                                  View Certificate →
-                                </button>
-                              </div>
-                            </div>
-                          </div>
-                        ))}
-                      </div>
-                    ) : (
-                      <div className="text-center py-12">
-                        <Heart className="h-16 w-16 text-gray-300 mx-auto mb-4" />
-                        <h4 className="text-lg font-semibold text-gray-900 mb-2">No Donations Yet</h4>
-                        <p className="text-gray-600 mb-6 max-w-md mx-auto">
-                          You haven't made any donations yet. Your first donation can save up to 3 lives!
-                        </p>
-                        <button className="px-6 py-3 bg-gradient-to-r from-rose-500 to-rose-400 text-white rounded-xl font-semibold hover:shadow-lg transition-all">
-                          Schedule Your First Donation
-                        </button>
-                      </div>
-                    )}
-
-                    {/* Impact Summary */}
-                    <div className="mt-8 p-6 bg-gradient-to-r from-rose-50 to-pink-50 rounded-2xl border border-rose-200">
-                      <div className="flex items-center justify-between mb-4">
-                        <h4 className="font-bold text-gray-900">Your Impact Summary</h4>
-                        <TrendingUp className="h-6 w-6 text-rose-500" />
-                      </div>
-                      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                        <div className="text-center p-4 bg-white rounded-xl border border-rose-200">
-                          <div className="text-2xl font-bold text-rose-600">{userData.totalDonations}</div>
-                          <div className="text-sm text-gray-600">Total Donations</div>
-                        </div>
-                        <div className="text-center p-4 bg-white rounded-xl border border-rose-200">
-                          <div className="text-2xl font-bold text-rose-600">{userData.totalDonations * 3}</div>
-                          <div className="text-sm text-gray-600">Lives Impacted</div>
-                        </div>
-                        <div className="text-center p-4 bg-white rounded-xl border border-rose-200">
-                          <div className="text-2xl font-bold text-rose-600">24</div>
-                          <div className="text-sm text-gray-600">Months Active</div>
-                        </div>
-                        <div className="text-center p-4 bg-white rounded-xl border border-rose-200">
-                          <div className="text-2xl font-bold text-rose-600">Top 10%</div>
-                          <div className="text-sm text-gray-600">Among Donors</div>
-                        </div>
-                      </div>
+                    <div className="text-sm text-gray-500">
+                      {new Date(userData.lastUpdated).toLocaleDateString()}
                     </div>
                   </div>
-                )}
+                ) : null}
 
-                {activeTab === 'settings' && (
-                  <div className="bg-white rounded-2xl shadow-lg border border-gray-200 p-6">
-                    <div className="mb-8">
-                      <h3 className="text-xl font-bold text-gray-900">Preferences & Settings</h3>
-                      <p className="text-gray-600">Customize your donation experience</p>
+                <div className="flex items-center justify-between p-4 border border-gray-100 rounded-xl">
+                  <div className="flex items-center space-x-4">
+                    <div className="p-2 rounded-lg bg-blue-50 text-blue-600">
+                      <Calendar className="h-5 w-5" />
                     </div>
-
-                    <div className="space-y-8">
-                      {/* Availability Settings */}
-                      <div>
-                        <div className="flex items-center space-x-3 mb-6">
-                          <Clock className="h-6 w-6 text-rose-500" />
-                          <div>
-                            <h4 className="font-bold text-gray-900">Availability Settings</h4>
-                            <p className="text-sm text-gray-600">When you're ready to donate</p>
-                          </div>
-                        </div>
-                        <div className="space-y-4">
-                          <div className="flex items-center justify-between p-4 bg-gray-50 rounded-xl">
-                            <div>
-                              <div className="font-medium text-gray-900">Available for Donation</div>
-                              <div className="text-sm text-gray-600">Receive emergency requests</div>
-                            </div>
-                            <button
-                              onClick={() => setIsAvailable(!isAvailable)}
-                              className={`relative inline-flex h-6 w-12 items-center rounded-full transition-colors ${
-                                isAvailable ? 'bg-emerald-500' : 'bg-gray-400'
-                              }`}
-                            >
-                              <span
-                                className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
-                                  isAvailable ? 'translate-x-7' : 'translate-x-1'
-                                }`}
-                              />
-                            </button>
-                          </div>
-                          <div className="flex items-center justify-between p-4 bg-gray-50 rounded-xl">
-                            <div>
-                              <div className="font-medium text-gray-900">Auto-Scheduling</div>
-                              <div className="text-sm text-gray-600">Automatic appointment suggestions</div>
-                            </div>
-                            <button
-                              onClick={() => handlePreferenceToggle('autoScheduling')}
-                              className={`relative inline-flex h-6 w-12 items-center rounded-full transition-colors ${
-                                userData.preferences.autoScheduling ? 'bg-rose-500' : 'bg-gray-400'
-                              }`}
-                            >
-                              <span
-                                className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
-                                  userData.preferences.autoScheduling ? 'translate-x-7' : 'translate-x-1'
-                                }`}
-                              />
-                            </button>
-                          </div>
-                        </div>
-                      </div>
-
-                      {/* Notification Settings */}
-                      <div>
-                        <div className="flex items-center space-x-3 mb-6">
-                          <Bell className="h-6 w-6 text-rose-500" />
-                          <div>
-                            <h4 className="font-bold text-gray-900">Notification Preferences</h4>
-                            <p className="text-sm text-gray-600">How we communicate with you</p>
-                          </div>
-                        </div>
-                        <div className="space-y-4">
-                          {Object.entries(userData.preferences).map(([key, value]) => (
-                            <div key={key} className="flex items-center justify-between p-4 bg-gray-50 rounded-xl">
-                              <div>
-                                <div className="font-medium text-gray-900 capitalize">{key.replace(/([A-Z])/g, ' $1')}</div>
-                                <div className="text-sm text-gray-600">
-                                  {key === 'emergencyAlerts' && 'Critical blood/organ requests'}
-                                  {key === 'notifications' && 'General updates and reminders'}
-                                  {key === 'locationSharing' && 'Share location for better matching'}
-                                </div>
-                              </div>
-                              <button
-                                onClick={() => handlePreferenceToggle(key)}
-                                className={`relative inline-flex h-6 w-12 items-center rounded-full transition-colors ${
-                                  value ? 'bg-rose-500' : 'bg-gray-400'
-                                }`}
-                              >
-                                <span
-                                  className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
-                                    value ? 'translate-x-7' : 'translate-x-1'
-                                  }`}
-                                />
-                              </button>
-                            </div>
-                          ))}
-                        </div>
-                      </div>
+                    <div>
+                      <div className="font-medium text-gray-900">Account Created</div>
+                      <div className="text-sm text-gray-500">You joined LifeStream community</div>
                     </div>
                   </div>
-                )}
-              </div>
-
-              {/* Supportive CTA - Desktop */}
-              <div className="bg-gradient-to-r from-rose-50 to-pink-50 rounded-2xl p-8 border border-rose-200">
-                <div className="flex flex-col md:flex-row items-center justify-between gap-6">
-                  <div>
-                    <h3 className="text-2xl font-bold text-gray-900 mb-3">
-                      {userData.role === 'organ_donor' 
-                        ? 'Share Your Legacy' 
-                        : userData.role === 'receiver'
-                        ? 'Need Emergency Help?'
-                        : 'Ready to Save Lives?'}
-                    </h3>
-                    <p className="text-gray-600 max-w-lg">
-                      {userData.role === 'organ_donor'
-                        ? 'Register as an organ donor and save up to 8 lives. Leave the ultimate legacy of life.'
-                        : userData.role === 'receiver'
-                        ? 'Update your medical information to get faster matches with potential donors.'
-                        : 'Keep your profile updated and availability on to respond faster in emergencies.'}
-                    </p>
+                  <div className="text-sm text-gray-500">
+                    {new Date(userData.registrationDate || userData.joinDate || Date.now()).toLocaleDateString()}
                   </div>
-                  <button className="px-8 py-4 bg-gradient-to-r from-rose-500 to-rose-400 text-white rounded-xl font-semibold text-lg hover:shadow-lg transition-all flex items-center space-x-3 whitespace-nowrap">
-                    {userData.role === 'organ_donor' ? (
-                      <>
-                        <Heart className="h-6 w-6" fill="white" />
-                        <span>Register Organ Donor</span>
-                      </>
-                    ) : userData.role === 'receiver' ? (
-                      <>
-                        <AlertCircle className="h-6 w-6" />
-                        <span>Emergency Help</span>
-                      </>
-                    ) : (
-                      <>
-                        <Droplets className="h-6 w-6" />
-                        <span>Schedule Donation</span>
-                      </>
-                    )}
-                  </button>
                 </div>
               </div>
             </div>
           </div>
-        )}
-      </main>
 
-      {/* Mobile Bottom Navigation */}
-      {isMobile && (
-        <div className="fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 shadow-lg z-40">
-          <div className="flex justify-around items-center p-3">
-            {tabs.map((tab) => (
-              <button
-                key={tab.id}
-                onClick={() => setActiveTab(tab.id)}
-                className={`flex flex-col items-center space-y-1 p-2 rounded-xl transition-colors ${
-                  activeTab === tab.id ? 'bg-rose-50 text-rose-500' : 'text-gray-500'
-                }`}
-              >
-                <tab.icon className="h-5 w-5" />
-                <span className="text-xs font-medium">{tab.label}</span>
-              </button>
-            ))}
+          {/* Right Column - Stats & Actions */}
+          <div className="space-y-8">
+            {/* Stats Cards */}
+            <div className="bg-white rounded-2xl shadow-lg p-6">
+              <h2 className="text-xl font-bold text-gray-900 mb-6">Your Stats</h2>
+              <div className="grid grid-cols-2 gap-4">
+                {stats.map((stat, index) => (
+                  <div key={index} className={`p-4 rounded-xl ${stat.bg}`}>
+                    <div className="flex items-center space-x-3">
+                      <div className={`p-2 rounded-lg ${stat.color.replace('text-', 'bg-').replace('-500', '-100')}`}>
+                        <stat.icon className={`h-5 w-5 ${stat.color}`} />
+                      </div>
+                      <div>
+                        <div className="text-2xl font-bold text-gray-900">{stat.value}</div>
+                        <div className="text-sm text-gray-600">{stat.label}</div>
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            {/* Account Status */}
+            <div className={`bg-gradient-to-r ${getGradientColor().replace('from-', 'from-').replace('to-', 'to-')}/10 rounded-2xl shadow-lg p-6 border ${getGradientColor().replace('from-', 'border-').replace('to-', '-200').split(' ')[0]}`}>
+              <div className="flex items-center space-x-3 mb-4">
+                <Shield className="h-5 w-5 text-gray-700" />
+                <h3 className="font-bold text-gray-900">Account Status</h3>
+              </div>
+              <div className="space-y-4">
+                <div className="flex items-center justify-between">
+                  <span className="text-gray-600">Verification</span>
+                  <span className="flex items-center space-x-1 text-emerald-600">
+                    <CheckCircle className="h-4 w-4" />
+                    <span>Verified</span>
+                  </span>
+                </div>
+                <div className="flex items-center justify-between">
+                  <span className="text-gray-600">Account Type</span>
+                  <span className="font-medium text-gray-900">{userType.label}</span>
+                </div>
+                <div className="flex items-center justify-between">
+                  <span className="text-gray-600">Member Since</span>
+                  <span className="font-medium text-gray-900">
+                    {new Date(userData.registrationDate || userData.joinDate || Date.now()).toLocaleDateString()}
+                  </span>
+                </div>
+              </div>
+            </div>
+
+            {/* Quick Actions */}
+            <div className="bg-white rounded-2xl shadow-lg p-6">
+              <h2 className="text-xl font-bold text-gray-900 mb-6">Quick Actions</h2>
+              <div className="space-y-3">
+                {quickActions.map((action, index) => (
+                  <button
+                    key={index}
+                    onClick={action.onClick}
+                    className="w-full flex items-center justify-between p-3 border border-gray-200 rounded-xl hover:bg-gray-50 transition-all hover:scale-[1.02]"
+                  >
+                    <div className="flex items-center space-x-3">
+                      <action.icon className={`h-5 w-5 ${action.color}`} />
+                      <span>{action.label}</span>
+                    </div>
+                    <span className="text-gray-400">→</span>
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            {/* Danger Zone */}
+            <div className="bg-white rounded-2xl shadow-lg p-6 border border-red-100">
+              <h2 className="text-xl font-bold text-gray-900 mb-4">Account Settings</h2>
+              <div className="space-y-3">
+                <button
+                  onClick={() => {
+                    if (window.confirm('Are you sure you want to delete your account? This action cannot be undone.')) {
+                      handleLogout();
+                    }
+                  }}
+                  className="w-full text-left p-3 text-red-600 hover:bg-red-50 rounded-xl transition-colors"
+                >
+                  Delete Account
+                </button>
+                <button
+                  onClick={handleLogout}
+                  className="w-full text-left p-3 text-gray-600 hover:bg-gray-50 rounded-xl transition-colors"
+                >
+                  Logout from all devices
+                </button>
+              </div>
+            </div>
           </div>
         </div>
-      )}
+      </div>
 
-      {/* Mobile Content Padding */}
-      {isMobile && <div className="h-20"></div>}
-
-      {/* Custom Styles for Mobile Optimization */}
-      <style jsx global>{`
-        /* Better mobile touch targets */
-        @media (max-width: 768px) {
-          button, 
-          [role="button"],
-          input,
-          select,
-          textarea {
-            min-height: 44px;
-            font-size: 16px !important; /* Prevent zoom on iOS */
-          }
-          
-          /* Hide scrollbar for cleaner look */
-          .hide-scrollbar {
-            -ms-overflow-style: none;
-            scrollbar-width: none;
-          }
-          
-          .hide-scrollbar::-webkit-scrollbar {
-            display: none;
-          }
-        }
-        
-        /* Smooth transitions */
-        .smooth-transition {
-          transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-        }
-      `}</style>
+      {/* Footer */}
+      <footer className="mt-12 py-6 border-t border-gray-100">
+        <div className="max-w-7xl mx-auto px-4 text-center">
+          <p className="text-gray-600 text-sm">
+            LifeStream Profile Management • {userType.label} Account • 
+            <span className="ml-2 text-gray-500">
+              Last updated: {userData.lastUpdated ? new Date(userData.lastUpdated).toLocaleString() : 'Never'}
+            </span>
+          </p>
+        </div>
+      </footer>
     </div>
   );
 };
