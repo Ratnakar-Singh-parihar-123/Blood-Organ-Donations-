@@ -34,9 +34,9 @@ const { setSocketIO } = require("./controllers/notificationController");
 
 const io = new Server(server, {
   cors: {
-    origin: process.env.CLIENT_URL, // FRONTEND_URL ko .env me rakho
-    methods: ["GET", "POST"],          // Allowed methods
-    credentials: true,                 // Agar cookies ya auth headers use kar rahe ho
+    origin: process.env.CLIENT_URL ||  "https://jeevandaancare.vercel.app" , 
+    methods: ["GET", "POST"],          
+    credentials: true,                 
   },
 });
 
