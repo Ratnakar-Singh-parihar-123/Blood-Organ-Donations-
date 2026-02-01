@@ -83,58 +83,6 @@ const StatsSection = () => {
     });
   }, [isVisible]);
 
-  // Main stats cards
-  const mainStats = [
-    {
-      id: 'livesSaved',
-      title: 'Lives Saved',
-      value: counts.livesSaved,
-      suffix: '+',
-      icon: Heart,
-      color: 'from-rose-500 to-rose-400',
-      bgColor: 'bg-rose-50',
-      iconColor: 'text-rose-500',
-      description: 'Directly impacted through donations',
-      trend: '+12% this month'
-    },
-    {
-      id: 'activeDonors',
-      title: 'Active Donors',
-      value: counts.activeDonors,
-      suffix: '+',
-      icon: Users,
-      color: 'from-emerald-500 to-emerald-400',
-      bgColor: 'bg-emerald-50',
-      iconColor: 'text-emerald-500',
-      description: 'Registered life-savers',
-      trend: '+8% this month'
-    },
-    {
-      id: 'bloodRequests',
-      title: 'Urgent Requests',
-      value: counts.bloodRequests,
-      suffix: '',
-      icon: Droplets,
-      color: 'from-amber-500 to-amber-400',
-      bgColor: 'bg-amber-50',
-      iconColor: 'text-amber-500',
-      description: 'Active needs right now',
-      trend: 'Live updates'
-    },
-    {
-      id: 'hospitalsConnected',
-      title: 'Hospitals Connected',
-      value: counts.hospitalsConnected,
-      suffix: '+',
-      icon: Building2,
-      color: 'from-blue-500 to-blue-400',
-      bgColor: 'bg-blue-50',
-      iconColor: 'text-blue-500',
-      description: 'Trusted healthcare partners',
-      trend: '+5 this quarter'
-    }
-  ];
-
   // Secondary metrics
   const secondaryMetrics = [
     {
@@ -176,60 +124,6 @@ const StatsSection = () => {
           <p className="text-lg text-gray-600">
             Behind each statistic is a person whose life was changed by someone's decision to donate.
           </p>
-        </div>
-
-        {/* Main Stats Grid */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-12">
-          {mainStats.map((stat, index) => (
-            <div
-              key={stat.id}
-              className={`group bg-white rounded-2xl border border-gray-100 p-6 shadow-lg hover:shadow-2xl transition-all duration-500 transform hover:-translate-y-1 ${
-                isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'
-              }`}
-              style={{ transitionDelay: `${index * 100}ms` }}
-            >
-              {/* Icon Container */}
-              <div className={`${stat.bgColor} w-14 h-14 rounded-xl flex items-center justify-center mb-5 relative overflow-hidden`}>
-                <stat.icon className={`h-7 w-7 ${stat.iconColor} relative z-10`} />
-                <div className={`absolute inset-0 bg-gradient-to-r ${stat.color} opacity-10 group-hover:opacity-20 transition-opacity`}></div>
-              </div>
-
-              {/* Count-up Animation */}
-              <div className="flex items-baseline space-x-2 mb-2">
-                <div className="text-3xl sm:text-4xl font-bold text-gray-900 tracking-tight">
-                  {stat.value.toLocaleString()}
-                </div>
-                <div className="text-xl font-semibold text-gray-500">{stat.suffix}</div>
-              </div>
-
-              {/* Title */}
-              <h3 className="text-lg font-semibold text-gray-900 mb-2">{stat.title}</h3>
-
-              {/* Description */}
-              <p className="text-sm text-gray-600 mb-4">{stat.description}</p>
-
-              {/* Trend Indicator */}
-              <div className="flex items-center justify-between pt-4 border-t border-gray-100">
-                <div className="flex items-center space-x-1">
-                  <TrendingUp className="h-4 w-4 text-emerald-500" />
-                  <span className="text-sm font-medium text-emerald-600">{stat.trend}</span>
-                </div>
-                
-                {/* Animated Progress Bar */}
-                <div className="w-24 h-1.5 bg-gray-100 rounded-full overflow-hidden">
-                  <div 
-                    className={`h-full bg-gradient-to-r ${stat.color} rounded-full transition-all duration-1000 ${
-                      isVisible ? 'w-full' : 'w-0'
-                    }`}
-                    style={{ transitionDelay: `${index * 200 + 500}ms` }}
-                  ></div>
-                </div>
-              </div>
-
-              {/* Glow Effect on Hover */}
-              <div className="absolute inset-0 rounded-2xl bg-gradient-to-r from-rose-500 to-transparent opacity-0 group-hover:opacity-5 transition-opacity -z-10"></div>
-            </div>
-          ))}
         </div>
 
         {/* Secondary Metrics & Visualization */}

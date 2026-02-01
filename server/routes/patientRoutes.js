@@ -9,8 +9,7 @@ const {
   forgotPassword,
   verifyOTP,
   resetPassword,
-  resendOTP,
-  matchDonors
+  resendOTP
 } = require("../controllers/PatientController");
 
 
@@ -37,6 +36,6 @@ router.post("/resend-otp", resendOTP);
 router.post("/logout", logout);
 
 // Match donors for a patient (requires authentication)
-router.get("/match-donors/:patientId", matchDonors);
+// router.get("/match-donors/:patientId", matchDonors);
 
 module.exports = router;

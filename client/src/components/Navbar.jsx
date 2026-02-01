@@ -34,7 +34,7 @@ const Navbar = () => {
   const [isLocationOpen, setIsLocationOpen] = useState(false);
   const [isMoreOpen, setIsMoreOpen] = useState(false);
   const [currentLocation, setCurrentLocation] = useState('Mumbai, India');
-  const [unreadCount, setUnreadCount] = useState(3); // Start with 3 for demo
+  const [unreadCount, setUnreadCount] = useState(3);
   const [isNewNotification, setIsNewNotification] = useState(false);
   const [isBellAnimating, setIsBellAnimating] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
@@ -43,12 +43,12 @@ const Navbar = () => {
   const [userType, setUserType] = useState('');
   const [userTypeConfig, setUserTypeConfig] = useState(null);
   const [windowWidth, setWindowWidth] = useState(window.innerWidth);
+  const [patientId, setPatientId] = useState('');
 
-  // Import Notifications component dynamically to avoid SSR issues
+  // Import Notifications component dynamically
   const [NotificationsComponent, setNotificationsComponent] = useState(null);
 
   useEffect(() => {
-    // Dynamically import Notifications component
     import('../notifications/Notifications').then(module => {
       setNotificationsComponent(() => module.default);
     }).catch(err => {
@@ -96,14 +96,13 @@ const Navbar = () => {
     }
   ];
 
-  // Track window width for responsive behavior
+  // Track window width
   useEffect(() => {
     const handleResize = () => {
       setWindowWidth(window.innerWidth);
       if (window.innerWidth >= 1024) {
         setIsMobileMenuOpen(false);
       }
-      // Close notifications on mobile when resizing to desktop
       if (window.innerWidth >= 768 && showNotifications) {
         setShowNotifications(false);
       }
@@ -112,7 +111,7 @@ const Navbar = () => {
     return () => window.removeEventListener('resize', handleResize);
   }, [showNotifications]);
 
-  // Check login status
+  // Check login status and set patient ID
   useEffect(() => {
     checkUserAuth();
 
@@ -124,17 +123,51 @@ const Navbar = () => {
     return () => window.removeEventListener('storage', handleStorageChange);
   }, [location]);
 
+  // Get patient ID from user data or localStorage
+  useEffect(() => {
+    let finalPatientId = null;
+
+    // 1️⃣ Logged-in user case
+    if (isLoggedIn && userData) {
+      // 🔥 MOST IMPORTANT: backend usually sends patient as object
+      finalPatientId =
+        userData.patientId ||
+        userData.patient?._id ||
+        userData._id || // fallback
+        null;
+    }
+
+    // 2️⃣ If not found, check localStorage
+    if (!finalPatientId) {
+      finalPatientId =
+        localStorage.getItem("patientId") ||
+        localStorage.getItem("guestPatientId");
+    }
+
+    // 3️⃣ If still not found, stop
+    if (!finalPatientId) {
+      console.log("⏳ patientId not available yet");
+      return;
+    }
+
+    // 4️⃣ Set everywhere (single source of truth)
+    setPatientId(finalPatientId);
+    localStorage.setItem("patientId", finalPatientId);
+
+    console.log("✅ patientId set:", finalPatientId);
+  }, [isLoggedIn, userData]);
+
+
   // Simulate notification updates
   useEffect(() => {
     let interval;
 
     if (isLoggedIn) {
       interval = setInterval(() => {
-        // 20% chance to get a notification every 30 seconds
         if (Math.random() < 0.2) {
           handleNewNotification();
         }
-      }, 30000); // Check every 30 seconds
+      }, 30000);
     }
 
     return () => clearInterval(interval);
@@ -143,24 +176,21 @@ const Navbar = () => {
   const handleNewNotification = () => {
     setUnreadCount(prev => {
       const newCount = prev + 1;
-      
-      // Show animation effects
+
       setIsNewNotification(true);
       setIsBellAnimating(true);
-      
-      // Play notification sound
+
       setTimeout(() => {
         const notificationSound = new Audio('https://assets.mixkit.co/sfx/preview/mixkit-correct-answer-tone-2870.mp4');
         notificationSound.volume = 0.3;
         notificationSound.play().catch(console.log);
       }, 100);
 
-      // Reset animations after 2 seconds
       setTimeout(() => {
         setIsNewNotification(false);
         setIsBellAnimating(false);
       }, 2000);
-      
+
       return newCount;
     });
   };
@@ -183,6 +213,15 @@ const Navbar = () => {
 
           localStorage.setItem('currentUserType', type.key);
           localStorage.setItem('currentUserData', data);
+
+          // IMPORTANT: Check if backend has provided patientId
+          // Aapke backend se patientId aata hoga userData mein
+          // Jaise: userData.patientId = "697f6c0d595e2d443291ce3e"
+          if (parsedData.patientId) {
+            setPatientId(parsedData.patientId);
+            localStorage.setItem('patientId', parsedData.patientId);
+          }
+
           break;
         } catch (error) {
           console.error('Error parsing user data:', error);
@@ -205,6 +244,11 @@ const Navbar = () => {
             setUserType(currentUserType);
             setUserTypeConfig(type);
             foundUser = true;
+
+            // Check for patientId in stored data
+            if (parsedData.patientId) {
+              setPatientId(parsedData.patientId);
+            }
           }
         } catch (error) {
           console.error('Error parsing current user data:', error);
@@ -217,17 +261,27 @@ const Navbar = () => {
       setUserData(null);
       setUserType('');
       setUserTypeConfig(null);
+
+      // For guest users, create or get guest patient ID
+      let guestPatientId = localStorage.getItem('guestPatientId');
+      if (!guestPatientId) {
+        // Generate a simple guest ID
+        guestPatientId = 'guest-' + Date.now().toString(36) + Math.random().toString(36).substr(2);
+        localStorage.setItem('guestPatientId', guestPatientId);
+      }
+      setPatientId(guestPatientId);
     }
   };
 
   // Update active tab based on current route
   useEffect(() => {
     const path = location.pathname;
+
     if (path === '/') setActiveTab('home');
     else if (path.includes('/blood')) setActiveTab('blood');
     else if (path.includes('/organ')) setActiveTab('organ');
-    else if (path.includes('/urgent-requests')) setActiveTab('urgent');
     else if (path.includes('/patient-matches')) setActiveTab('urgent');
+    else if (path.includes('/urgent-requests')) setActiveTab('urgent');
     else if (path.includes('/profile')) setActiveTab('profile');
     else if (path.includes('/about')) setActiveTab('about');
     else if (path.includes('/auth')) setActiveTab('auth');
@@ -237,11 +291,10 @@ const Navbar = () => {
   // Close notifications when clicking outside
   useEffect(() => {
     const handleClickOutside = (event) => {
-      // Check if click is outside notifications bell and notifications panel
-      if (showNotifications && 
-          notificationBellRef.current && 
-          !notificationBellRef.current.contains(event.target) &&
-          !event.target.closest('.notification-panel')) {
+      if (showNotifications &&
+        notificationBellRef.current &&
+        !notificationBellRef.current.contains(event.target) &&
+        !event.target.closest('.notification-panel')) {
         setShowNotifications(false);
       }
     };
@@ -272,13 +325,14 @@ const Navbar = () => {
     },
     {
       id: 'urgent',
-      label: 'Urgent Needs',
+      label: 'Match Donors',
       icon: AlertCircle,
       path: '/patient-matches',
       description: 'Emergency requests',
       bgColor: 'bg-red-50',
       textColor: 'text-red-600',
-      badge: 3
+      badge: 3,
+      dynamicPath: true
     },
     {
       id: 'hospitals',
@@ -362,13 +416,14 @@ const Navbar = () => {
     },
     {
       id: 'urgent',
-      label: 'Urgent',
+      label: 'Match Donors',
       icon: AlertCircle,
       path: '/patient-matches',
       color: 'text-red-600',
       bgColor: 'bg-red-50',
       pulse: true,
-      badge: 3
+      badge: 3,
+      dynamicPath: true
     },
     {
       id: 'profile',
@@ -412,6 +467,16 @@ const Navbar = () => {
 
     if (!userTypeConfig) return baseItems;
 
+    // Add patient matches link for all user types
+    const patientMatchesItem = {
+      label: 'Patient Matches',
+      icon: AlertCircle,
+      path: `/patient-matches/${patientId}`,
+      bgColor: 'bg-red-50',
+      textColor: 'text-red-600',
+      description: 'View patient matches'
+    };
+
     switch (userTypeConfig.key) {
       case 'bloodDonor':
         return [
@@ -424,6 +489,7 @@ const Navbar = () => {
             textColor: 'text-red-600',
             description: 'Donation history'
           },
+          patientMatchesItem,
           {
             label: 'Achievements',
             icon: Award,
@@ -431,14 +497,6 @@ const Navbar = () => {
             bgColor: 'bg-green-50',
             textColor: 'text-green-600',
             description: 'Your achievements'
-          },
-          {
-            label: 'Rewards',
-            icon: Gift,
-            path: '/rewards',
-            bgColor: 'bg-blue-50',
-            textColor: 'text-blue-600',
-            description: 'Your rewards'
           }
         ];
 
@@ -453,6 +511,7 @@ const Navbar = () => {
             textColor: 'text-green-600',
             description: 'Organ donation pledge'
           },
+          patientMatchesItem,
           {
             label: 'Medical Records',
             icon: BookOpen,
@@ -466,6 +525,7 @@ const Navbar = () => {
       case 'patient':
         return [
           ...baseItems,
+          patientMatchesItem,
           {
             label: 'My Requests',
             icon: AlertCircle,
@@ -473,14 +533,6 @@ const Navbar = () => {
             bgColor: 'bg-red-50',
             textColor: 'text-red-600',
             description: 'Blood/organ requests'
-          },
-          {
-            label: 'Hospital Contacts',
-            icon: Hospital,
-            path: '/hospitals',
-            bgColor: 'bg-blue-50',
-            textColor: 'text-blue-600',
-            description: 'Hospital information'
           }
         ];
 
@@ -495,14 +547,7 @@ const Navbar = () => {
             textColor: 'text-blue-600',
             description: 'Volunteer work'
           },
-          {
-            label: 'Community Events',
-            icon: Calendar,
-            path: '/events',
-            bgColor: 'bg-green-50',
-            textColor: 'text-green-600',
-            description: 'Upcoming events'
-          }
+          patientMatchesItem
         ];
 
       default:
@@ -557,10 +602,46 @@ const Navbar = () => {
   const handleTabClick = (path, tabId) => {
     setActiveTab(tabId);
     navigate(path);
+
     if (window.innerWidth < 1024) {
       setIsMobileMenuOpen(false);
     }
     setIsMoreOpen(false);
+  };
+
+  // Handle patient matches click
+  const handlePatientMatchesClick = () => {
+    if (!patientId) {
+      console.error('Patient ID not available');
+
+      // If user is not logged in, redirect to login
+      if (!isLoggedIn) {
+        navigate('/auth?redirect=/patient-matches');
+        return;
+      }
+
+      // If logged in but no patientId, try to get it
+      const storedPatientId = localStorage.getItem('patientId');
+      if (storedPatientId) {
+        navigate(`/patient-matches/${storedPatientId}`);
+      } else {
+        // Show error or fetch from backend
+        console.error('Patient ID not found. Please contact support.');
+        return;
+      }
+    } else {
+      // Navigate to patient matches with actual patient ID from backend
+      navigate(`/patient-matches/${patientId}`);
+    }
+
+    setActiveTab('urgent');
+
+    if (window.innerWidth < 1024) {
+      setIsMobileMenuOpen(false);
+    }
+
+    // Log for debugging
+    console.log('Navigating to patient matches with ID:', patientId);
   };
 
   // Handle search
@@ -584,6 +665,7 @@ const Navbar = () => {
 
     localStorage.removeItem('currentUserData');
     localStorage.removeItem('currentUserType');
+    localStorage.removeItem('patientId');
 
     setIsLoggedIn(false);
     setUserData(null);
@@ -591,6 +673,11 @@ const Navbar = () => {
     setUserTypeConfig(null);
     setIsProfileOpen(false);
     setShowNotifications(false);
+
+    // Generate new guest patient ID
+    const guestPatientId = 'guest-' + Date.now().toString(36) + Math.random().toString(36).substr(2);
+    localStorage.setItem('guestPatientId', guestPatientId);
+    setPatientId(guestPatientId);
 
     window.location.href = '/';
   };
@@ -609,7 +696,6 @@ const Navbar = () => {
   // Handle notification click
   const handleNotificationClick = () => {
     setShowNotifications(!showNotifications);
-    // Only reset count when opening notifications
     if (!showNotifications && unreadCount > 0) {
       setUnreadCount(0);
       setIsNewNotification(false);
@@ -851,7 +937,7 @@ const Navbar = () => {
               {mainNavItems.map((item) => (
                 <button
                   key={item.id}
-                  onClick={() => handleTabClick(item.path, item.id)}
+                  onClick={() => item.dynamicPath ? handlePatientMatchesClick() : handleTabClick(item.path, item.id)}
                   className={`px-3 py-2.5 font-medium rounded-lg transition-all duration-200 relative group ${getTabStyle(item.id, activeTab === item.id)}`}
                 >
                   <div className="flex items-center space-x-2">
@@ -977,17 +1063,14 @@ const Navbar = () => {
                   className="relative p-2 rounded-lg bg-gray-100 hover:bg-blue-50 text-gray-600 
                            hover:text-blue-500 transition-all duration-200 group"
                 >
-                  {/* Bell Icon with optional animation */}
                   <div className={`relative ${isBellAnimating ? "animate-ring" : ""}`}>
                     <Bell className={`h-4 w-4 ${unreadCount > 0 ? "text-red-500" : ""}`} />
 
-                    {/* New Notification Glow */}
                     {isNewNotification && (
                       <div className="absolute inset-0 rounded-full bg-gradient-to-r from-red-500/30 to-pink-500/30 animate-ping"></div>
                     )}
                   </div>
 
-                  {/* Count Badge */}
                   {unreadCount > 0 && (
                     <span className="absolute -top-1 -right-1 w-5 h-5 bg-gradient-to-r from-red-500 to-red-400 text-white text-xs 
                          rounded-full flex items-center justify-center shadow animate-newNotification">
@@ -995,7 +1078,6 @@ const Navbar = () => {
                     </span>
                   )}
 
-                  {/* Sparkle / Ping for New Notification */}
                   {isNewNotification && unreadCount > 0 && (
                     <div className="absolute -top-2 -right-2">
                       {[...Array(3)].map((_, i) => (
@@ -1011,7 +1093,6 @@ const Navbar = () => {
                     </div>
                   )}
 
-                  {/* Tooltip */}
                   <div className="absolute -top-10 left-1/2 transform -translate-x-1/2 bg-gray-900 text-white text-xs py-1 px-2 
                     rounded opacity-0 group-hover:opacity-100 transition-opacity duration-200 whitespace-nowrap z-50">
                     {unreadCount > 0 ? `${unreadCount} new notification${unreadCount > 1 ? "s" : ""}` : "Notifications"}
@@ -1051,6 +1132,11 @@ const Navbar = () => {
                             <span className={`text-xs ${userTypeConfig?.bgColor || 'bg-blue-50'} ${userTypeConfig?.textColor || 'text-blue-700'} px-2 py-1 rounded-full border ${userTypeConfig?.borderColor || 'border-blue-200'}`}>
                               {getUserTypeLabel()}
                             </span>
+                            {patientId && (
+                              <span className="text-xs bg-gray-100 text-gray-600 px-2 py-1 rounded-full border border-gray-200">
+                                ID: {patientId.substring(0, 8)}...
+                              </span>
+                            )}
                           </div>
                         </div>
                       </div>
@@ -1114,14 +1200,14 @@ const Navbar = () => {
                 </div>
               ) : (
                 <div className="flex items-center space-x-2">
-                  {/* <button
+                  <button
                     onClick={handleLoginClick}
                     className="px-3 py-2 text-blue-600 hover:text-blue-700 font-medium rounded-lg 
                              hover:bg-blue-50 transition-all duration-200 flex items-center space-x-2 border border-blue-200"
                   >
                     <LogIn className="h-4 w-4" />
                     <span className="text-sm font-medium">Login</span>
-                  </button> */}
+                  </button>
                   <button
                     onClick={handleRegisterClick}
                     className="px-3 py-2 bg-gradient-to-r from-blue-600 to-blue-500 text-white 
@@ -1166,7 +1252,7 @@ const Navbar = () => {
               {mainNavItems.slice(0, 3).map((item) => (
                 <button
                   key={item.id}
-                  onClick={() => handleTabClick(item.path, item.id)}
+                  onClick={() => item.dynamicPath ? handlePatientMatchesClick() : handleTabClick(item.path, item.id)}
                   className={`px-2 py-1.5 rounded-lg text-sm font-medium ${activeTab === item.id
                     ? `text-white ${getMobileBgColor(item.id)}`
                     : 'text-gray-700 hover:bg-gray-100'
@@ -1325,7 +1411,7 @@ const Navbar = () => {
             return (
               <button
                 key={item.id}
-                onClick={() => handleTabClick(item.path, item.id)}
+                onClick={() => item.dynamicPath ? handlePatientMatchesClick() : handleTabClick(item.path, item.id)}
                 className={`flex flex-col items-center justify-center relative transition-all duration-200 
                           ${isActive ? 'transform -translate-y-1' : ''}`}
               >
@@ -1402,6 +1488,11 @@ const Navbar = () => {
                         </span>
                       )}
                     </div>
+                    {patientId && (
+                      <div className="mt-2 text-xs text-gray-500">
+                        Patient ID: {patientId}
+                      </div>
+                    )}
                   </div>
                 </div>
 
@@ -1451,7 +1542,13 @@ const Navbar = () => {
               {[...mainNavItems, ...secondaryNavItems].map((item) => (
                 <button
                   key={item.id}
-                  onClick={() => handleTabClick(item.path, item.id)}
+                  onClick={() => {
+                    if (item.dynamicPath) {
+                      handlePatientMatchesClick();
+                    } else {
+                      handleTabClick(item.path, item.id);
+                    }
+                  }}
                   className={`w-full text-left px-4 py-3 rounded-lg flex items-center justify-between 
                            transition-colors ${activeTab === item.id ? 'bg-blue-50 text-blue-600' : 'hover:bg-gray-50'}`}
                 >
@@ -1499,6 +1596,20 @@ const Navbar = () => {
               >
                 <Ambulance className="h-5 w-5" />
                 <span>Emergency Request</span>
+              </button>
+            </div>
+
+            {/* Patient Matches Section */}
+            <div className="bg-gradient-to-r from-blue-50 to-blue-100 rounded-xl p-4 mb-6 border border-blue-200">
+              <h3 className="font-bold text-gray-800 mb-2">Patient Matches</h3>
+              <p className="text-sm text-gray-600 mb-4">View your patient matches and connections</p>
+              <button
+                onClick={handlePatientMatchesClick}
+                className="w-full px-4 py-3 bg-gradient-to-r from-blue-600 to-blue-500 
+                         text-white rounded-lg font-bold flex items-center justify-center space-x-2"
+              >
+                <Users className="h-5 w-5" />
+                <span>View My Matches</span>
               </button>
             </div>
 
@@ -1573,10 +1684,9 @@ const Navbar = () => {
       {/* Render Notifications Component when toggled */}
       {showNotifications && NotificationsComponent && (
         <div className="notification-panel">
-          <NotificationsComponent 
+          <NotificationsComponent
             onClose={() => setShowNotifications(false)}
             onNotificationRead={() => {
-              // Reset unread count when notifications are read
               setUnreadCount(0);
             }}
           />

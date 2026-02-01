@@ -2,8 +2,6 @@ const Patient = require("../models/Patient");
 const { generateToken } = require("../utils/jwt");
 const crypto = require("crypto");
 const sendEmail = require("../utils/sendEmail");
-const BloodDonor = require("../models/BloodDonor");
-const OrganDonor = require("../models/OrganDonor");
 
 // register
 const register = async (req, res) => {
@@ -313,70 +311,7 @@ const resendOTP = async (req, res) => {
 
 
 //  macth donor 
-const matchDonors = async (req, res) => {
-  try {
-    // 1️⃣ Fetch patient
-    const patient = await Patient.findById(req.params.patientId);
-    if (!patient) {
-      return res.status(404).json({ message: "Patient not found" });
-    }
 
-    // 2️⃣ Fetch blood donors
-    const bloodDonorsRaw = await BloodDonor.find({
-      bloodGroup: patient.bloodGroup.toUpperCase(),
-      city: { $regex: `^${patient.city}$`, $options: "i" },
-      isAvailable: true,
-    }).limit(10);
-
-    // 3️⃣ Map blood donors for frontend
-    const bloodDonors = bloodDonorsRaw.map(d => ({
-      _id: d._id,
-      name: d.name,
-      bloodGroup: d.bloodGroup,
-      city: d.city,
-      distance: Math.floor(Math.random() * 50) + 1, // mock 1-50 km
-      availability: d.isAvailable ? "immediate" : "not available",
-      isVerified: d.isVerified || false,
-      matchScore: Math.floor(Math.random() * 21) + 80, // mock 80-100%
-      type: "blood"
-    }));
-
-    // 4️⃣ Fetch organ donors (if needed)
-    let organDonors = [];
-    if (patient.organRequired) {
-      const organDonorsRaw = await OrganDonor.find({
-        organsToDonate: { $in: [patient.organRequired] },
-        city: { $regex: `^${patient.city}$`, $options: "i" },
-        isAvailable: true,
-      }).limit(10);
-
-      organDonors = organDonorsRaw.map(d => ({
-        _id: d._id,
-        name: d.name,
-        organs: d.organsToDonate,
-        city: d.city,
-        distance: Math.floor(Math.random() * 50) + 1,
-        availability: d.isAvailable ? "immediate" : "not available",
-        isVerified: d.isVerified || false,
-        matchScore: Math.floor(Math.random() * 21) + 80,
-        type: "organ"
-      }));
-    }
-
-    // 5️⃣ Send response
-    res.json({
-      patient,
-      matches: {
-        bloodDonors,
-        organDonors
-      }
-    });
-
-  } catch (error) {
-    console.error("Match Donors Error:", error);
-    res.status(500).json({ message: "Server error" });
-  }
-};
 
 module.exports = {
   register,
@@ -386,5 +321,4 @@ module.exports = {
   verifyOTP,
   resetPassword,
   resendOTP,
-  matchDonors
 };

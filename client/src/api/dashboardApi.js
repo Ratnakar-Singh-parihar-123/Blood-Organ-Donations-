@@ -1,11 +1,6 @@
 import axios from "axios";
 
-const API = axios.create({
-  baseURL: import.meta.env.VITE_API_URL,
-  withCredentials: true,
-});
-
 export const getDashboardCounts = async () => {
-  const res = await API.get("/api/dashboard/counts");
+  const res = await axios.get("http://localhost:5000/api/dashboard/counts");
   return res.data;
 };

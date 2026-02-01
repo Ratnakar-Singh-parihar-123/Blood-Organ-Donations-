@@ -378,7 +378,7 @@ const Dashboard = () => {
                 </div>
 
                 {/* Bottom Info */}
-                <div className="bg-white/80 backdrop-blur-sm rounded-2xl border border-gray-200 p-6">
+                {/* <div className="bg-white/80 backdrop-blur-sm rounded-2xl border border-gray-200 p-6">
                     <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
                         <div className="flex items-center gap-3">
                             <div className="p-2 bg-blue-50 rounded-lg">
@@ -394,7 +394,7 @@ const Dashboard = () => {
                             <p className="text-xs mt-1">© 2024 JeevanDaan • Dashboard v2.0</p>
                         </div>
                     </div>
-                </div>
+                </div> */}
             </div>
         </div>
     );

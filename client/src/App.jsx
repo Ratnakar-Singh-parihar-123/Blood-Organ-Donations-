@@ -20,6 +20,7 @@ import SettingsPage from "./pages/setting/SettingsPage";
 import ForgetPassword from "./pages/forget-password/ForgetPassword";
 // import Notifications from "./notifications/Notifications";
 import PatientMatches from "./pages/PatientMatches/PatientMatches";
+import Chat from "./pages/chat/chat";
 
 // Authentication Modals (for modals on UserTypeSelectionPage)
 // import BloodDonorAuthModal from "./components/auth/BloodDonorAuthModal";
@@ -44,41 +45,37 @@ function App() {
         <Route path="/urgent-requests" element={<UrgentRequestsPage />} />
         <Route path="/forgot-password" element={<ForgetPassword />} />
         {/* <Route path="/notifications" element={<Notifications />} /> */}
-        
+        <Route path="/chat" element={<Chat />} />
+
         {/* Protected Routes - Require Login */}
-        <Route 
-          path="/emergency-request" 
+        <Route
+          path="/emergency-request"
           element={
             <ProtectedRoute>
               <EmergencyRequestPage />
             </ProtectedRoute>
-          } 
+          }
         />
-        
-        <Route 
-          path="/profile" 
+
+        <Route
+          path="/profile"
           element={
             <ProtectedRoute>
               <ProfilePage />
             </ProtectedRoute>
-          } 
+          }
         />
-        <Route 
-        path="/patient-matches"
-        element={
-          <ProtectedRoute>
-            <PatientMatches />
-          </ProtectedRoute>
-        }
-        /> 
-        
-        <Route 
-          path="/settings" 
+        <Route
+          path="/patient-matches/:patientId"
+          element={<PatientMatches />}
+        />
+        <Route
+          path="/settings"
           element={
             <ProtectedRoute>
               <SettingsPage />
             </ProtectedRoute>
-          } 
+          }
         />
 
         {/* 404 Page */}

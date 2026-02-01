@@ -12,6 +12,8 @@ const organdonorRoutes = require("./routes/organDonor");
 const patientRoutes = require("./routes/patientRoutes");
 const alluserdonorCountRoutes = require("./routes/alluserdonorcountRoutes");
 const notificationRoutes = require("./routes/notificationRoutes");
+const chatRoutes = require("./routes/chatRoutes");
+const matchRoutes = require("./routes/matchRoutes");
 
 // ================= DB =================
 const connectDB = require("./config/database");
@@ -73,7 +75,8 @@ app.use("/api/organ-donors", organdonorRoutes);
 app.use("/api/patients", patientRoutes);
 app.use("/api/dashboard", alluserdonorCountRoutes);
 app.use("/api/notifications", notificationRoutes);
-
+app.use("/api/chats", chatRoutes);
+app.use("/api", matchRoutes);
 // ================= 404 HANDLER =================
 app.use((req, res) => {
   res.status(404).json({
