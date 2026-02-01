@@ -123,7 +123,7 @@ const BloodHeroSection = () => {
                 </div>
 
                 {/* Floating Emergency Card */}
-                <div className="absolute bottom-6 left-6 right-6 bg-gradient-to-r from-red-700 to-rose-700 text-white rounded-2xl p-4 shadow-xl shadow-red-600/25 transform hover:-translate-y-1 transition-transform duration-300">
+                {/* <div className="absolute bottom-6 left-6 right-6 bg-gradient-to-r from-red-700 to-rose-700 text-white rounded-2xl p-4 shadow-xl shadow-red-600/25 transform hover:-translate-y-1 transition-transform duration-300">
                   <div className="flex items-center justify-between">
                     <div className="flex items-center gap-3">
                       <div className="bg-white/20 p-2 rounded-lg backdrop-blur-sm">
@@ -138,7 +138,7 @@ const BloodHeroSection = () => {
                       Donate Now
                     </button>
                   </div>
-                </div>
+                </div> */}
 
                 {/* Floating Stats Card */}
                 <div className="absolute top-6 right-6 bg-white/90 backdrop-blur-sm rounded-xl p-4 shadow-lg">
@@ -154,7 +154,7 @@ const BloodHeroSection = () => {
                 </div>
 
                 {/* Floating Donor Card */}
-                <div className="absolute top-1/4 -left-4 bg-white rounded-xl p-4 shadow-lg transform hover:-translate-x-1 transition-transform duration-300">
+                {/* <div className="absolute top-1/4 -left-4 bg-white rounded-xl p-4 shadow-lg transform hover:-translate-x-1 transition-transform duration-300">
                   <div className="flex items-center gap-3">
                     <div className="relative">
                       <img
@@ -169,7 +169,7 @@ const BloodHeroSection = () => {
                       <p className="text-sm text-gray-600">12 Donations</p>
                     </div>
                   </div>
-                </div>
+                </div> */}
               </div>
             </div>
           </div>

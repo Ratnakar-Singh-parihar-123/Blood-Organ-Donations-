@@ -1,7 +1,11 @@
-import React from "react";
-import { PlayCircle, Shield, Star, Calendar, Users, Clock, Phone, Heart, Droplets, Activity } from "lucide-react";
+import React, { useState } from "react";
+import { PlayCircle, Shield, Star, Calendar, Users, Clock, Phone, Heart, Droplets, Activity, HeartPulse } from "lucide-react";
+import { Link } from "react-router-dom";
+import VideoModal from "../../../models/WatchDemo"; // Import the VideoModal component
 
 const HeroSection = () => {
+  const [modalOpen, setModalOpen] = useState(false);
+
   return (
     <section className="relative bg-gradient-to-b from-blue-50 via-white to-white overflow-hidden">
       {/* Background Elements */}
@@ -10,7 +14,7 @@ const HeroSection = () => {
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 md:py-16 lg:py-24">
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-16 items-center">
-          
+
           {/* RIGHT ILLUSTRATION - FIRST ON MOBILE */}
           <div className="relative order-first lg:order-last lg:h-full">
             {/* Main Card */}
@@ -27,52 +31,80 @@ const HeroSection = () => {
                 />
               </div>
 
-              {/* Floating Emergency Card */}
-              <div className="absolute bottom-4 sm:bottom-6 left-4 sm:left-6 right-4 sm:right-6 bg-gradient-to-r from-red-600 to-rose-600 text-white rounded-2xl p-3 sm:p-4 shadow-xl shadow-red-500/25 transform hover:-translate-y-1 transition-transform duration-300">
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-2 sm:gap-3">
-                    <div className="bg-white/20 p-2 rounded-lg backdrop-blur-sm">
-                      <Phone className="h-4 w-4 sm:h-6 sm:w-6" />
+              {/* Watch */}
+              <div className="absolute top-0 right-5">
+                <div className="relative">
+                  {/* Elegant Simple Watch */}
+                  <div className="relative w-24 h-24 sm:w-28 sm:h-28 rounded-full bg-gradient-to-b from-gray-50 to-white shadow-lg border border-gray-300 flex items-center justify-center overflow-hidden">
+
+                    {/* Subtle background pattern */}
+                    <div className="absolute inset-0 opacity-10">
+                      <div className="w-full h-full"
+                        style={{
+                          backgroundImage: `radial-gradient(circle at 30% 30%, #3b82f6 1px, transparent 1px)`,
+                          backgroundSize: '20px 20px'
+                        }}>
+                      </div>
                     </div>
-                    <div>
-                      <p className="font-bold text-sm sm:text-lg">Emergency Hotline</p>
-                      <p className="text-xs sm:text-sm text-white/90">Call 108 - 24/7 Available</p>
+
+                    {/* Outer ring with numbers */}
+                    <div className="absolute inset-0 rounded-full">
+                      {[12, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11].map((num, i) => (
+                        <div
+                          key={num}
+                          className="absolute text-[8px] font-medium text-gray-600"
+                          style={{
+                            top: '50%',
+                            left: '50%',
+                            transform: `rotate(${i * 30}deg) translateY(-38px) rotate(-${i * 30}deg)`,
+                            transformOrigin: 'center'
+                          }}
+                        >
+                          {num}
+                        </div>
+                      ))}
+                    </div>
+
+                    {/* Watch hands */}
+                    <div className="relative">
+                      {/* Hour hand */}
+                      <div
+                        className="absolute w-1.5 h-7 bg-gray-800 rounded-full origin-bottom"
+                        style={{
+                          transform: `rotate(${new Date().getHours() % 12 * 30 + new Date().getMinutes() * 0.5}deg) translateY(-14px)`
+                        }}
+                      ></div>
+
+                      {/* Minute hand */}
+                      <div
+                        className="absolute w-1 h-9 bg-gray-700 rounded-full origin-bottom"
+                        style={{
+                          transform: `rotate(${new Date().getMinutes() * 6}deg) translateY(-18px)`
+                        }}
+                      ></div>
+
+                      {/* Second hand */}
+                      <div
+                        className="absolute w-0.5 h-9 bg-red-500 rounded-full origin-bottom"
+                        style={{
+                          transform: `rotate(${new Date().getSeconds() * 6}deg) translateY(-18px)`
+                        }}
+                      ></div>
+                    </div>
+
+                    {/* Center */}
+                    <div className="absolute w-3 h-3 bg-red-500 rounded-full z-10"></div>
+
+                    {/* Current time at bottom */}
+                    <div className="absolute bottom-3 left-0 right-0 text-center">
+                      <div className="text-xs font-mono font-semibold text-gray-700 bg-white/80 px-2 py-0.5 rounded-full inline-block">
+                        {new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                      </div>
                     </div>
                   </div>
-                  <button className="bg-white text-red-600 hover:bg-gray-100 px-3 py-1.5 sm:px-4 sm:py-2 rounded-lg font-semibold text-xs sm:text-sm transition-colors whitespace-nowrap">
-                    Call Now
-                  </button>
                 </div>
               </div>
 
-              {/* Floating Stats Card */}
-              <div className="absolute top-4 sm:top-6 right-4 sm:right-6 bg-white/90 backdrop-blur-sm rounded-xl p-3 sm:p-4 shadow-lg">
-                <div className="flex items-center gap-2 sm:gap-3">
-                  <div className="w-8 h-8 sm:w-12 sm:h-12 bg-emerald-100 rounded-lg sm:rounded-xl flex items-center justify-center">
-                    <Clock className="h-4 w-4 sm:h-6 sm:w-6 text-emerald-600" />
-                  </div>
-                  <div>
-                    <p className="text-lg sm:text-2xl font-bold text-gray-900">15 min</p>
-                    <p className="text-xs sm:text-sm text-gray-600">Avg. Response</p>
-                  </div>
-                </div>
-              </div>
-
-              {/* Floating Donor Card */}
-              <div className="absolute top-1/4 -left-2 sm:-left-4 bg-white rounded-xl p-3 shadow-lg transform hover:-translate-x-1 transition-transform duration-300">
-                <div className="flex items-center gap-2">
-                  <div className="relative">
-                    <div className="w-8 h-8 sm:w-12 sm:h-12 bg-gradient-to-r from-red-500 to-red-600 rounded-full flex items-center justify-center">
-                      <Heart className="h-4 w-4 sm:h-5 sm:w-5 text-white" fill="white" />
-                    </div>
-                    <div className="absolute -bottom-1 -right-1 w-3 h-3 sm:w-4 sm:h-4 bg-green-500 rounded-full border-2 border-white"></div>
-                  </div>
-                  <div>
-                    <p className="font-semibold text-gray-900 text-xs sm:text-sm">Active Donor</p>
-                    <p className="text-xs text-gray-600">3 Lives Saved</p>
-                  </div>
-                </div>
-              </div>
             </div>
 
             {/* Bottom Floating Elements */}
@@ -98,7 +130,7 @@ const HeroSection = () => {
 
             {/* Description */}
             <p className="mt-4 sm:mt-6 text-base sm:text-lg text-gray-600 max-w-xl leading-relaxed">
-              Connect blood and organ donors with patients in need, raise emergency requests, 
+              Connect blood and organ donors with patients in need, raise emergency requests,
               find nearby hospitals, and help save lives through one secure and reliable platform.
             </p>
 
@@ -150,19 +182,23 @@ const HeroSection = () => {
             </div>
 
             {/* CTA Buttons */}
-            <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 mt-8 sm:mt-10">
-              <button className="group relative bg-gradient-to-r from-blue-600 to-emerald-600 hover:from-blue-700 hover:to-emerald-700 text-white px-6 py-3 sm:px-8 sm:py-4 rounded-xl font-semibold text-base sm:text-lg shadow-lg shadow-blue-500/25 hover:shadow-xl hover:shadow-blue-500/30 transition-all duration-300 transform hover:-translate-y-0.5">
-                <span className="flex items-center justify-center gap-2">
-                  Start Saving Lives
-                  <svg className="w-4 h-4 sm:w-5 sm:h-5 group-hover:translate-x-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <div className="flex flex-col sm:flex-row gap-4 mt-10">
+              <Link to="/auth" className="group relative">
+                <div className="bg-gradient-to-r from-blue-600 to-emerald-600 hover:from-blue-700 hover:to-emerald-700 text-white px-8 py-4 rounded-xl font-semibold text-lg shadow-lg shadow-blue-500/25 hover:shadow-xl hover:shadow-blue-500/30 transition-all duration-300 transform hover:-translate-y-0.5 inline-flex items-center justify-center gap-2 w-full sm:w-auto">
+                  Get Started Free
+                  <svg className="w-5 h-5 group-hover:translate-x-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M13 7l5 5m0 0l-5 5m5-5H6" />
                   </svg>
-                </span>
-              </button>
+                </div>
+              </Link>
 
-              <button className="group flex items-center justify-center gap-2 sm:gap-3 px-6 py-3 sm:px-8 sm:py-4 bg-white text-gray-700 rounded-xl font-medium border-2 border-gray-200 hover:border-blue-300 hover:bg-blue-50 transition-all duration-300">
-                <PlayCircle className="h-4 w-4 sm:h-5 sm:w-5 text-blue-600 group-hover:text-blue-700" />
-                <span className="text-sm sm:text-base">Watch Demo (3 min)</span>
+              {/* Watch Demo Button that opens the modal */}
+              <button
+                onClick={() => setModalOpen(true)}
+                className="group flex items-center justify-center gap-3 px-8 py-4 bg-white text-gray-700 rounded-xl font-medium border-2 border-gray-200 hover:border-blue-300 hover:bg-blue-50 transition-all duration-300"
+              >
+                <PlayCircle className="h-5 w-5 text-blue-600 group-hover:text-blue-700" />
+                <span>Watch Demo (3 min)</span>
               </button>
             </div>
 
@@ -188,6 +224,9 @@ const HeroSection = () => {
           <path fill="#ffffff" fillOpacity="1" d="M0,64L80,69.3C160,75,320,85,480,80C640,75,800,53,960,48C1120,43,1280,53,1360,58.7L1440,64L1440,120L1360,120C1280,120,1120,120,960,120C800,120,640,120,480,120C320,120,160,120,80,120L0,120Z"></path>
         </svg>
       </div>
+
+      {/* Video Modal */}
+      <VideoModal isOpen={modalOpen} onClose={() => setModalOpen(false)} />
     </section>
   );
 };
