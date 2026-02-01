@@ -1,28 +1,41 @@
-const express = require('express');
-const cors = require('cors');
-require('dotenv').config();
-const { Server } = require("socket.io");
+const express = require("express");
+const cors = require("cors");
+require("dotenv").config();
+
 const http = require("http");
+const { Server } = require("socket.io");
 
-// Import routes & DB
-const authRoutes = require('./routes/authRoutes');
-const blooddonorRoutes = require('./routes/bloodDonor');
-const organdonorRoutes = require('./routes/organDonor');
-const patientRoutes = require('./routes/patientRoutes');
-const alluserdonotCountRoutes = require('./routes/alluserdonorcountRoutes');
-const notificationRoutes = require('./routes/notificationRoutes');
-const connectDB = require('./config/database');
+// ================= IMPORT ROUTES =================
+const authRoutes = require("./routes/authRoutes");
+const blooddonorRoutes = require("./routes/bloodDonor");
+const organdonorRoutes = require("./routes/organDonor");
+const patientRoutes = require("./routes/patientRoutes");
+const alluserdonorCountRoutes = require("./routes/alluserdonorcountRoutes");
+const notificationRoutes = require("./routes/notificationRoutes");
 
-// Initialize express
+// ================= DB =================
+const connectDB = require("./config/database");
+
+// ================= APP INIT =================
 const app = express();
 const server = http.createServer(app);
 
-// Middleware
-app.use(cors());
+// ================= CORS CONFIG =================
+const allowedOrigin = process.env.CLIENT_URL || "http://localhost:5173";
+
+app.use(
+  cors({
+    origin: allowedOrigin,
+    credentials: true,
+    methods: ["GET", "POST", "PUT", "DELETE"],
+  })
+);
+
+// ================= MIDDLEWARE =================
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
-// Request logging
+// ================= REQUEST LOG =================
 app.use((req, res, next) => {
   console.log(`[${new Date().toISOString()}] ${req.method} ${req.originalUrl}`);
   next();
@@ -34,53 +47,52 @@ const { setSocketIO } = require("./controllers/notificationController");
 
 const io = new Server(server, {
   cors: {
-    origin: process.env.CLIENT_URL ||  "https://jeevandaancare.vercel.app" , 
-    methods: ["GET", "POST"],          
-    credentials: true,                 
+    origin: allowedOrigin,
+    methods: ["GET", "POST"],
+    credentials: true,
   },
 });
 
-
 socketSetup(io);
 setSocketIO(io);
-// ============================================
 
-// Health check
-app.get('/health', (req, res) => {
+// ================= HEALTH CHECK =================
+app.get("/health", (req, res) => {
   res.status(200).json({
     success: true,
-    message: 'Server is running',
-    timestamp: new Date().toISOString()
+    message: "Server is running 🚀",
+    env: process.env.NODE_ENV || "development",
+    time: new Date().toISOString(),
   });
 });
 
-// Routes
-app.use('/api/auth', authRoutes);
-app.use('/api/blood-donors', blooddonorRoutes);
-app.use('/api/organ-donors', organdonorRoutes);
-app.use('/api/patients', patientRoutes);
-app.use('/api/dashboard', alluserdonotCountRoutes);
+// ================= ROUTES =================
+app.use("/api/auth", authRoutes);
+app.use("/api/blood-donors", blooddonorRoutes);
+app.use("/api/organ-donors", organdonorRoutes);
+app.use("/api/patients", patientRoutes);
+app.use("/api/dashboard", alluserdonorCountRoutes);
 app.use("/api/notifications", notificationRoutes);
 
-// 404 handler
+// ================= 404 HANDLER =================
 app.use((req, res) => {
   res.status(404).json({
     success: false,
-    message: 'Route not found'
+    message: "Route not found",
   });
 });
 
-// Global error handler
+// ================= GLOBAL ERROR HANDLER =================
 app.use((err, req, res, next) => {
-  console.error(err.stack);
+  console.error("🔥 Error:", err.message);
   res.status(500).json({
     success: false,
-    message: 'Internal server error',
-    error: process.env.NODE_ENV === 'development' ? err.message : undefined
+    message: "Internal Server Error",
+    error: process.env.NODE_ENV === "development" ? err.message : undefined,
   });
 });
 
-// ================= START SERVER =================
+// ================= SERVER START =================
 const PORT = process.env.PORT || 5000;
 
 const startServer = async () => {
@@ -89,18 +101,18 @@ const startServer = async () => {
 
     server.listen(PORT, () => {
       console.log(`🚀 Server running on port ${PORT}`);
-      console.log(`🔌 Socket.IO enabled`);
-      console.log(`Environment: ${process.env.NODE_ENV || 'development'}`);
+      console.log(`🌍 Allowed Origin: ${allowedOrigin}`);
+      console.log(`🔌 Socket.IO active`);
     });
-  } catch (err) {
-    console.error('Failed to start server:', err);
+  } catch (error) {
+    console.error("❌ Server start failed:", error.message);
     process.exit(1);
   }
 };
 
-// Handle unhandled promise rejections
-process.on('unhandledRejection', (err) => {
-  console.error('Unhandled Promise Rejection:', err);
+// ================= SAFETY =================
+process.on("unhandledRejection", (err) => {
+  console.error("Unhandled Promise Rejection:", err.message);
   process.exit(1);
 });
 
