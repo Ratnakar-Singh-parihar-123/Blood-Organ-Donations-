@@ -1,808 +1,602 @@
-import React, { useState, useEffect } from 'react';
+import React from "react";
 import { 
   Heart, 
-  ArrowRight, 
-  Users, 
-  Shield,
-  Clock,
+  Activity, 
+  Calendar, 
+  Shield, 
+  Clock, 
+  User, 
   Award,
-  CheckCircle2,
-  Sparkles,
   ChevronRight,
-  Zap,
-  Leaf,
-  Gift,
-  X,
   CheckCircle,
-  User,
+  MapPin,
   Phone,
-  Mail,
-  Calendar,
-  FileText,
-  Thermometer,
-  Lock
-} from 'lucide-react';
+  Star,
+  TrendingUp,
+  AlertCircle,
+  ArrowRight,
+  RefreshCw,
+  Zap,
+  Target,
+  Leaf,
+  LifeBuoy,
+  Stethoscope,
+  Globe
+} from "lucide-react";
 
-const OrganDonationHero = () => {
-  const [isVisible, setIsVisible] = useState(false);
-  const [pulseIndex, setPulseIndex] = useState(0);
-  const [showDonationForm, setShowDonationForm] = useState(false);
-  const [formSubmitted, setFormSubmitted] = useState(false);
-  const [formData, setFormData] = useState({
-    fullName: '',
-    age: '',
-    bloodGroup: '',
-    phone: '',
-    email: '',
-    organType: '',
-    medicalHistory: '',
-    emergencyContact: '',
-    address: '',
-    consent: false
-  });
-
-  // Initialize animations
-  useEffect(() => {
-    setIsVisible(true);
-    
-    // Create pulsing effect for impact numbers
-    const interval = setInterval(() => {
-      setPulseIndex(prev => (prev + 1) % 4);
-    }, 1500);
-    
-    return () => clearInterval(interval);
-  }, []);
-
-  const impactStats = [
-    { id: 1, value: '8', label: 'Lives Saved', color: 'text-rose-500', delay: 0 },
-    { id: 2, value: '75+', label: 'Lives Improved', color: 'text-emerald-500', delay: 200 },
-    { id: 3, value: '106,000+', label: 'Waiting in US', color: 'text-blue-500', delay: 400 },
-    { id: 4, value: '22', label: 'Die Daily Waiting', color: 'text-amber-500', delay: 600 }
-  ];
-
-  const benefits = [
-    { icon: Shield, text: '100% Confidential & Safe', color: 'text-emerald-500' },
-    { icon: Clock, text: '5-Minute Registration', color: 'text-blue-500' },
-    { icon: Award, text: 'Leave a Lasting Legacy', color: 'text-rose-500' }
-  ];
-
-  const steps = [
-    { number: '01', title: 'Register', desc: '5-minute online form' },
-    { number: '02', title: 'Inform Family', desc: 'Share your decision' },
-    { number: '03', title: 'Save Lives', desc: 'Your ultimate gift' }
-  ];
-
-  const organTypes = [
-    'Heart', 'Lungs', 'Liver', 'Kidneys', 'Pancreas', 
-    'Intestines', 'Corneas', 'Skin', 'Bone', 'Tendons'
-  ];
-
-  const bloodGroups = ['A+', 'A-', 'B+', 'B-', 'O+', 'O-', 'AB+', 'AB-'];
-
-  const handleInputChange = (e) => {
-    const { name, value, type, checked } = e.target;
-    setFormData(prev => ({
-      ...prev,
-      [name]: type === 'checkbox' ? checked : value
-    }));
-  };
-
-  const handleSubmit = (e) => {
-    e.preventDefault();
-    // Here you would typically send data to backend
-    console.log('Organ Donation Form submitted:', formData);
-    setFormSubmitted(true);
-    
-    // Reset form after 4 seconds
-    setTimeout(() => {
-      setFormSubmitted(false);
-      setShowDonationForm(false);
-      setFormData({
-        fullName: '',
-        age: '',
-        bloodGroup: '',
-        phone: '',
-        email: '',
-        organType: '',
-        medicalHistory: '',
-        emergencyContact: '',
-        address: '',
-        consent: false
-      });
-    }, 4000);
-  };
-
+const OrganHeroSection = () => {
   return (
-    <>
-      <section className="relative min-h-screen lg:min-h-[90vh] bg-gradient-to-b from-white to-rose-50/20 overflow-hidden">
-        
-        {/* Animated Background Elements */}
-        <div className="absolute inset-0 overflow-hidden">
-          {/* Floating Gradient Orbs */}
-          <div className="absolute top-1/4 -left-20 w-64 h-64 bg-gradient-to-r from-rose-200/30 to-pink-200/20 rounded-full blur-3xl"></div>
-          <div className="absolute bottom-1/4 -right-20 w-80 h-80 bg-gradient-to-r from-rose-100/20 to-red-100/10 rounded-full blur-3xl"></div>
-          
-          {/* Subtle Grid Pattern */}
-          <div className="absolute inset-0 opacity-5">
-            <div className="absolute inset-0" style={{
-              backgroundImage: `linear-gradient(to right, #f43f5e 1px, transparent 1px),
-                                linear-gradient(to bottom, #f43f5e 1px, transparent 1px)`,
-              backgroundSize: '50px 50px'
-            }}></div>
-          </div>
-        </div>
+    <div className="bg-gradient-to-b from-emerald-50 via-white to-white">
+      {/* ================= HERO SECTION ================= */}
+      <section className="relative overflow-hidden">
+        {/* Background Elements */}
+        <div className="absolute top-0 right-0 w-1/3 h-1/3 bg-gradient-to-br from-emerald-200/30 to-green-200/20 rounded-full -translate-y-1/3 translate-x-1/3 blur-3xl"></div>
+        <div className="absolute bottom-0 left-0 w-1/3 h-1/3 bg-gradient-to-tr from-emerald-100/30 to-green-100/20 rounded-full translate-y-1/3 -translate-x-1/3 blur-3xl"></div>
 
-        {/* Main Content */}
-        <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-20 lg:pt-28 pb-20">
-          <div className="grid lg:grid-cols-2 gap-12 items-center">
-            
-            {/* Left Column - Text Content */}
-            <div className={`space-y-8 transition-all duration-1000 ${isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-10'}`}>
-              
-              {/* Trust Badge */}
-              <div className="inline-flex items-center space-x-2 bg-white/80 backdrop-blur-sm px-4 py-2 rounded-full border border-rose-100 shadow-sm">
-                <Sparkles className="h-4 w-4 text-rose-500" />
-                <span className="text-sm font-medium text-gray-700">Trusted by 2M+ Registered Donors</span>
-                <div className="flex -space-x-2">
-                  {[1,2,3].map((i) => (
-                    <div key={i} className="w-6 h-6 rounded-full bg-gradient-to-r from-rose-400 to-rose-300 border-2 border-white"></div>
-                  ))}
-                </div>
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 md:py-20 lg:py-28">
+          <div className="grid lg:grid-cols-2 gap-10 lg:gap-16 items-center">
+            {/* Left Content */}
+            <div className="relative z-10 order-2 lg:order-1">
+              <div className="inline-flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-emerald-600 to-green-600 rounded-full text-white text-sm font-medium mb-6 shadow-lg shadow-emerald-500/20">
+                <Heart className="h-4 w-4" fill="white" />
+                <span>Join 25,000+ Registered Donors</span>
               </div>
 
-              {/* Main Headline */}
-              <div className="space-y-4">
-                <h1 className="text-4xl sm:text-5xl lg:text-6xl font-bold tracking-tight">
-                  <span className="block text-gray-900">Give the</span>
-                  <span className="block bg-gradient-to-r from-rose-600 via-rose-500 to-rose-400 bg-clip-text text-transparent">
-                    Gift of Life
-                  </span>
-                </h1>
-                
-                {/* Subtext */}
-                <p className="text-lg sm:text-xl text-gray-600 max-w-xl leading-relaxed">
-                  Your decision to register as an organ donor can save up to 
-                  <span className="font-semibold text-rose-500"> 8 lives</span> and improve 
-                  <span className="font-semibold text-emerald-500"> 75+ more</span>. It's the most meaningful legacy you can leave.
-                </p>
-              </div>
+              <h1 className="text-4xl sm:text-5xl lg:text-6xl font-bold text-gray-900 leading-tight tracking-tight">
+                Give Life,
+                <span className="block text-transparent bg-clip-text bg-gradient-to-r from-emerald-600 to-green-600">
+                  Beyond Life
+                </span>
+                The Ultimate Gift
+              </h1>
 
-              {/* Impact Stats */}
-              <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
-                {impactStats.map((stat) => (
-                  <div
-                    key={stat.id}
-                    className={`bg-white rounded-xl border border-gray-100 p-4 shadow-sm transition-all duration-300 ${
-                      pulseIndex === stat.id - 1 ? 'ring-2 ring-rose-100 transform scale-105' : ''
-                    }`}
-                    style={{ transitionDelay: `${stat.delay}ms` }}
-                  >
-                    <div className={`text-2xl sm:text-3xl font-bold ${stat.color}`}>{stat.value}</div>
-                    <div className="text-sm text-gray-600 mt-1">{stat.label}</div>
+              <p className="mt-4 sm:mt-6 text-lg text-gray-600 max-w-xl leading-relaxed">
+                Organ donation is the greatest gift of life. One donor can save up to 8 lives 
+                and improve the quality of life for 75+ people through tissue donation.
+              </p>
+
+              {/* Stats */}
+              <div className="grid grid-cols-2 sm:grid-cols-3 gap-4 mt-8">
+                <div className="bg-white p-4 rounded-xl shadow-sm border border-emerald-100">
+                  <div className="flex items-center gap-2">
+                    <User className="h-5 w-5 text-emerald-600" />
+                    <span className="text-2xl font-bold text-gray-900">25K+</span>
                   </div>
-                ))}
+                  <p className="text-sm text-gray-500 mt-1">Registered Donors</p>
+                </div>
+                <div className="bg-white p-4 rounded-xl shadow-sm border border-green-100">
+                  <div className="flex items-center gap-2">
+                    <Activity className="h-5 w-5 text-green-600" />
+                    <span className="text-2xl font-bold text-gray-900">8 Lives</span>
+                  </div>
+                  <p className="text-sm text-gray-500 mt-1">Can Be Saved</p>
+                </div>
+                <div className="bg-white p-4 rounded-xl shadow-sm border border-emerald-100 col-span-2 sm:col-span-1">
+                  <div className="flex items-center gap-2">
+                    <Clock className="h-5 w-5 text-emerald-600" />
+                    <span className="text-2xl font-bold text-gray-900">115K+</span>
+                  </div>
+                  <p className="text-sm text-gray-500 mt-1">On Waiting List</p>
+                </div>
               </div>
 
               {/* CTA Buttons */}
-              <div className="flex flex-col sm:flex-row gap-4 pt-4">
-                {/* Primary CTA */}
-                <button 
-                  onClick={() => setShowDonationForm(true)}
-                  className="group relative px-8 py-4 bg-gradient-to-r from-rose-500 to-rose-400 text-white rounded-2xl font-semibold text-lg shadow-xl shadow-rose-200 hover:shadow-2xl hover:shadow-rose-300 transition-all duration-300 hover:scale-105 active:scale-95 flex items-center justify-center space-x-2"
-                >
-                  <div className="absolute inset-0 bg-gradient-to-r from-rose-600 to-rose-500 rounded-2xl opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
-                  <Heart className="h-6 w-6 relative z-10" fill="white" />
-                  <span className="relative z-10">Register as Organ Donor</span>
-                  <ArrowRight className="h-5 w-5 relative z-10 group-hover:translate-x-1 transition-transform" />
-                  
-                  {/* Glow Effect */}
-                  <div className="absolute inset-0 rounded-2xl border-2 border-rose-300 animate-ping opacity-20"></div>
-                </button>
-
-                {/* Secondary CTA */}
-                <button className="group px-6 py-4 bg-white text-gray-800 rounded-2xl font-medium text-lg border-2 border-rose-100 hover:border-rose-300 shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105 active:scale-95 flex items-center justify-center space-x-2">
-                  <Leaf className="h-5 w-5 text-emerald-500" />
-                  <span>Learn More</span>
-                  <ChevronRight className="h-5 w-5 text-rose-500 group-hover:translate-x-1 transition-transform" />
-                </button>
-              </div>
-
-              {/* Benefits */}
-              <div className="space-y-3 pt-4">
-                {benefits.map((benefit, index) => (
-                  <div
-                    key={index}
-                    className="flex items-center space-x-3 opacity-0 animate-fade-in-up"
-                    style={{ animationDelay: `${index * 200}ms`, animationFillMode: 'forwards' }}
-                  >
-                    <div className="p-2 bg-gray-50 rounded-lg">
-                      <benefit.icon className={`h-5 w-5 ${benefit.color}`} />
-                    </div>
-                    <span className="text-gray-700">{benefit.text}</span>
-                    <CheckCircle2 className="h-5 w-5 text-emerald-500" />
-                  </div>
-                ))}
-              </div>
-            </div>
-
-            {/* Right Column - Visual Element */}
-            <div className={`relative ${isVisible ? 'opacity-100 translate-x-0' : 'opacity-0 translate-x-10'}`}>
-              
-              {/* Main Illustration Container */}
-              <div className="relative max-w-lg mx-auto">
-                
-                {/* Floating Step Cards */}
-                <div className="absolute -top-6 -left-6 z-20">
-                  <div className="bg-white p-6 rounded-2xl shadow-2xl border border-rose-100 animate-float-slow">
-                    <div className="flex items-center space-x-3">
-                      <div className="p-3 bg-rose-50 rounded-xl">
-                        <Users className="h-6 w-6 text-rose-500" />
-                      </div>
-                      <div>
-                        <div className="font-bold text-gray-900">One Donor</div>
-                        <div className="text-sm text-gray-600">Can Save 8 Lives</div>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-
-                <div className="absolute -bottom-6 -right-6 z-20">
-                  <div className="bg-white p-6 rounded-2xl shadow-2xl border border-emerald-100 animate-float-delayed">
-                    <div className="flex items-center space-x-3">
-                      <div className="p-3 bg-emerald-50 rounded-xl">
-                        <Gift className="h-6 w-6 text-emerald-500" />
-                      </div>
-                      <div>
-                        <div className="font-bold text-gray-900">Lasting Legacy</div>
-                        <div className="text-sm text-gray-600">Forever Remembered</div>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-
-                {/* Central Heart Illustration */}
-                <div className="relative bg-gradient-to-br from-white to-rose-50/50 rounded-3xl p-8 shadow-2xl border border-rose-100/50 backdrop-blur-sm overflow-hidden">
-                  
-                  {/* Background Pattern */}
-                  <div className="absolute inset-0 opacity-10">
-                    <div className="absolute top-0 left-0 w-full h-full">
-                      <Heart className="w-full h-full text-rose-200" fill="currentColor" />
-                    </div>
-                  </div>
-
-                  {/* Animated Organ Icons */}
-                  <div className="relative z-10 flex flex-col items-center justify-center py-12">
-                    
-                    {/* Pulsing Rings */}
-                    <div className="absolute w-56 h-56 border-2 border-rose-200/30 rounded-full animate-pulse-slow"></div>
-                    <div className="absolute w-64 h-64 border-2 border-rose-300/20 rounded-full animate-pulse-slower"></div>
-                    
-                    {/* Heart with Organ Icons */}
-                    <div className="relative">
-                      
-                      {/* Central Heart */}
-                      <div className="relative bg-gradient-to-r from-rose-500 to-rose-400 w-48 h-48 rounded-3xl flex items-center justify-center shadow-2xl shadow-rose-300/50">
-                        <Heart className="h-32 w-32 text-white" fill="white" />
-                        
-                        {/* Glow Effect */}
-                        <div className="absolute inset-0 bg-gradient-to-r from-rose-500 to-rose-400 rounded-3xl blur-xl opacity-30 animate-pulse"></div>
-                      </div>
-
-                      {/* Floating Organ Icons */}
-                      <div className="absolute -top-6 left-1/2 transform -translate-x-1/2">
-                        <div className="bg-white p-3 rounded-full shadow-lg border border-rose-100 animate-bounce-slow">
-                          <Heart className="h-6 w-6 text-rose-500" fill="#f43f5e" />
-                        </div>
-                      </div>
-                      
-                      <div className="absolute -right-6 top-1/2 transform -translate-y-1/2">
-                        <div className="bg-white p-3 rounded-full shadow-lg border border-emerald-100 animate-bounce-slow" style={{ animationDelay: '0.5s' }}>
-                          <Leaf className="h-6 w-6 text-emerald-500" />
-                        </div>
-                      </div>
-                      
-                      <div className="absolute -bottom-6 left-1/2 transform -translate-x-1/2">
-                        <div className="bg-white p-3 rounded-full shadow-lg border border-blue-100 animate-bounce-slow" style={{ animationDelay: '1s' }}>
-                          <Zap className="h-6 w-6 text-blue-500" />
-                        </div>
-                      </div>
-                      
-                      <div className="absolute -left-6 top-1/2 transform -translate-y-1/2">
-                        <div className="bg-white p-3 rounded-full shadow-lg border border-purple-100 animate-bounce-slow" style={{ animationDelay: '1.5s' }}>
-                          <Shield className="h-6 w-6 text-purple-500" />
-                        </div>
-                      </div>
-                    </div>
-
-                    {/* Connection Lines */}
-                    <svg className="absolute inset-0 w-full h-full pointer-events-none">
-                      <line x1="50%" y1="30%" x2="50%" y2="15%" stroke="#fda4af" strokeWidth="2" strokeDasharray="4,4" className="animate-dash" />
-                      <line x1="70%" y1="50%" x2="85%" y2="50%" stroke="#86efac" strokeWidth="2" strokeDasharray="4,4" className="animate-dash" style={{ animationDelay: '0.5s' }} />
-                      <line x1="50%" y1="70%" x2="50%" y2="85%" stroke="#93c5fd" strokeWidth="2" strokeDasharray="4,4" className="animate-dash" style={{ animationDelay: '1s' }} />
-                      <line x1="30%" y1="50%" x2="15%" y2="50%" stroke="#d8b4fe" strokeWidth="2" strokeDasharray="4,4" className="animate-dash" style={{ animationDelay: '1.5s' }} />
+              <div className="flex flex-col sm:flex-row gap-4 mt-10">
+                <button className="group relative bg-gradient-to-r from-emerald-600 to-green-600 hover:from-emerald-700 hover:to-green-700 text-white px-8 py-4 rounded-xl font-semibold text-lg shadow-lg shadow-emerald-500/25 hover:shadow-xl hover:shadow-emerald-500/30 transition-all duration-300 transform hover:-translate-y-0.5">
+                  <span className="flex items-center justify-center gap-2">
+                    Register as Donor
+                    <svg className="w-5 h-5 group-hover:translate-x-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M13 7l5 5m0 0l-5 5m5-5H6" />
                     </svg>
+                  </span>
+                </button>
+
+                <button className="group flex items-center justify-center gap-3 px-8 py-4 bg-white text-gray-700 rounded-xl font-medium border-2 border-gray-200 hover:border-emerald-300 hover:bg-emerald-50 transition-all duration-300">
+                  <Calendar className="h-5 w-5 text-emerald-600 group-hover:text-emerald-700" />
+                  <span>Learn More</span>
+                </button>
+              </div>
+
+              {/* Trust Badges */}
+              <div className="mt-12">
+                <p className="text-sm text-gray-500 mb-4">Supported by leading medical institutions</p>
+                <div className="flex flex-wrap gap-4 items-center">
+                  <div className="h-8 text-gray-400">🏥</div>
+                  <div className="h-8 text-gray-400">🏛️</div>
+                  <div className="h-8 text-gray-400">⚕️</div>
+                  <div className="h-8 text-gray-400">🌐</div>
+                  <div className="text-sm text-gray-500 font-medium">+ 15 more</div>
+                </div>
+              </div>
+            </div>
+
+            {/* Right Image */}
+            <div className="relative order-1 lg:order-2 lg:h-full">
+              {/* Main Card */}
+              <div className="relative bg-gradient-to-br from-white to-emerald-50 rounded-3xl shadow-2xl shadow-emerald-500/10 p-6 lg:p-8 overflow-hidden">
+                {/* Background Pattern */}
+                <div className="absolute top-0 right-0 w-64 h-64 bg-gradient-to-br from-emerald-100/50 to-green-100/30 rounded-full -translate-y-32 translate-x-32"></div>
+                
+                {/* Main Image */}
+                <div className="relative z-10">
+                  <img
+                    src="https://www.sakraworldhospital.com/assets/spl_splimgs/organ-donation-2020-1.webp"
+                    alt="Organ Donation Hero"
+                    className="w-full h-auto rounded-2xl shadow-lg object-cover"
+                  />
+                </div>
+
+                {/* Floating Urgent Card */}
+                <div className="absolute bottom-6 left-6 right-6 bg-gradient-to-r from-emerald-700 to-green-700 text-white rounded-2xl p-4 shadow-xl shadow-emerald-600/25 transform hover:-translate-y-1 transition-transform duration-300">
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-3">
+                      <div className="bg-white/20 p-2 rounded-lg backdrop-blur-sm">
+                        <AlertCircle className="h-6 w-6" />
+                      </div>
+                      <div>
+                        <p className="font-bold text-lg">Critical Need</p>
+                        <p className="text-sm text-white/90">Kidney & Liver Patients Waiting</p>
+                      </div>
+                    </div>
+                    <button className="bg-white text-emerald-700 hover:bg-gray-100 px-4 py-2 rounded-lg font-semibold text-sm transition-colors">
+                      Learn More
+                    </button>
                   </div>
                 </div>
-              </div>
 
-              {/* Simple Process Steps */}
-              <div className="mt-8 flex justify-center">
-                <div className="flex items-center space-x-4 sm:space-x-8">
-                  {steps.map((step, index) => (
-                    <div key={index} className="flex flex-col items-center">
-                      <div className="w-12 h-12 rounded-full bg-gradient-to-r from-rose-500 to-rose-400 flex items-center justify-center text-white font-bold text-lg shadow-lg">
-                        {step.number}
-                      </div>
-                      <div className="text-center mt-2">
-                        <div className="font-semibold text-gray-900 text-sm">{step.title}</div>
-                        <div className="text-xs text-gray-500">{step.desc}</div>
-                      </div>
-                      {index < steps.length - 1 && (
-                        <div className="hidden sm:block absolute transform translate-x-16 w-16 h-0.5 bg-gradient-to-r from-rose-300 to-transparent"></div>
-                      )}
+                {/* Floating Stats Card */}
+                <div className="absolute top-6 right-6 bg-white/90 backdrop-blur-sm rounded-xl p-4 shadow-lg">
+                  <div className="flex items-center gap-3">
+                    <div className="w-12 h-12 bg-emerald-100 rounded-xl flex items-center justify-center">
+                      <Activity className="h-6 w-6 text-emerald-600" />
                     </div>
-                  ))}
+                    <div>
+                      <p className="text-2xl font-bold text-gray-900">75+</p>
+                      <p className="text-sm text-gray-600">Can Be Helped</p>
+                    </div>
+                  </div>
                 </div>
-              </div>
-            </div>
-          </div>
 
-          {/* Trust Indicators */}
-          <div className="mt-16 grid grid-cols-2 lg:grid-cols-4 gap-6">
-            <div className="bg-white/80 backdrop-blur-sm p-6 rounded-2xl border border-gray-100 shadow-sm">
-              <div className="flex items-center space-x-3">
-                <Shield className="h-8 w-8 text-emerald-500" />
-                <div>
-                  <div className="text-2xl font-bold text-gray-900">100%</div>
-                  <div className="text-gray-600">Safe & Confidential</div>
+                {/* Floating Donor Card */}
+                <div className="absolute top-1/4 -left-4 bg-white rounded-xl p-4 shadow-lg transform hover:-translate-x-1 transition-transform duration-300">
+                  <div className="flex items-center gap-3">
+                    <div className="relative">
+                      <img
+                        src="https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?ixlib=rb-4.0.3&auto=format&fit=crop&w=100&q=80"
+                        alt="Donor"
+                        className="w-12 h-12 rounded-full object-cover border-2 border-white shadow"
+                      />
+                      <div className="absolute -bottom-1 -right-1 w-5 h-5 bg-green-500 rounded-full border-2 border-white"></div>
+                    </div>
+                    <div>
+                      <p className="font-semibold text-gray-900">Sarah L.</p>
+                      <p className="text-sm text-gray-600">Registered Donor</p>
+                    </div>
+                  </div>
                 </div>
-              </div>
-            </div>
-            
-            <div className="bg-white/80 backdrop-blur-sm p-6 rounded-2xl border border-gray-100 shadow-sm">
-              <div className="flex items-center space-x-3">
-                <Clock className="h-8 w-8 text-blue-500" />
-                <div>
-                  <div className="text-2xl font-bold text-gray-900">5 min</div>
-                  <div className="text-gray-600">Registration Time</div>
-                </div>
-              </div>
-            </div>
-            
-            <div className="bg-white/80 backdrop-blur-sm p-6 rounded-2xl border border-gray-100 shadow-sm">
-              <div className="flex items-center space-x-3">
-                <Award className="h-8 w-8 text-amber-500" />
-                <div>
-                  <div className="text-2xl font-bold text-gray-900">2M+</div>
-                  <div className="text-gray-600">Registered Donors</div>
-                </div>
-              </div>
-            </div>
-            
-            <div className="bg-white/80 backdrop-blur-sm p-6 rounded-2xl border border-gray-100 shadow-sm">
-              <div className="flex items-center space-x-3">
-                <Users className="h-8 w-8 text-rose-500" />
-                <div>
-                  <div className="text-2xl font-bold text-gray-900">8</div>
-                  <div className="text-gray-600">Lives Per Donor</div>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          {/* Scroll Indicator */}
-          <div className="absolute bottom-8 left-1/2 transform -translate-x-1/2 animate-bounce">
-            <div className="flex flex-col items-center space-y-2">
-              <div className="text-xs text-gray-500 font-medium">Scroll to learn more</div>
-              <div className="w-6 h-10 border-2 border-rose-200 rounded-full flex justify-center">
-                <div className="w-1 h-3 bg-gradient-to-b from-rose-400 to-rose-300 rounded-full mt-2 animate-scroll"></div>
               </div>
             </div>
           </div>
         </div>
       </section>
 
-      {/* Organ Donation Form Modal */}
-      {showDonationForm && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm">
-          <div className="relative w-full max-w-3xl max-h-[90vh] overflow-y-auto">
-            {formSubmitted ? (
-              /* Success Message */
-              <div className="bg-gradient-to-br from-emerald-50 to-white rounded-2xl shadow-2xl border border-emerald-100 p-8">
-                <div className="flex flex-col items-center text-center space-y-6">
-                  <div className="relative">
-                    <div className="w-24 h-24 bg-emerald-100 rounded-full flex items-center justify-center">
-                      <CheckCircle className="h-12 w-12 text-emerald-600" />
+      {/* ================= WHY DONATE SECTION ================= */}
+      <section className="py-16 md:py-24 lg:py-32 px-4 sm:px-6 lg:px-8">
+        <div className="max-w-7xl mx-auto">
+          <div className="grid lg:grid-cols-2 gap-12 lg:gap-20 items-center">
+            {/* Image Section */}
+            <div className="relative order-2 lg:order-1">
+              <div className="relative bg-gradient-to-br from-white to-emerald-50 rounded-3xl shadow-xl shadow-emerald-500/10 p-4 overflow-hidden">
+                <img
+                  src="https://mahaarogyasamvadiec.in/wp-content/uploads/2024/05/WhatsApp-Image-2024-05-31-at-16.12.07.jpeg"
+                  alt="Why Organ Donation"
+                  className="w-full h-auto rounded-2xl shadow-lg"
+                />
+                
+                {/* Floating Card */}
+                <div className="absolute -bottom-4 -right-4 bg-white rounded-2xl shadow-xl p-6 max-w-xs">
+                  <div className="flex items-center gap-3">
+                    <div className="w-12 h-12 bg-gradient-to-r from-emerald-500 to-green-500 rounded-xl flex items-center justify-center">
+                      <Shield className="h-6 w-6 text-white" />
                     </div>
-                    <div className="absolute -top-2 -right-2">
-                      <Heart className="h-8 w-8 text-rose-500" fill="#f43f5e" />
+                    <div>
+                      <p className="font-bold text-gray-900">100% Legal</p>
+                      <p className="text-sm text-gray-600">Medical & Ethical</p>
                     </div>
                   </div>
-                  <div>
-                    <h3 className="text-2xl font-bold text-gray-900 mb-2">
-                      Thank You for Your Courageous Decision!
-                    </h3>
-                    <p className="text-gray-600 max-w-lg">
-                      You have officially joined the registry as an organ donor. Your decision has the 
-                      potential to save up to 8 lives. A confirmation email with your donor card will 
-                      be sent to you shortly.
-                    </p>
-                  </div>
-                  <div className="bg-rose-50 p-4 rounded-xl">
-                    <p className="text-sm text-gray-700">
-                      💡 <span className="font-semibold">Important:</span> Please inform your family 
-                      about your decision to become an organ donor.
-                    </p>
-                  </div>
-                  <button
-                    onClick={() => setShowDonationForm(false)}
-                    className="px-6 py-3 bg-gradient-to-r from-rose-500 to-rose-400 text-white font-semibold rounded-lg hover:from-rose-600 hover:to-rose-500 transition-all duration-300"
-                  >
-                    Close
-                  </button>
                 </div>
               </div>
-            ) : (
-              /* Donation Form */
-              <div className="bg-gradient-to-br from-white to-rose-50/50 rounded-2xl shadow-2xl border border-rose-100 overflow-hidden">
-                {/* Header */}
-                <div className="bg-gradient-to-r from-rose-600 to-rose-500 p-6">
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center space-x-3">
-                      <div className="p-2 bg-white/20 rounded-lg">
-                        <Heart className="h-6 w-6 text-white" fill="white" />
+            </div>
+
+            {/* Content Section */}
+            <div className="order-1 lg:order-2">
+              <div className="inline-flex items-center gap-2 px-4 py-2 bg-emerald-100 text-emerald-700 rounded-full text-sm font-medium mb-6">
+                <Target className="h-4 w-4" />
+                <span>The Gift of Life</span>
+              </div>
+
+              <h2 className="text-3xl sm:text-4xl lg:text-5xl font-bold text-gray-900">
+                Why Organ
+                <span className="block text-transparent bg-clip-text bg-gradient-to-r from-emerald-600 to-green-600">
+                  Donation?
+                </span>
+              </h2>
+
+              <p className="mt-4 text-lg text-gray-600">
+                Organ donation is a selfless act that saves lives and gives hope. 
+                It's the ultimate humanitarian gesture that creates a lasting legacy.
+              </p>
+
+              {/* Key Points */}
+              <div className="space-y-6 mt-8">
+                {[
+                  {
+                    icon: LifeBuoy,
+                    title: "Save Multiple Lives",
+                    desc: "One donor can save up to 8 lives through organ donation"
+                  },
+                  {
+                    icon: Leaf,
+                    title: "Leave a Legacy",
+                    desc: "Create a lasting impact that lives on in others"
+                  },
+                  {
+                    icon: User,
+                    title: "Transform Families",
+                    desc: "Give hope to patients and their loved ones"
+                  },
+                  {
+                    icon: Globe,
+                    title: "Medical Advancement",
+                    desc: "Contribute to medical research and innovation"
+                  }
+                ].map((item, idx) => {
+                  const Icon = item.icon;
+                  return (
+                    <div key={idx} className="flex items-start gap-4 p-4 bg-white rounded-xl border border-gray-100 hover:border-emerald-200 transition-colors">
+                      <div className="w-12 h-12 bg-emerald-50 rounded-lg flex items-center justify-center flex-shrink-0">
+                        <Icon className="h-6 w-6 text-emerald-600" />
                       </div>
                       <div>
-                        <h2 className="text-2xl font-bold text-white">Organ Donor Registration</h2>
-                        <p className="text-rose-100">Join the national registry in 5 minutes</p>
+                        <h3 className="font-bold text-gray-900">{item.title}</h3>
+                        <p className="text-gray-600 mt-1">{item.desc}</p>
                       </div>
                     </div>
-                    <button
-                      onClick={() => setShowDonationForm(false)}
-                      className="p-2 hover:bg-white/20 rounded-lg transition-colors"
-                    >
-                      <X className="h-6 w-6 text-white" />
-                    </button>
+                  );
+                })}
+              </div>
+
+              <button className="mt-10 group flex items-center gap-2 text-emerald-600 font-semibold text-lg hover:text-emerald-700 transition-colors">
+                Learn More About Benefits
+                <ChevronRight className="h-5 w-5 group-hover:translate-x-1 transition-transform" />
+              </button>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* ================= HOW IT WORKS SECTION ================= */}
+      <section className="py-16 md:py-24 lg:py-32 bg-gradient-to-b from-white to-emerald-50 px-4 sm:px-6 lg:px-8">
+        <div className="max-w-7xl mx-auto">
+          <div className="text-center">
+            <div className="inline-flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-emerald-600 to-green-600 rounded-full text-white text-sm font-medium mb-6">
+              <RefreshCw className="h-4 w-4" />
+              <span>Simple Registration Process</span>
+            </div>
+
+            <h2 className="text-3xl sm:text-4xl lg:text-5xl font-bold text-gray-900 mb-4">
+              How It Works
+            </h2>
+            <p className="text-lg text-gray-600 max-w-2xl mx-auto">
+              Registering as an organ donor is simple and can be done at any time. 
+              Your decision today can save lives tomorrow.
+            </p>
+          </div>
+
+          {/* Steps */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 lg:gap-8 mt-12 lg:mt-20">
+            {[
+              {
+                number: "01",
+                title: "Register Your Decision",
+                desc: "Sign up online or at government centers",
+                icon: User
+              },
+              {
+                number: "02",
+                title: "Inform Family",
+                desc: "Share your decision with loved ones",
+                icon: User
+              },
+              {
+                number: "03",
+                title: "Medical Record",
+                desc: "Your decision is recorded legally",
+                icon: Shield
+              },
+              {
+                number: "04",
+                title: "Live Your Life",
+                desc: "Continue normally, be a potential lifesaver",
+                icon: Award
+              }
+            ].map((step, idx) => {
+              const Icon = step.icon;
+              return (
+                <div key={idx} className="group relative">
+                  {/* Connecting Line (Desktop) */}
+                  {idx < 3 && (
+                    <div className="hidden lg:block absolute top-12 left-3/4 w-full h-0.5 bg-gradient-to-r from-emerald-200 to-green-200 group-hover:from-emerald-400 group-hover:to-green-400 transition-colors z-0"></div>
+                  )}
+
+                  <div className="relative bg-white rounded-2xl shadow-lg border border-gray-100 p-6 lg:p-8 transition-all duration-300 group-hover:shadow-xl group-hover:-translate-y-2 group-hover:border-emerald-200 z-10">
+                    {/* Step Number */}
+                    <div className="absolute -top-4 -left-4 w-16 h-16 bg-gradient-to-r from-emerald-600 to-green-600 rounded-2xl flex items-center justify-center text-white font-bold text-2xl shadow-lg">
+                      {step.number}
+                    </div>
+
+                    {/* Icon */}
+                    <div className="mb-6 pt-4">
+                      <div className="w-14 h-14 bg-emerald-50 rounded-xl flex items-center justify-center group-hover:scale-110 transition-transform">
+                        <Icon className="h-7 w-7 text-emerald-600" />
+                      </div>
+                    </div>
+
+                    {/* Content */}
+                    <h3 className="text-xl font-bold text-gray-900 mb-3">{step.title}</h3>
+                    <p className="text-gray-600">{step.desc}</p>
+
+                    {/* Arrow */}
+                    <div className="mt-6 opacity-0 group-hover:opacity-100 transition-opacity">
+                      <ArrowRight className="h-5 w-5 text-emerald-600" />
+                    </div>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+
+          {/* CTA */}
+          <div className="text-center mt-16">
+            <button className="group bg-gradient-to-r from-emerald-600 to-green-600 hover:from-emerald-700 hover:to-green-700 text-white px-8 py-4 rounded-xl font-semibold text-lg shadow-lg shadow-emerald-500/25 hover:shadow-xl hover:shadow-emerald-500/30 transition-all duration-300 inline-flex items-center gap-2">
+              Register as Organ Donor
+              <ArrowRight className="h-5 w-5 group-hover:translate-x-1 transition-transform" />
+            </button>
+            <p className="text-sm text-gray-500 mt-4">Your decision today can save lives tomorrow</p>
+          </div>
+        </div>
+      </section>
+
+      {/* ================= TESTIMONIALS SECTION ================= */}
+      <section className="py-16 md:py-24 lg:py-32 px-4 sm:px-6 lg:px-8">
+        <div className="max-w-7xl mx-auto">
+          <div className="text-center">
+            <div className="inline-flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-amber-500 to-orange-500 rounded-full text-white text-sm font-medium mb-6">
+              <Star className="h-4 w-4" fill="white" />
+              <span>Hero Stories</span>
+            </div>
+
+            <h2 className="text-3xl sm:text-4xl lg:text-5xl font-bold text-gray-900 mb-4">
+              Stories of
+              <span className="block text-transparent bg-clip-text bg-gradient-to-r from-emerald-600 to-green-600">
+                Hope & Gratitude
+              </span>
+            </h2>
+            <p className="text-lg text-gray-600 max-w-2xl mx-auto">
+              Hear from donor families and recipients whose lives have been forever changed 
+              by the gift of organ donation.
+            </p>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mt-12 lg:mt-20">
+            {[
+              {
+                quote: "My daughter's organs saved 4 lives. Knowing that part of her lives on brings us immense comfort during our grief. She continues to help others even now.",
+                name: "Michael Chen",
+                role: "Donor Father",
+                impact: "Saved 4 Lives",
+                image: "https://images.unsplash.com/photo-1568602471122-7832951cc4c5?ixlib=rb-4.0.3&auto=format&fit=crop&w=200&q=80"
+              },
+              {
+                quote: "After 3 years on dialysis, a kidney transplant gave me my life back. I can play with my grandchildren again. Thank you to my anonymous donor's family.",
+                name: "Maria Rodriguez",
+                role: "Kidney Recipient",
+                impact: "4 Years Transplant",
+                image: "https://images.unsplash.com/photo-1582750433449-648ed127bb54?ixlib=rb-4.0.3&auto=format&fit=crop&w=200&q=80"
+              }
+            ].map((testimonial, idx) => (
+              <div key={idx} className="group relative">
+                <div className="absolute -inset-0.5 bg-gradient-to-r from-emerald-500 to-green-500 rounded-3xl blur opacity-20 group-hover:opacity-30 transition-opacity"></div>
+                <div className="relative bg-white rounded-3xl p-8 shadow-lg">
+                  <div className="flex items-start gap-4">
+                    <img
+                      src={testimonial.image}
+                      alt={testimonial.name}
+                      className="w-16 h-16 rounded-full object-cover border-4 border-white shadow"
+                    />
+                    <div className="flex-1">
+                      <div className="flex items-center gap-1 mb-2">
+                        {[...Array(5)].map((_, i) => (
+                          <Star key={i} className="h-4 w-4 text-amber-500" fill="currentColor" />
+                        ))}
+                      </div>
+                      <p className="text-gray-700 text-lg italic mb-6">"{testimonial.quote}"</p>
+                      <div className="flex items-center justify-between">
+                        <div>
+                          <p className="font-bold text-gray-900">{testimonial.name}</p>
+                          <p className="text-sm text-gray-600">{testimonial.role}</p>
+                        </div>
+                        <div className="px-3 py-1 bg-emerald-50 text-emerald-700 rounded-full text-sm font-medium">
+                          {testimonial.impact}
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* ================= CTA SECTION ================= */}
+      <section className="py-16 md:py-24 lg:py-32 px-4 sm:px-6 lg:px-8">
+        <div className="max-w-6xl mx-auto">
+          <div className="relative overflow-hidden rounded-3xl">
+            {/* Background Pattern */}
+            <div className="absolute inset-0 bg-gradient-to-r from-emerald-700 via-emerald-600 to-green-600"></div>
+            <div className="absolute top-0 right-0 w-1/3 h-1/3 bg-gradient-to-br from-white/10 to-transparent rounded-full -translate-y-1/3 translate-x-1/3 blur-3xl"></div>
+            
+            <div className="relative p-8 md:p-12 lg:p-16 text-white">
+              <div className="grid lg:grid-cols-2 gap-8 items-center">
+                <div>
+                  <div className="inline-flex items-center gap-2 px-4 py-2 bg-white/20 backdrop-blur-sm rounded-full text-white text-sm font-medium mb-6">
+                    <Activity className="h-4 w-4" fill="white" />
+                    <span>Join the Life-Giving Movement</span>
+                  </div>
+
+                  <h2 className="text-3xl sm:text-4xl lg:text-5xl font-bold mb-4">
+                    Ready to Give
+                    <span className="block">The Ultimate Gift?</span>
+                  </h2>
+                  <p className="text-lg text-emerald-100 mb-8 max-w-lg">
+                    Your decision to become an organ donor can save multiple lives 
+                    and create a lasting legacy of hope and healing.
+                  </p>
+
+                  {/* Quick Stats */}
+                  <div className="grid grid-cols-2 gap-4 mb-8">
+                    <div className="bg-white/10 backdrop-blur-sm rounded-xl p-4">
+                      <p className="text-2xl font-bold">8 Lives</p>
+                      <p className="text-sm text-emerald-200">Can Be Saved</p>
+                    </div>
+                    <div className="bg-white/10 backdrop-blur-sm rounded-xl p-4">
+                      <p className="text-2xl font-bold">75+ People</p>
+                      <p className="text-sm text-emerald-200">Can Be Helped</p>
+                    </div>
                   </div>
                 </div>
 
-                {/* Form */}
-                <form onSubmit={handleSubmit} className="p-6 space-y-6">
-                  <div className="grid md:grid-cols-2 gap-6">
-                    {/* Full Name */}
-                    <div className="space-y-2">
-                      <label className="flex items-center space-x-2 text-sm font-medium text-gray-700">
-                        <User className="h-4 w-4" />
-                        <span>Full Legal Name *</span>
-                      </label>
-                      <input
-                        type="text"
-                        name="fullName"
-                        value={formData.fullName}
-                        onChange={handleInputChange}
-                        required
-                        className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:border-rose-300 focus:ring-2 focus:ring-rose-100 transition-all outline-none"
-                        placeholder="As per government ID"
-                      />
-                    </div>
-
-                    {/* Age */}
-                    <div className="space-y-2">
-                      <label className="flex items-center space-x-2 text-sm font-medium text-gray-700">
-                        <Calendar className="h-4 w-4" />
-                        <span>Age *</span>
-                      </label>
-                      <input
-                        type="number"
-                        name="age"
-                        value={formData.age}
-                        onChange={handleInputChange}
-                        min="18"
-                        max="100"
-                        required
-                        className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:border-rose-300 focus:ring-2 focus:ring-rose-100 transition-all outline-none"
-                        placeholder="Must be 18+ years"
-                      />
-                    </div>
-
-                    {/* Blood Group */}
-                    <div className="space-y-2">
-                      <label className="flex items-center space-x-2 text-sm font-medium text-gray-700">
-                        <Heart className="h-4 w-4" />
-                        <span>Blood Group *</span>
-                      </label>
-                      <select
-                        name="bloodGroup"
-                        value={formData.bloodGroup}
-                        onChange={handleInputChange}
-                        required
-                        className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:border-rose-300 focus:ring-2 focus:ring-rose-100 transition-all outline-none"
-                      >
-                        <option value="">Select Blood Group</option>
-                        {bloodGroups.map(group => (
-                          <option key={group} value={group}>{group}</option>
-                        ))}
-                      </select>
-                    </div>
-
-                    {/* Phone */}
-                    <div className="space-y-2">
-                      <label className="flex items-center space-x-2 text-sm font-medium text-gray-700">
-                        <Phone className="h-4 w-4" />
-                        <span>Phone Number *</span>
-                      </label>
-                      <input
-                        type="tel"
-                        name="phone"
-                        value={formData.phone}
-                        onChange={handleInputChange}
-                        required
-                        className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:border-rose-300 focus:ring-2 focus:ring-rose-100 transition-all outline-none"
-                        placeholder="Primary contact number"
-                      />
-                    </div>
-
-                    {/* Email */}
-                    <div className="space-y-2">
-                      <label className="flex items-center space-x-2 text-sm font-medium text-gray-700">
-                        <Mail className="h-4 w-4" />
-                        <span>Email Address *</span>
-                      </label>
-                      <input
-                        type="email"
-                        name="email"
-                        value={formData.email}
-                        onChange={handleInputChange}
-                        required
-                        className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:border-rose-300 focus:ring-2 focus:ring-rose-100 transition-all outline-none"
-                        placeholder="For confirmation & updates"
-                      />
-                    </div>
-
-                    {/* Organ Type */}
-                    <div className="space-y-2">
-                      <label className="flex items-center space-x-2 text-sm font-medium text-gray-700">
-                        <Shield className="h-4 w-4" />
-                        <span>Organ(s) to Donate *</span>
-                      </label>
-                      <select
-                        name="organType"
-                        value={formData.organType}
-                        onChange={handleInputChange}
-                        required
-                        className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:border-rose-300 focus:ring-2 focus:ring-rose-100 transition-all outline-none"
-                      >
-                        <option value="">Select Organ Type</option>
-                        <option value="all">All Organs and Tissues</option>
-                        {organTypes.map(organ => (
-                          <option key={organ} value={organ}>{organ}</option>
-                        ))}
-                      </select>
-                    </div>
-
-                    {/* Emergency Contact */}
-                    <div className="space-y-2">
-                      <label className="flex items-center space-x-2 text-sm font-medium text-gray-700">
-                        <Users className="h-4 w-4" />
-                        <span>Emergency Contact *</span>
-                      </label>
-                      <input
-                        type="text"
-                        name="emergencyContact"
-                        value={formData.emergencyContact}
-                        onChange={handleInputChange}
-                        required
-                        className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:border-rose-300 focus:ring-2 focus:ring-rose-100 transition-all outline-none"
-                        placeholder="Name & Phone"
-                      />
-                    </div>
-                  </div>
-
-                  {/* Medical History */}
-                  <div className="space-y-2">
-                    <label className="flex items-center space-x-2 text-sm font-medium text-gray-700">
-                      <FileText className="h-4 w-4" />
-                      <span>Medical History</span>
-                    </label>
-                    <textarea
-                      name="medicalHistory"
-                      value={formData.medicalHistory}
-                      onChange={handleInputChange}
-                      rows="3"
-                      className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:border-rose-300 focus:ring-2 focus:ring-rose-100 transition-all outline-none resize-none"
-                      placeholder="Any existing medical conditions, allergies, or surgeries"
-                    />
-                  </div>
-
-                  {/* Address */}
-                  <div className="space-y-2">
-                    <label className="flex items-center space-x-2 text-sm font-medium text-gray-700">
-                      {/* <Building2 className="h-4 w-4" /> */}
-                      <span>Permanent Address *</span>
-                    </label>
-                    <textarea
-                      name="address"
-                      value={formData.address}
-                      onChange={handleInputChange}
-                      required
-                      rows="3"
-                      className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:border-rose-300 focus:ring-2 focus:ring-rose-100 transition-all outline-none resize-none"
-                      placeholder="Complete permanent address"
-                    />
-                  </div>
-
-                  {/* Legal Consent */}
-                  <div className="bg-rose-50 p-6 rounded-xl border border-rose-100">
-                    <div className="space-y-4">
-                      <div className="flex items-start space-x-3">
-                        <div className="mt-1">
-                          <Lock className="h-5 w-5 text-rose-500" />
-                        </div>
-                        <div>
-                          <h4 className="font-semibold text-gray-900 mb-2">Legal Declaration</h4>
-                          <div className="text-sm text-gray-600 space-y-2">
-                            <p>By checking this box, I declare that:</p>
-                            <ul className="list-disc pl-5 space-y-1">
-                              <li>I am voluntarily registering as an organ donor</li>
-                              <li>I understand this decision is legally binding</li>
-                              <li>I have the right to withdraw my consent at any time</li>
-                              <li>Medical suitability will be determined at the time of donation</li>
-                              <li>My family will be consulted before donation proceeds</li>
-                            </ul>
-                          </div>
-                        </div>
-                      </div>
-                      
-                      <div className="flex items-start space-x-3">
-                        <input
-                          type="checkbox"
-                          id="consent"
-                          name="consent"
-                          checked={formData.consent}
-                          onChange={handleInputChange}
-                          required
-                          className="mt-1 text-rose-500 focus:ring-rose-300"
-                        />
-                        <label htmlFor="consent" className="text-sm text-gray-700">
-                          I have read and understood all the points above, and I hereby voluntarily 
-                          consent to register as an organ donor. I understand that my decision has 
-                          the potential to save multiple lives.
-                        </label>
-                      </div>
-                    </div>
-                  </div>
-
-                  {/* Additional Info */}
-                  <div className="bg-blue-50 p-4 rounded-xl border border-blue-100">
-                    <div className="flex items-start space-x-3">
-                      <Thermometer className="h-5 w-5 text-blue-500 mt-0.5" />
-                      <div className="text-sm text-gray-600">
-                        <span className="font-semibold text-blue-700">Important:</span> Being registered 
-                        as an organ donor does not affect your medical care. Doctors work equally hard 
-                        to save every patient's life. Organ donation is only considered after all life-saving 
-                        efforts have failed and death has been legally declared.
-                      </div>
-                    </div>
-                  </div>
-
-                  {/* Submit Button */}
-                  <div className="flex flex-col sm:flex-row gap-4 pt-4">
-                    <button
-                      type="submit"
-                      className="flex-1 px-8 py-4 bg-gradient-to-r from-rose-500 to-rose-400 text-white rounded-xl font-semibold text-lg shadow-lg hover:shadow-xl hover:scale-105 transition-all duration-300 flex items-center justify-center space-x-2"
-                    >
-                      <Heart className="h-6 w-6" fill="white" />
-                      <span>Register as Organ Donor</span>
-                      <CheckCircle2 className="h-5 w-5" />
+                <div className="bg-white/10 backdrop-blur-sm rounded-2xl p-8 border border-white/20">
+                  <h3 className="text-2xl font-bold mb-6">Take Action Today</h3>
+                  <div className="space-y-4">
+                    <button className="w-full bg-white text-emerald-700 hover:bg-gray-100 px-6 py-4 rounded-xl font-semibold text-lg transition-all duration-300 hover:scale-105 flex items-center justify-center gap-2">
+                      <Activity className="h-5 w-5" />
+                      Register as Donor
                     </button>
-                    <button
-                      type="button"
-                      onClick={() => setShowDonationForm(false)}
-                      className="px-8 py-4 bg-white text-gray-700 rounded-xl font-semibold text-lg border-2 border-gray-200 hover:border-gray-300 transition-all duration-300"
-                    >
-                      Cancel
+                    <button className="w-full bg-transparent border-2 border-white text-white hover:bg-white/10 px-6 py-4 rounded-xl font-semibold text-lg transition-all duration-300 flex items-center justify-center gap-2">
+                      <Stethoscope className="h-5 w-5" />
+                      Learn About Process
+                    </button>
+                    <button className="w-full bg-transparent text-white hover:text-emerald-100 px-6 py-3 rounded-xl font-medium transition-colors flex items-center justify-center gap-2">
+                      <Phone className="h-4 w-4" />
+                      Support: 1800-ORGAN-HELP
                     </button>
                   </div>
-                </form>
+                </div>
               </div>
-            )}
+            </div>
           </div>
         </div>
-      )}
+      </section>
 
-      {/* Custom Animations */}
-      <style jsx global>{`
-        @keyframes float {
-          0%, 100% { transform: translateY(0px); }
-          50% { transform: translateY(-15px); }
-        }
-        
-        @keyframes float-slow {
-          0%, 100% { transform: translateY(0px); }
-          50% { transform: translateY(-10px); }
-        }
-        
-        @keyframes float-delayed {
-          0%, 100% { transform: translateY(0px) translateX(0px); }
-          33% { transform: translateY(-10px) translateX(5px); }
-          66% { transform: translateY(5px) translateX(-5px); }
-        }
-        
-        @keyframes bounce-slow {
-          0%, 100% { transform: translateY(0); }
-          50% { transform: translateY(-15px); }
-        }
-        
-        @keyframes pulse-slow {
-          0%, 100% { opacity: 0.3; transform: scale(1); }
-          50% { opacity: 0.5; transform: scale(1.05); }
-        }
-        
-        @keyframes pulse-slower {
-          0%, 100% { opacity: 0.2; transform: scale(1); }
-          50% { opacity: 0.4; transform: scale(1.1); }
-        }
-        
-        @keyframes dash {
-          to {
-            stroke-dashoffset: -20;
-          }
-        }
-        
-        @keyframes scroll {
-          0% { transform: translateY(0); opacity: 1; }
-          100% { transform: translateY(10px); opacity: 0; }
-        }
-        
-        @keyframes fade-in-up {
-          from {
-            opacity: 0;
-            transform: translateY(20px);
-          }
-          to {
-            opacity: 1;
-            transform: translateY(0);
-          }
-        }
-        
-        .animate-float {
-          animation: float 6s ease-in-out infinite;
-        }
-        
-        .animate-float-slow {
-          animation: float-slow 8s ease-in-out infinite;
-        }
-        
-        .animate-float-delayed {
-          animation: float-delayed 10s ease-in-out infinite;
-        }
-        
-        .animate-bounce-slow {
-          animation: bounce-slow 3s ease-in-out infinite;
-        }
-        
-        .animate-pulse-slow {
-          animation: pulse-slow 4s cubic-bezier(0.4, 0, 0.6, 1) infinite;
-        }
-        
-        .animate-pulse-slower {
-          animation: pulse-slower 6s cubic-bezier(0.4, 0, 0.6, 1) infinite;
-        }
-        
-        .animate-dash {
-          animation: dash 3s linear infinite;
-        }
-        
-        .animate-scroll {
-          animation: scroll 2s ease-in-out infinite;
-        }
-        
-        .animate-fade-in-up {
-          animation: fade-in-up 0.6s ease-out forwards;
-        }
-      `}</style>
-    </>
+      {/* ================= FAQ SECTION ================= */}
+      <section className="py-16 md:py-24 lg:py-32 px-4 sm:px-6 lg:px-8 bg-gradient-to-b from-white to-gray-50">
+        <div className="max-w-4xl mx-auto">
+          <div className="text-center mb-12">
+            <h2 className="text-3xl sm:text-4xl lg:text-5xl font-bold text-gray-900 mb-4">
+              Common Questions
+              <span className="block text-transparent bg-clip-text bg-gradient-to-r from-emerald-600 to-green-600">
+                Answered
+              </span>
+            </h2>
+            <p className="text-lg text-gray-600">
+              Everything you need to know about organ donation
+            </p>
+          </div>
+
+          <div className="space-y-4">
+            {[
+              {
+                question: "Who can be an organ donor?",
+                answer: "Anyone can register regardless of age or medical history. Medical professionals determine suitability at time of donation."
+              },
+              {
+                question: "Does organ donation disfigure the body?",
+                answer: "No. Organ donation is a surgical procedure performed with the same care as any surgery. Open-casket funerals are possible."
+              },
+              {
+                question: "Will my family be charged?",
+                answer: "No. All costs related to organ donation are covered by the transplant program, not the donor's family."
+              },
+              {
+                question: "Does my religion support organ donation?",
+                answer: "Most major religions support organ donation as an act of charity and saving lives."
+              },
+              {
+                question: "Can I change my mind after registering?",
+                answer: "Yes. You can update or withdraw your donor registration at any time."
+              }
+            ].map((faq, idx) => (
+              <div key={idx} className="group bg-white rounded-2xl border border-gray-200 hover:border-emerald-300 transition-all duration-300 hover:shadow-lg overflow-hidden">
+                <button className="w-full text-left p-6 flex items-center justify-between hover:bg-emerald-50 transition-colors">
+                  <div className="flex items-center gap-4">
+                    <div className="w-10 h-10 bg-emerald-100 rounded-lg flex items-center justify-center flex-shrink-0">
+                      <span className="font-bold text-emerald-700">{idx + 1}</span>
+                    </div>
+                    <h3 className="text-lg font-semibold text-gray-900">{faq.question}</h3>
+                  </div>
+                  <ChevronRight className="h-5 w-5 text-gray-400 group-hover:text-emerald-600 group-hover:rotate-90 transition-transform" />
+                </button>
+                <div className="px-6 pb-6 pl-20">
+                  <p className="text-gray-600">{faq.answer}</p>
+                </div>
+              </div>
+            ))}
+          </div>
+
+          {/* Additional Help */}
+          <div className="text-center mt-12">
+            <div className="inline-flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-blue-600 to-cyan-600 text-white rounded-xl font-medium">
+              <Phone className="h-4 w-4" />
+              <span>Need Help? Call our Donor Support: 1800-ORGAN-HELP</span>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* ================= DONOR REGISTRY INFO ================= */}
+      <section className="py-16 md:py-20 px-4 sm:px-6 lg:px-8 bg-gradient-to-b from-white to-emerald-50">
+        <div className="max-w-6xl mx-auto">
+          <div className="bg-white rounded-3xl shadow-xl border border-emerald-100 p-8 md:p-12">
+            <div className="grid md:grid-cols-3 gap-8">
+              <div className="text-center">
+                <div className="w-16 h-16 bg-emerald-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                  <Shield className="h-8 w-8 text-emerald-600" />
+                </div>
+                <h3 className="font-bold text-gray-900 text-lg mb-2">Legal Protection</h3>
+                <p className="text-gray-600 text-sm">Your decision is legally binding and protected</p>
+              </div>
+              <div className="text-center">
+                <div className="w-16 h-16 bg-emerald-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                  <User className="h-8 w-8 text-emerald-600" />
+                </div>
+                <h3 className="font-bold text-gray-900 text-lg mb-2">Family Support</h3>
+                <p className="text-gray-600 text-sm">We guide families through the entire process</p>
+              </div>
+              <div className="text-center">
+                <div className="w-16 h-16 bg-emerald-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                  <CheckCircle className="h-8 w-8 text-emerald-600" />
+                </div>
+                <h3 className="font-bold text-gray-900 text-lg mb-2">Medical Oversight</h3>
+                <p className="text-gray-600 text-sm">All procedures follow strict medical guidelines</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+    </div>
   );
 };
 
-export default OrganDonationHero;
+export default OrganHeroSection;

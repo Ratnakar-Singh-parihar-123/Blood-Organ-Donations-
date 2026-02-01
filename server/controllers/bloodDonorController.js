@@ -1,5 +1,7 @@
 const BloodDonor = require("../models/BloodDonor");
 const { generateToken } = require('../utils/jwt');
+const crypto = require("crypto");
+const sendEmail = require("../utils/sendEmail");
 
 // Blood Donor register
 const register = async (req, res) => {
@@ -125,4 +127,154 @@ const logout = (req, res) => {
     });
 };
 
-module.exports = { register, login, logout };
+// send otp
+const forgotPassword = async (req, res) => {
+    try {
+        const { email } = req.body;
+
+        const blooddonor = await BloodDonor.findOne({ email });
+        if (!blooddonor) {
+            return res.status(400).json({ message: "BloodDonor not found" });
+
+        }
+        const otp = Math.floor(100000 + Math.random() * 900000).toString();
+
+        // hash otp
+        const hashedOTP = crypto
+            .createHash("sha256")
+            .update(otp)
+            .digest("hex");
+        blooddonor.resetOTP = hashedOTP;
+        blooddonor.resetOTPExpire = Date.now() + 10 * 60 * 1000; // 10 min
+        await blooddonor.save();
+
+        await sendEmail(
+            email,
+            "Password Reset OTP",
+            `Your OTP is ${otp}. It will expire in 10 minutes.`
+        );
+
+        res.json({ message: "OTP sent to email" });
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ message: "Server error" });
+    }
+};
+
+// VERIFY OTP
+const verifyOTP = async (req, res) => {
+    try {
+        const { email, otp } = req.body;
+
+        const hashedOTP = crypto
+            .createHash("sha256")
+            .update(otp)
+            .digest("hex");
+
+        const blooddonor = await BloodDonor.findOne({
+            email,
+            resetOTP: hashedOTP,
+            resetOTPExpire: { $gt: Date.now() },
+        });
+
+        if (!blooddonor) {
+            return res.status(400).json({ message: "Invalid or expired OTP" });
+        }
+
+        res.json({ message: "OTP verified successfully" });
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ message: "Server error" });
+    }
+};
+
+// reset password
+const resetPassword = async (req, res) => {
+    try {
+        const { email, otp, newPassword } = req.body;
+
+        const hashedOTP = crypto
+            .createHash("sha256")
+            .update(otp)
+            .digest("hex");
+
+        const blooddonor = await BloodDonor.findOne({
+            email,
+            resetOTP: hashedOTP,
+            resetOTPExpire: { $gt: Date.now() },
+        });
+
+        if (!blooddonor) {
+            return res.status(400).json({ message: "Invalid or expired OTP" });
+        }
+
+        blooddonor.password = newPassword;
+        blooddonor.resetOTP = undefined;
+        blooddonor.resetOTPExpire = undefined;
+
+        await blooddonor.save();
+
+        res.json({ message: "Password changed successfully" });
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ message: "Server error" });
+    }
+};
+
+// resend otp
+const resendOTP = async (req, res) => {
+    try {
+        const { email } = req.body;
+
+        const blooddonor = await BloodDonor.findOne({ email });
+        if (!blooddonor) {
+            return res.status(404).json({ message: "BloodDonor not found" });
+        }
+
+        // OPTIONAL: cooldown (60 sec)
+        if (
+            blooddonor.resetOTPExpire &&
+            blooddonor.resetOTPExpire > Date.now() - 9 * 60 * 1000
+        ) {
+            return res
+                .status(429)
+                .json({ message: "Please wait before requesting OTP again" });
+        }
+
+        // generate new OTP
+        const otp = Math.floor(100000 + Math.random() * 900000).toString();
+
+        const hashedOTP = crypto
+            .createHash("sha256")
+            .update(otp)
+            .digest("hex");
+
+        // overwrite old OTP
+        blooddonor.resetOTP = hashedOTP;
+        blooddonor.resetOTPExpire = Date.now() + 10 * 60 * 1000;
+
+        await blooddonor.save();
+
+        await sendEmail(
+            email,
+            "Resend Password Reset OTP",
+            `Your new OTP is ${otp}. It will expire in 10 minutes.`
+        );
+
+        res.json({ message: "OTP resent successfully" });
+    } catch (error) {
+        console.error("Resend OTP error:", error);
+        res.status(500).json({ message: "Server error" });
+    }
+};
+
+
+module.exports = {
+    register,
+    login,
+    logout,
+    forgotPassword,
+    verifyOTP,
+    resetPassword,
+    resendOTP
+};

@@ -7,6 +7,7 @@ import UrgentBloodRequests from "./components/UrgentBloodRequests";
 import WhyDonate from "./components/WhyDonate";
 import Testimonials from "./components/Testimonials";
 import CTASection from "./components/CTASection";
+import Dashboard from "./components/Dashboard";
 
 function HomePage() {
   useEffect(() => {
@@ -16,6 +17,7 @@ function HomePage() {
   return (
     <>
       <HeroSection />
+      <Dashboard />
       <StatsSection />
       <HowItWorks />
       <DonationTypes />

@@ -9,11 +9,12 @@ import {
   TrendingUp, History,
   Gift, LifeBuoy,
   Bookmark, LogIn, UserPlus,
-  ActivityIcon,
+  Activity as ActivityIcon,
   Hospital, Ambulance,
   CheckCircle, ChevronRight,
   Sparkles, Zap, MoreVertical,
-  Info, Target, BookOpen
+  Info, Target, BookOpen,
+  Users, Globe, Phone, Mail
 } from 'lucide-react';
 
 const Navbar = () => {
@@ -37,7 +38,48 @@ const Navbar = () => {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [userData, setUserData] = useState(null);
   const [userType, setUserType] = useState('');
+  const [userTypeConfig, setUserTypeConfig] = useState(null);
   const [windowWidth, setWindowWidth] = useState(window.innerWidth);
+
+  // User type configurations
+  const userTypesConfig = [
+    { 
+      key: 'bloodDonor', 
+      label: 'Blood Donor', 
+      icon: Droplets, 
+      gradient: 'bg-gradient-to-r from-red-600 to-red-500',
+      textColor: 'text-red-600',
+      bgColor: 'bg-red-50',
+      borderColor: 'border-red-200'
+    },
+    { 
+      key: 'organDonor', 
+      label: 'Organ Donor', 
+      icon: ActivityIcon, 
+      gradient: 'bg-gradient-to-r from-green-600 to-emerald-500',
+      textColor: 'text-green-600',
+      bgColor: 'bg-green-50',
+      borderColor: 'border-green-200'
+    },
+    { 
+      key: 'patient', 
+      label: 'Patient/Family', 
+      icon: Ambulance, 
+      gradient: 'bg-gradient-to-r from-blue-600 to-blue-500',
+      textColor: 'text-blue-600',
+      bgColor: 'bg-blue-50',
+      borderColor: 'border-blue-200'
+    },
+    { 
+      key: 'user', 
+      label: 'Community Member', 
+      icon: Users, 
+      gradient: 'bg-gradient-to-r from-indigo-600 to-blue-500',
+      textColor: 'text-indigo-600',
+      bgColor: 'bg-indigo-50',
+      borderColor: 'border-indigo-200'
+    }
+  ];
 
   // Track window width for responsive behavior
   useEffect(() => {
@@ -51,22 +93,24 @@ const Navbar = () => {
     return () => window.removeEventListener('resize', handleResize);
   }, []);
 
-  // Check login status from localStorage for all user types
+  // Check login status
   useEffect(() => {
     checkUserAuth();
+    
+    const handleStorageChange = () => {
+      checkUserAuth();
+    };
+    
+    window.addEventListener('storage', handleStorageChange);
+    return () => window.removeEventListener('storage', handleStorageChange);
   }, [location]);
 
   const checkUserAuth = () => {
-    const userTypes = [
-      { key: 'bloodDonor', label: 'Blood Donor', color: 'from-red-500 to-rose-500' },
-      { key: 'organDonor', label: 'Organ Donor', color: 'from-emerald-500 to-green-500' },
-      { key: 'patient', label: 'Patient', color: 'from-amber-500 to-orange-500' },
-      { key: 'user', label: 'User', color: 'from-blue-500 to-cyan-500' }
-    ];
-
-    for (const type of userTypes) {
+    let foundUser = false;
+    
+    for (const type of userTypesConfig) {
       const token = localStorage.getItem(`${type.key}Token`);
-      const data = localStorage.getItem(type.key);
+      const data = localStorage.getItem(`${type.key}Data`) || localStorage.getItem(type.key);
 
       if (token && data) {
         try {
@@ -74,17 +118,46 @@ const Navbar = () => {
           setIsLoggedIn(true);
           setUserData(parsedData);
           setUserType(type.key);
-          return;
+          setUserTypeConfig(type);
+          foundUser = true;
+          
+          localStorage.setItem('currentUserType', type.key);
+          localStorage.setItem('currentUserData', data);
+          break;
         } catch (error) {
           console.error('Error parsing user data:', error);
         }
       }
     }
 
-    // No user found
-    setIsLoggedIn(false);
-    setUserData(null);
-    setUserType('');
+    if (!foundUser) {
+      const currentUserData = localStorage.getItem('currentUserData');
+      const currentUserType = localStorage.getItem('currentUserType');
+      
+      if (currentUserData && currentUserType) {
+        try {
+          const parsedData = JSON.parse(currentUserData);
+          const type = userTypesConfig.find(t => t.key === currentUserType);
+          
+          if (type) {
+            setIsLoggedIn(true);
+            setUserData(parsedData);
+            setUserType(currentUserType);
+            setUserTypeConfig(type);
+            foundUser = true;
+          }
+        } catch (error) {
+          console.error('Error parsing current user data:', error);
+        }
+      }
+    }
+
+    if (!foundUser) {
+      setIsLoggedIn(false);
+      setUserData(null);
+      setUserType('');
+      setUserTypeConfig(null);
+    }
   };
 
   // Update active tab based on current route
@@ -94,74 +167,91 @@ const Navbar = () => {
     else if (path.includes('/blood')) setActiveTab('blood');
     else if (path.includes('/organ')) setActiveTab('organ');
     else if (path.includes('/urgent-requests')) setActiveTab('urgent');
+    else if (path.includes('/patient-matches')) setActiveTab('urgent');
     else if (path.includes('/profile')) setActiveTab('profile');
     else if (path.includes('/about')) setActiveTab('about');
     else if (path.includes('/auth')) setActiveTab('auth');
     else if (path.includes('/settings')) setActiveTab('settings');
   }, [location]);
 
-  // Main navigation items - shown always on desktop
+  // Main navigation items
   const mainNavItems = [
-    // { 
-    //   id: 'home', 
-    //   label: 'Home', 
-    //   icon: Home,
-    //   path: '/',
-    //   description: 'Return to homepage'
-    // },
     {
       id: 'blood',
-      label: 'Blood',
+      label: 'Blood Donation',
       icon: Droplets,
       path: '/blood',
-      description: 'Blood donation'
+      description: 'Find blood donors',
+      bgColor: 'bg-red-50',
+      textColor: 'text-red-600'
     },
     {
       id: 'organ',
-      label: 'Organ',
+      label: 'Organ Donation',
       icon: ActivityIcon,
       path: '/organ',
-      description: 'Organ donation'
+      description: 'Organ donation info',
+      bgColor: 'bg-green-50',
+      textColor: 'text-green-600'
     },
     {
       id: 'urgent',
-      label: 'Urgent',
+      label: 'Urgent Needs',
       icon: AlertCircle,
-      path: '/urgent-requests',
+      path: '/patient-matches',
       description: 'Emergency requests',
+      bgColor: 'bg-red-50',
+      textColor: 'text-red-600',
       badge: 3
-    }
-  ];
-
-  // Secondary navigation items - shown in "More" dropdown on desktop
-  const secondaryNavItems = [
-    {
-      id: 'about',
-      label: 'About',
-      icon: Info,
-      path: '/about',
-      description: 'About us'
-    },
-    {
-      id: 'resources',
-      label: 'Resources',
-      icon: BookOpen,
-      path: '/resources',
-      description: 'Educational resources'
     },
     {
       id: 'hospitals',
       label: 'Hospitals',
       icon: Hospital,
       path: '/hospitals',
-      description: 'Find hospitals'
+      description: 'Find hospitals',
+      bgColor: 'bg-blue-50',
+      textColor: 'text-blue-600'
+    }
+  ];
+
+  // Secondary navigation items
+  const secondaryNavItems = [
+    {
+      id: 'about',
+      label: 'About Us',
+      icon: Info,
+      path: '/about',
+      description: 'Our mission & vision',
+      bgColor: 'bg-blue-50',
+      textColor: 'text-blue-600'
     },
     {
-      id: 'settings',
-      label: 'Settings',
-      icon: Settings,
-      path: '/settings',
-      description: 'Account settings'
+      id: 'resources',
+      label: 'Resources',
+      icon: BookOpen,
+      path: '/resources',
+      description: 'Educational materials',
+      bgColor: 'bg-green-50',
+      textColor: 'text-green-600'
+    },
+    {
+      id: 'community',
+      label: 'Community',
+      icon: Users,
+      path: '/community',
+      description: 'Connect with others',
+      bgColor: 'bg-blue-50',
+      textColor: 'text-blue-600'
+    },
+    {
+      id: 'events',
+      label: 'Events',
+      icon: Calendar,
+      path: '/events',
+      description: 'Upcoming events',
+      bgColor: 'bg-green-50',
+      textColor: 'text-green-600'
     }
   ];
 
@@ -172,7 +262,8 @@ const Navbar = () => {
       label: 'Home',
       icon: Home,
       path: '/',
-      color: 'text-rose-500',
+      color: 'text-blue-600',
+      bgColor: 'bg-blue-50',
       pulse: false
     },
     {
@@ -180,7 +271,8 @@ const Navbar = () => {
       label: 'Blood',
       icon: Droplets,
       path: '/blood',
-      color: 'text-red-500',
+      color: 'text-red-600',
+      bgColor: 'bg-red-50',
       pulse: true
     },
     {
@@ -188,15 +280,17 @@ const Navbar = () => {
       label: 'Organ',
       icon: ActivityIcon,
       path: '/organ',
-      color: 'text-emerald-500',
+      color: 'text-green-600',
+      bgColor: 'bg-green-50',
       pulse: false
     },
     {
       id: 'urgent',
       label: 'Urgent',
       icon: AlertCircle,
-      path: '/urgent-requests',
-      color: 'text-amber-500',
+      path: '/patient-matches',
+      color: 'text-red-600',
+      bgColor: 'bg-red-50',
       pulse: true,
       badge: 3
     },
@@ -205,63 +299,182 @@ const Navbar = () => {
       label: 'Profile',
       icon: User,
       path: '/profile',
-      color: 'text-blue-500',
+      color: 'text-blue-600',
+      bgColor: 'bg-blue-50',
       pulse: false
     }
   ];
 
   // Profile dropdown items
-  const profileItems = [
-    {
-      label: 'My Profile',
-      icon: User,
-      path: '/profile',
-      color: 'text-gray-700',
-      description: 'View your profile'
-    },
-    {
-      label: 'My Donations',
-      icon: History,
-      path: '/donations',
-      color: 'text-rose-600',
-      description: 'Donation history'
-    },
-    {
-      label: 'Achievements',
-      icon: Award,
-      path: '/achievements',
-      color: 'text-amber-600',
-      description: 'Your achievements'
-    },
-    {
-      label: 'Saved Donors',
-      icon: Bookmark,
-      path: '/saved',
-      color: 'text-blue-600',
-      description: 'Saved donors list'
-    },
-    {
-      label: 'Rewards',
-      icon: Gift,
-      path: '/rewards',
-      color: 'text-purple-600',
-      description: 'Your rewards'
-    },
-    {
-      label: 'Help Center',
-      icon: LifeBuoy,
-      path: '/help',
-      color: 'text-emerald-600',
-      description: 'Get help'
+  const getProfileItems = () => {
+    const baseItems = [
+      {
+        label: 'My Profile',
+        icon: User,
+        path: '/profile',
+        bgColor: 'bg-blue-50',
+        textColor: 'text-blue-600',
+        description: 'View your profile'
+      },
+      {
+        label: 'Help Center',
+        icon: LifeBuoy,
+        path: '/help',
+        bgColor: 'bg-green-50',
+        textColor: 'text-green-600',
+        description: 'Get help & support'
+      },
+      {
+        label: 'Settings',
+        icon: Settings,
+        path: '/settings',
+        bgColor: 'bg-blue-50',
+        textColor: 'text-blue-600',
+        description: 'Account settings'
+      }
+    ];
+
+    if (!userTypeConfig) return baseItems;
+
+    switch (userTypeConfig.key) {
+      case 'bloodDonor':
+        return [
+          ...baseItems,
+          {
+            label: 'My Donations',
+            icon: History,
+            path: '/donations',
+            bgColor: 'bg-red-50',
+            textColor: 'text-red-600',
+            description: 'Donation history'
+          },
+          {
+            label: 'Achievements',
+            icon: Award,
+            path: '/achievements',
+            bgColor: 'bg-green-50',
+            textColor: 'text-green-600',
+            description: 'Your achievements'
+          },
+          {
+            label: 'Rewards',
+            icon: Gift,
+            path: '/rewards',
+            bgColor: 'bg-blue-50',
+            textColor: 'text-blue-600',
+            description: 'Your rewards'
+          }
+        ];
+      
+      case 'organDonor':
+        return [
+          ...baseItems,
+          {
+            label: 'My Pledge',
+            icon: Shield,
+            path: '/pledge',
+            bgColor: 'bg-green-50',
+            textColor: 'text-green-600',
+            description: 'Organ donation pledge'
+          },
+          {
+            label: 'Medical Records',
+            icon: BookOpen,
+            path: '/medical-records',
+            bgColor: 'bg-blue-50',
+            textColor: 'text-blue-600',
+            description: 'Health information'
+          }
+        ];
+      
+      case 'patient':
+        return [
+          ...baseItems,
+          {
+            label: 'My Requests',
+            icon: AlertCircle,
+            path: '/requests',
+            bgColor: 'bg-red-50',
+            textColor: 'text-red-600',
+            description: 'Blood/organ requests'
+          },
+          {
+            label: 'Hospital Contacts',
+            icon: Hospital,
+            path: '/hospitals',
+            bgColor: 'bg-blue-50',
+            textColor: 'text-blue-600',
+            description: 'Hospital information'
+          }
+        ];
+      
+      case 'user':
+        return [
+          ...baseItems,
+          {
+            label: 'Volunteer Activities',
+            icon: Users,
+            path: '/volunteer',
+            bgColor: 'bg-blue-50',
+            textColor: 'text-blue-600',
+            description: 'Volunteer work'
+          },
+          {
+            label: 'Community Events',
+            icon: Calendar,
+            path: '/events',
+            bgColor: 'bg-green-50',
+            textColor: 'text-green-600',
+            description: 'Upcoming events'
+          }
+        ];
+      
+      default:
+        return baseItems;
     }
-  ];
+  };
 
   // Quick links for search
   const quickLinks = [
-    { label: 'Blood Donation Process', path: '/process', icon: Droplets, color: 'bg-red-50 text-red-600' },
-    { label: 'Organ Donation Info', path: '/organ-info', icon: ActivityIcon, color: 'bg-emerald-50 text-emerald-600' },
-    { label: 'Donor Eligibility', path: '/eligibility', icon: Shield, color: 'bg-blue-50 text-blue-600' },
-    { label: 'Find Blood Bank', path: '/blood-banks', icon: Hospital, color: 'bg-rose-50 text-rose-600' }
+    { 
+      label: 'Blood Donation Process', 
+      path: '/process', 
+      icon: Droplets, 
+      bgColor: 'bg-red-50',
+      borderColor: 'border-red-200',
+      textColor: 'text-red-600'
+    },
+    { 
+      label: 'Organ Donation Info', 
+      path: '/organ-info', 
+      icon: ActivityIcon, 
+      bgColor: 'bg-green-50',
+      borderColor: 'border-green-200',
+      textColor: 'text-green-600'
+    },
+    { 
+      label: 'Donor Eligibility', 
+      path: '/eligibility', 
+      icon: Shield, 
+      bgColor: 'bg-blue-50',
+      borderColor: 'border-blue-200',
+      textColor: 'text-blue-600'
+    },
+    { 
+      label: 'Find Blood Bank', 
+      path: '/blood-banks', 
+      icon: Hospital, 
+      bgColor: 'bg-red-50',
+      borderColor: 'border-red-200',
+      textColor: 'text-red-600'
+    }
+  ];
+
+  // Contact info
+  const contactInfo = [
+    { icon: Phone, label: 'Emergency Helpline', value: '108', bgColor: 'bg-red-50', textColor: 'text-red-600' },
+    { icon: Mail, label: 'Support Email', value: 'help@lifestream.org', bgColor: 'bg-blue-50', textColor: 'text-blue-600' },
+    { icon: Users, label: 'Volunteer Support', value: '1800-123-456', bgColor: 'bg-green-50', textColor: 'text-green-600' }
   ];
 
   // Handle tab click
@@ -286,19 +499,23 @@ const Navbar = () => {
 
   // Handle logout
   const handleLogout = () => {
-    // Clear all user data
     const types = ['bloodDonor', 'organDonor', 'patient', 'user'];
     types.forEach(type => {
       localStorage.removeItem(`${type}Token`);
       localStorage.removeItem(type);
       localStorage.removeItem(`${type}Data`);
     });
-
+    
+    localStorage.removeItem('currentUserData');
+    localStorage.removeItem('currentUserType');
+    
     setIsLoggedIn(false);
     setUserData(null);
     setUserType('');
+    setUserTypeConfig(null);
     setIsProfileOpen(false);
-    navigate('/');
+    
+    window.location.href = '/';
   };
 
   // Handle emergency request
@@ -308,7 +525,7 @@ const Navbar = () => {
 
   // Handle location select
   const handleLocationSelect = (city) => {
-    setCurrentLocation(city);
+    setCurrentLocation(`${city}, India`);
     setIsLocationOpen(false);
   };
 
@@ -354,65 +571,111 @@ const Navbar = () => {
 
   // Get user type label
   const getUserTypeLabel = () => {
-    switch (userType) {
-      case 'bloodDonor': return 'Blood Donor';
-      case 'organDonor': return 'Organ Donor';
-      case 'patient': return 'Patient/Family';
-      case 'user': return 'Community Member';
-      default: return 'User';
-    }
+    return userTypeConfig?.label || 'User';
   };
 
   // Get user stats
   const getUserStats = () => {
     if (!userData) return { donations: 0, points: 0, level: 'Beginner' };
 
-    return {
+    const stats = {
       donations: userData.donationCount || userData.donations || 0,
       points: userData.points || 0,
       level: userData.level || 'Beginner'
     };
+
+    stats.livesSaved = stats.donations * 3;
+    return stats;
   };
 
-  // CSS for animations
-  const styles = `
-    @keyframes fadeIn {
-      from {
-        opacity: 0;
-        transform: translateY(-10px);
-      }
-      to {
-        opacity: 1;
-        transform: translateY(0);
-      }
+  // Handle login click
+  const handleLoginClick = () => {
+    navigate('/auth');
+  };
+
+  // Handle register click
+  const handleRegisterClick = () => {
+    navigate('/auth?tab=register');
+  };
+
+  // Get tab styles dynamically
+  const getTabStyle = (itemId, isActive) => {
+    if (isActive) {
+      if (itemId === 'blood') return 'text-white bg-gradient-to-r from-red-600 to-red-500';
+      if (itemId === 'organ') return 'text-white bg-gradient-to-r from-green-600 to-green-500';
+      return 'text-white bg-gradient-to-r from-blue-600 to-blue-500';
     }
     
-    .animate-fadeIn {
-      animation: fadeIn 0.3s ease-out forwards;
-    }
-    
-    .animate-ping {
-      animation: ping 1.5s cubic-bezier(0, 0, 0.2, 1) infinite;
-    }
-    
-    @keyframes ping {
-      75%, 100% {
-        transform: scale(2);
-        opacity: 0;
-      }
-    }
-  `;
+    if (itemId === 'blood') return 'text-gray-700 hover:text-red-600 hover:bg-red-50';
+    if (itemId === 'organ') return 'text-gray-700 hover:text-green-600 hover:bg-green-50';
+    return 'text-gray-700 hover:text-blue-600 hover:bg-blue-50';
+  };
+
+  // Get mobile tab text color
+  const getMobileTextColor = (itemId, isActive) => {
+    if (!isActive) return 'text-gray-500';
+    if (itemId === 'blood') return 'text-red-600';
+    if (itemId === 'organ') return 'text-green-600';
+    return 'text-blue-600';
+  };
+
+  // Get mobile background color
+  const getMobileBgColor = (itemId) => {
+    if (itemId === 'blood') return 'bg-red-500';
+    if (itemId === 'organ') return 'bg-green-500';
+    return 'bg-blue-500';
+  };
+
+  const profileItems = getProfileItems();
+  const userStats = getUserStats();
 
   return (
     <>
-      <style>{styles}</style>
+      <style>{`
+        @keyframes fadeIn {
+          from {
+            opacity: 0;
+            transform: translateY(-10px);
+          }
+          to {
+            opacity: 1;
+            transform: translateY(0);
+          }
+        }
+        
+        .animate-fadeIn {
+          animation: fadeIn 0.3s ease-out forwards;
+        }
+        
+        @keyframes slideIn {
+          from {
+            transform: translateX(-100%);
+          }
+          to {
+            transform: translateX(0);
+          }
+        }
+        
+        .animate-slideIn {
+          animation: slideIn 0.3s ease-out forwards;
+        }
+        
+        .scrollbar-hide::-webkit-scrollbar {
+          display: none;
+        }
+        
+        .scrollbar-hide {
+          -ms-overflow-style: none;
+          scrollbar-width: none;
+        }
+      `}</style>
 
-      {/* DESKTOP NAVBAR - Optimized for Laptop Screens */}
-      <nav className={`hidden lg:block fixed top-0 left-0 right-0 z-50 transition-all duration-500 ${isScrolled
-        ? 'bg-white/95 backdrop-blur-xl shadow-2xl shadow-gray-200/50 py-3 border-b border-gray-100/50'
-        : 'bg-gradient-to-r from-white/95 via-white/90 to-white/95 backdrop-blur-lg py-3'
+      {/* DESKTOP NAVBAR */}
+      <nav className={`hidden lg:block fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${isScrolled
+        ? 'bg-white shadow-lg py-2 border-b border-gray-200'
+        : 'bg-white py-3'
         }`}>
-        <div className="max-w-7xl mx-auto px-4 xl:px-8">
+        <div className="max-w-7xl mx-auto px-4 xl:px-6">
           <div className="flex items-center justify-between">
 
             {/* Logo Section */}
@@ -421,93 +684,72 @@ const Navbar = () => {
               className="flex items-center space-x-3 group cursor-pointer flex-shrink-0"
             >
               <div className="relative">
-                <div className="absolute inset-0 bg-gradient-to-r from-rose-500 via-rose-400 to-pink-500 rounded-full blur-lg opacity-70 group-hover:opacity-100 transition-opacity duration-500"></div>
-                <div className="relative bg-gradient-to-r from-rose-500 to-rose-400 w-12 h-12 rounded-full flex items-center justify-center shadow-xl shadow-rose-200/50 group-hover:shadow-rose-300/50 transition-shadow duration-500">
-                  <Heart className="h-6 w-6 text-white" fill="white" />
-                  <Droplets className="h-3 w-3 text-white absolute -bottom-1 -right-1" />
-                  <Sparkles className="h-3 w-3 text-yellow-300 absolute -top-1 -left-1 animate-pulse" />
+                <div className="absolute inset-0 bg-gradient-to-r from-blue-500 to-blue-600 rounded-full blur-md opacity-70 group-hover:opacity-100 transition-opacity duration-300"></div>
+                <div className="relative bg-gradient-to-r from-blue-600 to-blue-500 w-10 h-10 rounded-full flex items-center justify-center shadow-lg shadow-blue-200/50">
+                  <Heart className="h-5 w-5 text-white" fill="white" />
                 </div>
               </div>
               <div className="text-left">
-                <h1 className="text-xl font-bold bg-gradient-to-r from-rose-600 via-rose-500 to-pink-500 bg-clip-text text-transparent">
+                <h1 className="text-xl font-bold bg-gradient-to-r from-blue-600 to-blue-500 bg-clip-text text-transparent">
                   LifeStream
                 </h1>
-                <p className="text-xs text-gray-500 font-medium flex items-center">
-                  <span className="w-2 h-2 bg-emerald-500 rounded-full mr-2 animate-pulse"></span>
-                  Save Lives, Donate Today
-                </p>
+                <p className="text-xs text-gray-600 font-medium">Saving Lives Together</p>
               </div>
             </button>
 
-            {/* Primary Navigation - Always visible */}
-            <div className="flex items-center space-x-1 px-4">
+            {/* Primary Navigation */}
+            <div className="flex items-center space-x-1 px-2">
               {mainNavItems.map((item) => (
                 <button
                   key={item.id}
                   onClick={() => handleTabClick(item.path, item.id)}
-                  className={`px-4 py-2.5 font-medium rounded-xl transition-all duration-300 relative group ${activeTab === item.id
-                    ? 'text-white bg-gradient-to-r from-rose-500 to-rose-400 shadow-lg shadow-rose-200/50'
-                    : 'text-gray-700 hover:text-rose-600 hover:bg-rose-50/80'
-                    }`}
+                  className={`px-3 py-2.5 font-medium rounded-lg transition-all duration-200 relative group ${getTabStyle(item.id, activeTab === item.id)}`}
                 >
                   <div className="flex items-center space-x-2">
                     <item.icon className={`h-4 w-4 ${activeTab === item.id ? 'text-white' : 'text-gray-500'}`} />
-                    <span className="whitespace-nowrap">{item.label}</span>
+                    <span className="whitespace-nowrap text-sm font-medium">{item.label}</span>
                     {item.badge && (
-                      <span className="absolute -top-2 -right-2 w-5 h-5 bg-red-500 text-white text-xs rounded-full flex items-center justify-center animate-pulse shadow-lg">
+                      <span className="absolute -top-1 -right-1 w-5 h-5 bg-red-500 text-white text-xs rounded-full flex items-center justify-center animate-pulse shadow">
                         {item.badge}
                       </span>
                     )}
                   </div>
-                  {!activeTab.includes(item.id) && (
-                    <div className="absolute bottom-0 left-1/2 transform -translate-x-1/2 w-0 group-hover:w-4/5 h-0.5 bg-gradient-to-r from-rose-400 to-pink-400 rounded-full transition-all duration-300"></div>
-                  )}
                 </button>
               ))}
 
-              {/* More Dropdown for secondary items */}
+              {/* More Dropdown */}
               <div className="relative" ref={moreRef}>
                 <button
                   onClick={() => setIsMoreOpen(!isMoreOpen)}
-                  className={`px-4 py-2.5 font-medium rounded-xl transition-all duration-300 relative group flex items-center space-x-2 ${isMoreOpen
-                    ? 'text-rose-600 bg-rose-50/80'
-                    : 'text-gray-700 hover:text-rose-600 hover:bg-rose-50/80'
+                  className={`px-3 py-2.5 font-medium rounded-lg transition-all duration-200 flex items-center space-x-1 ${isMoreOpen
+                    ? 'text-blue-600 bg-blue-50'
+                    : 'text-gray-700 hover:text-blue-600 hover:bg-blue-50'
                     }`}
                 >
                   <MoreVertical className="h-4 w-4" />
-                  <span>More</span>
-                  <ChevronDown className={`h-3 w-3 transition-transform duration-300 ${isMoreOpen ? 'rotate-180' : ''}`} />
+                  <span className="text-sm font-medium">More</span>
+                  <ChevronDown className={`h-3 w-3 transition-transform duration-200 ${isMoreOpen ? 'rotate-180' : ''}`} />
                 </button>
 
-                {/* More Dropdown Menu */}
                 {isMoreOpen && (
-                  <div className="absolute top-full mt-2 left-0 w-64 bg-white rounded-2xl shadow-2xl 
-                                border border-gray-100 p-4 z-50 animate-fadeIn">
-                    <h4 className="font-semibold text-gray-800 mb-3 px-2">More Options</h4>
+                  <div className="absolute top-full mt-2 left-0 w-64 bg-white rounded-xl shadow-xl border border-gray-200 p-3 z-50 animate-fadeIn">
+                    <h4 className="font-semibold text-gray-800 mb-2 px-2 text-sm">More Options</h4>
                     <div className="space-y-1">
                       {secondaryNavItems.map((item) => (
                         <button
                           key={item.id}
                           onClick={() => handleTabClick(item.path, item.id)}
-                          className="w-full text-left px-3 py-2.5 rounded-lg flex items-center space-x-3 hover:bg-gray-50 transition-all duration-200 group"
+                          className="w-full text-left px-3 py-2 rounded-lg flex items-center space-x-3 hover:bg-gray-50 transition-all duration-150 group"
                         >
-                          <div className={`p-2 rounded-lg ${activeTab === item.id ? 'bg-rose-100 text-rose-600' : 'bg-gray-100 text-gray-600'}`}>
-                            <item.icon className="h-4 w-4" />
+                          <div className={`p-1.5 rounded-lg ${activeTab === item.id ? item.bgColor : 'bg-gray-100'}`}>
+                            <item.icon className={`h-4 w-4 ${activeTab === item.id ? item.textColor : 'text-gray-600'}`} />
                           </div>
                           <div className="text-left">
-                            <div className="font-medium text-gray-800">{item.label}</div>
+                            <div className="font-medium text-gray-800 text-sm">{item.label}</div>
                             <div className="text-xs text-gray-500">{item.description}</div>
                           </div>
                         </button>
                       ))}
-                    </div>
-                    <div className="mt-4 pt-4 border-t border-gray-100">
-                      <button
-                        onClick={() => navigate('/contact')}
-                        className="w-full text-center text-sm text-rose-600 hover:text-rose-700 font-medium"
-                      >
-                        Contact Support
-                      </button>
                     </div>
                   </div>
                 )}
@@ -515,46 +757,40 @@ const Navbar = () => {
             </div>
 
             {/* Right Side Actions */}
-            <div className="flex items-center space-x-3">
+            <div className="flex items-center space-x-2">
               {/* Location Selector */}
               <div className="relative hidden xl:block" ref={profileRef}>
                 <button
                   onClick={() => setIsLocationOpen(!isLocationOpen)}
-                  className="flex items-center space-x-2 px-4 py-2.5 rounded-xl border border-gray-200/80 
-                            hover:border-rose-300 transition-all duration-300 cursor-pointer bg-white/80 
-                            hover:bg-white shadow-sm hover:shadow-md"
+                  className="flex items-center space-x-2 px-3 py-2 rounded-lg border border-gray-200 
+                            hover:border-blue-300 transition-all duration-200 cursor-pointer bg-white"
                 >
-                  <div className="relative">
-                    <MapPin className="h-4 w-4 text-rose-500" />
-                    <div className="absolute -top-0.5 -right-0.5 w-2 h-2 bg-emerald-500 rounded-full animate-pulse"></div>
-                  </div>
+                  <MapPin className="h-4 w-4 text-blue-500" />
                   <span className="text-gray-700 text-sm font-medium">{currentLocation.split(',')[0]}</span>
-                  <ChevronDown className={`h-4 w-4 text-gray-400 transition-transform duration-300 ${isLocationOpen ? 'rotate-180' : ''}`} />
+                  <ChevronDown className={`h-3 w-3 text-gray-400 transition-transform duration-200 ${isLocationOpen ? 'rotate-180' : ''}`} />
                 </button>
 
-                {/* Location Dropdown */}
                 {isLocationOpen && (
-                  <div className="absolute top-full mt-2 right-0 w-64 bg-white rounded-2xl shadow-2xl 
-                                border border-gray-100 p-4 z-50 animate-fadeIn">
-                    <div className="flex items-center justify-between mb-3">
-                      <h4 className="font-semibold text-gray-800">Select Location</h4>
-                      <MapPin className="h-4 w-4 text-rose-500" />
+                  <div className="absolute top-full mt-2 right-0 w-56 bg-white rounded-xl shadow-xl border border-gray-200 p-3 z-50 animate-fadeIn">
+                    <div className="flex items-center justify-between mb-2">
+                      <h4 className="font-semibold text-gray-800 text-sm">Select Location</h4>
+                      <MapPin className="h-4 w-4 text-blue-500" />
                     </div>
-                    <div className="space-y-2 max-h-56 overflow-y-auto">
+                    <div className="space-y-1 max-h-48 overflow-y-auto scrollbar-hide">
                       {['Mumbai', 'Delhi', 'Bangalore', 'Chennai', 'Hyderabad', 'Kolkata', 'Pune', 'Ahmedabad'].map((city, idx) => (
                         <button
                           key={idx}
                           onClick={() => handleLocationSelect(city)}
-                          className={`w-full text-left px-4 py-3 rounded-xl flex items-center justify-between transition-all duration-200 ${currentLocation.includes(city)
-                            ? 'bg-gradient-to-r from-rose-50 to-pink-50 text-rose-600 border border-rose-200'
+                          className={`w-full text-left px-3 py-2 rounded-lg flex items-center justify-between transition-all duration-150 ${currentLocation.includes(city)
+                            ? 'bg-blue-50 text-blue-600 border border-blue-200'
                             : 'hover:bg-gray-50 text-gray-700'
                             }`}
                         >
                           <div>
-                            <div className="font-medium">{city}</div>
+                            <div className="font-medium text-sm">{city}</div>
                           </div>
                           {currentLocation.includes(city) && (
-                            <CheckCircle className="h-5 w-5 text-rose-500" />
+                            <CheckCircle className="h-4 w-4 text-blue-500" />
                           )}
                         </button>
                       ))}
@@ -563,43 +799,41 @@ const Navbar = () => {
                 )}
               </div>
 
-              {/* Search Button for Desktop */}
+              {/* Search Button */}
               <button
                 onClick={() => setIsSearchOpen(true)}
-                className="p-2.5 rounded-xl bg-gray-100 hover:bg-rose-50 text-gray-600 
-                         hover:text-rose-500 transition-all duration-300 hover:scale-105 group hidden xl:flex items-center space-x-2"
+                className="p-2 rounded-lg bg-gray-100 hover:bg-blue-50 text-gray-600 
+                         hover:text-blue-500 transition-all duration-200 hidden lg:flex items-center space-x-2"
               >
-                <Search className="h-5 w-5" />
+                <Search className="h-4 w-4" />
                 <span className="text-sm font-medium">Search</span>
               </button>
 
               {/* Emergency Button */}
               <button
                 onClick={handleEmergency}
-                className="relative px-4 py-2.5 bg-gradient-to-r from-red-500 via-rose-500 to-pink-500 
-                         text-white rounded-xl font-semibold shadow-lg shadow-red-200/50 hover:shadow-xl 
-                         hover:shadow-red-300/50 hover:scale-105 transition-all duration-300 
-                         flex items-center space-x-2 group overflow-hidden"
+                className="px-3 py-2 bg-gradient-to-r from-red-600 to-red-500 text-white 
+                         rounded-lg font-semibold shadow hover:shadow-md hover:scale-105 
+                         transition-all duration-200 flex items-center space-x-2 group overflow-hidden"
               >
-                <div className="absolute inset-0 bg-gradient-to-r from-red-600 via-rose-600 to-pink-600 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
-                <Ambulance className="h-5 w-5 relative z-10" />
-                <span className="relative z-10 hidden lg:inline">Emergency</span>
-                <div className="absolute -top-1 -right-1 w-3 h-3 bg-white rounded-full animate-ping"></div>
+                <Ambulance className="h-4 w-4" />
+                <span className="text-sm">Emergency</span>
+                <div className="absolute -top-1 -right-1 w-2 h-2 bg-white rounded-full animate-ping"></div>
               </button>
 
               {/* Notifications */}
               <button
                 onClick={() => {
                   navigate("/notifications");
-                  setUnreadCount(0); // reset unread count on open
+                  setUnreadCount(0);
                 }}
-                className="relative p-2.5 rounded-xl bg-gray-100 hover:bg-rose-50 text-gray-600 
-                 hover:text-rose-500 transition-all duration-300 hover:scale-105 group"
+                className="relative p-2 rounded-lg bg-gray-100 hover:bg-blue-50 text-gray-600 
+                 hover:text-blue-500 transition-all duration-200"
               >
-                <Bell className="h-5 w-5" />
+                <Bell className="h-4 w-4" />
                 {unreadCount > 0 && (
-                  <span className="absolute -top-1 -right-1 w-6 h-6 bg-gradient-to-r from-red-500 to-rose-500 text-white text-xs 
-                        rounded-full flex items-center justify-center animate-pulse shadow-lg">
+                  <span className="absolute -top-1 -right-1 w-5 h-5 bg-gradient-to-r from-red-500 to-red-400 text-white text-xs 
+                        rounded-full flex items-center justify-center shadow">
                     {unreadCount}
                   </span>
                 )}
@@ -610,43 +844,36 @@ const Navbar = () => {
                 <div className="relative" ref={profileRef}>
                   <button
                     onClick={() => setIsProfileOpen(!isProfileOpen)}
-                    className="flex items-center space-x-2 p-1.5 rounded-xl hover:bg-gray-100 transition-all duration-300 group"
+                    className="flex items-center space-x-2 p-1 rounded-lg hover:bg-gray-100 transition-all duration-200 group"
                   >
                     <div className="relative">
-                      <div className="absolute inset-0 bg-gradient-to-r from-rose-400 to-pink-400 rounded-full blur opacity-70 group-hover:opacity-100 transition-opacity"></div>
-                      <div className="relative w-10 h-10 rounded-full bg-gradient-to-r from-rose-400 to-rose-300 
-                                    flex items-center justify-center text-white font-semibold shadow-lg">
+                      <div className={`relative w-9 h-9 rounded-full ${userTypeConfig?.gradient || 'bg-gradient-to-r from-blue-600 to-blue-500'} 
+                                    flex items-center justify-center text-white font-semibold shadow`}>
                         {getUserInitials()}
                       </div>
-                      <div className="absolute -bottom-1 -right-1 w-3 h-3 bg-emerald-500 rounded-full border-2 border-white"></div>
                     </div>
                   </button>
 
-                  {/* Profile Dropdown */}
                   {isProfileOpen && (
-                    <div className="absolute top-full mt-2 right-0 w-80 bg-white rounded-2xl shadow-2xl 
-                                  border border-gray-100 p-4 z-50 animate-fadeIn">
-                      <div className="flex items-center space-x-3 pb-4 border-b border-gray-100">
+                    <div className="absolute top-full mt-2 right-0 w-72 bg-white rounded-xl shadow-xl border border-gray-200 p-3 z-50 animate-fadeIn">
+                      <div className="flex items-center space-x-3 pb-3 border-b border-gray-200">
                         <div className="relative">
-                          <div className="w-12 h-12 rounded-full bg-gradient-to-r from-rose-400 to-rose-300 
-                                        flex items-center justify-center text-white font-bold text-lg shadow-lg">
+                          <div className={`w-10 h-10 rounded-full ${userTypeConfig?.gradient || 'bg-gradient-to-r from-blue-600 to-blue-500'} 
+                                        flex items-center justify-center text-white font-bold shadow`}>
                             {getUserInitials()}
                           </div>
-                          <Star className="absolute -top-1 -right-1 h-5 w-5 text-amber-500" fill="currentColor" />
                         </div>
                         <div className="flex-1">
-                          <h3 className="font-bold text-gray-800">{getUserDisplayName()}</h3>
+                          <h3 className="font-bold text-gray-800 text-sm">{getUserDisplayName()}</h3>
                           <div className="flex items-center space-x-2 mt-1">
-                            <span className="text-xs bg-gradient-to-r from-amber-50 to-amber-100 text-amber-700 px-2 py-1 rounded-full border border-amber-200">
-                              <Star className="h-3 w-3 inline mr-1" fill="currentColor" />
-                              {getUserStats().level}
+                            <span className={`text-xs ${userTypeConfig?.bgColor || 'bg-blue-50'} ${userTypeConfig?.textColor || 'text-blue-700'} px-2 py-1 rounded-full border ${userTypeConfig?.borderColor || 'border-blue-200'}`}>
+                              {getUserTypeLabel()}
                             </span>
-                            <span className="text-xs text-gray-500">{getUserTypeLabel()}</span>
                           </div>
                         </div>
                       </div>
 
-                      <div className="py-3 space-y-1">
+                      <div className="py-2 space-y-1 max-h-64 overflow-y-auto scrollbar-hide">
                         {profileItems.map((item, idx) => (
                           <button
                             key={idx}
@@ -654,50 +881,50 @@ const Navbar = () => {
                               navigate(item.path);
                               setIsProfileOpen(false);
                             }}
-                            className="w-full flex items-center justify-between px-3 py-2.5 rounded-lg hover:bg-gray-50 
-                                     transition-all duration-200 group"
+                            className="w-full flex items-center justify-between px-2 py-2 rounded-lg hover:bg-gray-50 
+                                     transition-all duration-150 group"
                           >
                             <div className="flex items-center space-x-3">
-                              <div className={`p-2 rounded-lg ${item.color.replace('text-', 'bg-').replace('-600', '-50').replace('-700', '-50')}`}>
-                                <item.icon className={`h-4 w-4 ${item.color}`} />
+                              <div className={`p-1.5 rounded-lg ${item.bgColor}`}>
+                                <item.icon className={`h-4 w-4 ${item.textColor}`} />
                               </div>
                               <div className="text-left">
-                                <div className="font-medium text-gray-800">{item.label}</div>
+                                <div className="font-medium text-gray-800 text-sm">{item.label}</div>
                                 <div className="text-xs text-gray-500">{item.description}</div>
                               </div>
                             </div>
-                            <ChevronRight className="h-4 w-4 text-gray-400 group-hover:text-gray-600 group-hover:translate-x-1 transition-transform" />
+                            <ChevronRight className="h-4 w-4 text-gray-400 group-hover:text-gray-600 group-hover:translate-x-0.5 transition-transform" />
                           </button>
                         ))}
                       </div>
 
                       {/* Quick Stats */}
-                      <div className="pt-4 border-t border-gray-100">
+                      <div className="pt-3 border-t border-gray-200">
                         <div className="grid grid-cols-3 gap-2">
-                          <div className="text-center p-3 bg-gradient-to-br from-rose-50 to-pink-50 rounded-xl border border-rose-100">
-                            <div className="text-lg font-bold text-rose-600">{getUserStats().donations}</div>
+                          <div className="text-center p-2 bg-red-50 rounded-lg border border-red-100">
+                            <div className="text-sm font-bold text-red-600">{userStats.donations}</div>
                             <div className="text-xs text-gray-600">Donations</div>
                           </div>
-                          <div className="text-center p-3 bg-gradient-to-br from-blue-50 to-cyan-50 rounded-xl border border-blue-100">
-                            <div className="text-lg font-bold text-blue-600">{getUserStats().donations * 3}</div>
+                          <div className="text-center p-2 bg-blue-50 rounded-lg border border-blue-100">
+                            <div className="text-sm font-bold text-blue-600">{userStats.livesSaved}</div>
                             <div className="text-xs text-gray-600">Lives Saved</div>
                           </div>
-                          <div className="text-center p-3 bg-gradient-to-br from-emerald-50 to-green-50 rounded-xl border border-emerald-100">
-                            <div className="text-lg font-bold text-emerald-600">{getUserStats().points}</div>
+                          <div className="text-center p-2 bg-green-50 rounded-lg border border-green-100">
+                            <div className="text-sm font-bold text-green-600">{userStats.points}</div>
                             <div className="text-xs text-gray-600">Points</div>
                           </div>
                         </div>
                       </div>
 
-                      <div className="mt-4">
+                      <div className="mt-3">
                         <button
                           onClick={handleLogout}
-                          className="w-full flex items-center justify-center space-x-2 px-4 py-3 bg-gradient-to-r from-gray-50 to-gray-100 
-                                   text-gray-700 rounded-xl font-medium hover:bg-gradient-to-r hover:from-red-50 hover:to-rose-50 
-                                   hover:text-red-600 border border-gray-200 hover:border-red-200 transition-all duration-300"
+                          className="w-full flex items-center justify-center space-x-2 px-3 py-2 bg-gray-100 
+                                   text-gray-700 rounded-lg font-medium hover:bg-red-50 hover:text-red-600 
+                                   border border-gray-200 transition-all duration-200"
                         >
                           <LogOut className="h-4 w-4" />
-                          <span>Logout</span>
+                          <span className="text-sm">Logout</span>
                         </button>
                       </div>
                     </div>
@@ -705,24 +932,23 @@ const Navbar = () => {
                 </div>
               ) : (
                 <div className="flex items-center space-x-2">
-                  <button
-                    onClick={() => navigate('/auth')}
-                    className="px-4 py-2.5 text-rose-600 hover:text-rose-700 font-medium rounded-xl 
-                             hover:bg-rose-50 transition-all duration-300 flex items-center space-x-2"
-                  >
-                    <LogIn className="h-5 w-5" />
-                    <span className="hidden lg:inline">Login</span>
-                  </button>
                   {/* <button
-                    onClick={() => navigate('/auth')}
-                    className="px-4 py-2.5 bg-gradient-to-r from-rose-500 via-rose-400 to-pink-500 text-white 
-                             rounded-xl font-semibold shadow-lg shadow-rose-200/50 hover:shadow-xl 
-                             hover:shadow-rose-300/50 hover:scale-105 transition-all duration-300 
-                             hover:from-rose-600 hover:via-rose-500 hover:to-pink-600 flex items-center space-x-2 group"
+                    onClick={handleLoginClick}
+                    className="px-3 py-2 text-blue-600 hover:text-blue-700 font-medium rounded-lg 
+                             hover:bg-blue-50 transition-all duration-200 flex items-center space-x-2 border border-blue-200"
                   >
-                    <UserPlus className="h-5 w-5" />
-                    <span className="hidden lg:inline">Register</span>
+                    <LogIn className="h-4 w-4" />
+                    <span className="text-sm font-medium">Login</span>
                   </button> */}
+                  <button
+                    onClick={handleRegisterClick}
+                    className="px-3 py-2 bg-gradient-to-r from-blue-600 to-blue-500 text-white 
+                             rounded-lg font-semibold hover:shadow-md hover:scale-105 transition-all duration-200 
+                             flex items-center space-x-2"
+                  >
+                    <UserPlus className="h-4 w-4" />
+                    <span className="text-sm">Register</span>
+                  </button>
                 </div>
               )}
             </div>
@@ -730,10 +956,83 @@ const Navbar = () => {
         </div>
       </nav>
 
-      {/* Mobile Top Bar */}
-      <div className={`lg:hidden fixed top-0 left-0 right-0 z-40 transition-all duration-500 ${isScrolled
-        ? 'bg-white/95 backdrop-blur-xl shadow-lg py-3 border-b border-gray-100/50'
-        : 'bg-gradient-to-b from-white/95 via-white/90 to-transparent py-4'
+      {/* TABLET NAVBAR (768px - 1024px) */}
+      <nav className={`hidden md:block lg:hidden fixed top-0 left-0 right-0 z-40 transition-all duration-300 ${isScrolled
+        ? 'bg-white shadow py-2'
+        : 'bg-white py-3'
+        }`}>
+        <div className="max-w-4xl mx-auto px-4">
+          <div className="flex items-center justify-between">
+            
+            {/* Logo */}
+            <button
+              onClick={() => navigate('/')}
+              className="flex items-center space-x-2"
+            >
+              <div className="bg-gradient-to-r from-blue-600 to-blue-500 w-9 h-9 rounded-full flex items-center justify-center shadow">
+                <Heart className="h-4 w-4 text-white" fill="white" />
+              </div>
+              <div>
+                <h1 className="font-bold text-lg bg-gradient-to-r from-blue-600 to-blue-500 bg-clip-text text-transparent">
+                  LifeStream
+                </h1>
+              </div>
+            </button>
+
+            {/* Compact Navigation */}
+            <div className="flex items-center space-x-1">
+              {mainNavItems.slice(0, 3).map((item) => (
+                <button
+                  key={item.id}
+                  onClick={() => handleTabClick(item.path, item.id)}
+                  className={`px-2 py-1.5 rounded-lg text-sm font-medium ${activeTab === item.id
+                    ? `text-white ${getMobileBgColor(item.id)}`
+                    : 'text-gray-700 hover:bg-gray-100'
+                    }`}
+                >
+                  <item.icon className="h-4 w-4 inline mr-1" />
+                  <span className="hidden sm:inline">{item.label.split(' ')[0]}</span>
+                </button>
+              ))}
+            </div>
+
+            {/* Right Actions */}
+            <div className="flex items-center space-x-2">
+              <button
+                onClick={handleEmergency}
+                className="px-2 py-1.5 bg-red-500 text-white rounded-lg text-sm font-medium flex items-center"
+              >
+                <Ambulance className="h-4 w-4 mr-1" />
+                <span className="hidden sm:inline">Emergency</span>
+              </button>
+              
+              {isLoggedIn ? (
+                <button
+                  onClick={() => setIsProfileOpen(!isProfileOpen)}
+                  className="relative"
+                >
+                  <div className={`w-8 h-8 rounded-full ${userTypeConfig?.gradient || 'bg-gradient-to-r from-blue-600 to-blue-500'} 
+                                flex items-center justify-center text-white font-semibold text-sm`}>
+                    {getUserInitials()}
+                  </div>
+                </button>
+              ) : (
+                <button
+                  onClick={handleLoginClick}
+                  className="px-2 py-1.5 text-blue-600 font-medium text-sm"
+                >
+                  Login
+                </button>
+              )}
+            </div>
+          </div>
+        </div>
+      </nav>
+
+      {/* MOBILE TOP BAR */}
+      <div className={`md:hidden fixed top-0 left-0 right-0 z-40 transition-all duration-300 ${isScrolled
+        ? 'bg-white shadow py-2 border-b border-gray-200'
+        : 'bg-white py-3'
         }`}>
         <div className="px-4">
           <div className="flex items-center justify-between">
@@ -742,11 +1041,11 @@ const Navbar = () => {
               onClick={() => navigate('/')}
               className="flex items-center space-x-2"
             >
-              <div className="bg-gradient-to-r from-rose-500 to-rose-400 w-12 h-12 rounded-full flex items-center justify-center shadow-lg">
-                <Heart className="h-6 w-6 text-white" fill="white" />
+              <div className="bg-gradient-to-r from-blue-600 to-blue-500 w-10 h-10 rounded-full flex items-center justify-center shadow">
+                <Heart className="h-5 w-5 text-white" fill="white" />
               </div>
               <div>
-                <h1 className="font-bold text-lg bg-gradient-to-r from-rose-600 to-rose-500 bg-clip-text text-transparent">
+                <h1 className="font-bold text-lg bg-gradient-to-r from-blue-600 to-blue-500 bg-clip-text text-transparent">
                   LifeStream
                 </h1>
               </div>
@@ -756,74 +1055,64 @@ const Navbar = () => {
             <div className="flex items-center space-x-2">
               <button
                 onClick={handleEmergency}
-                className="relative p-2 rounded-xl bg-gradient-to-r from-red-50 to-rose-50 text-red-600 border border-red-200"
+                className="relative p-2 rounded-lg bg-red-50 text-red-600 border border-red-200"
               >
                 <Ambulance className="h-5 w-5" />
-                <div className="absolute -top-1 -right-1 w-3 h-3 bg-red-500 rounded-full animate-pulse"></div>
+                <div className="absolute -top-1 -right-1 w-2 h-2 bg-red-500 rounded-full animate-pulse"></div>
               </button>
+              
+              <button
+                onClick={() => navigate('/notifications')}
+                className="relative p-2 rounded-lg bg-gray-100"
+              >
+                <Bell className="h-5 w-5 text-gray-600" />
+                {unreadCount > 0 && (
+                  <span className="absolute -top-1 -right-1 w-5 h-5 bg-red-500 text-white text-xs rounded-full flex items-center justify-center">
+                    {unreadCount}
+                  </span>
+                )}
+              </button>
+              
               <button
                 onClick={() => setIsMobileMenuOpen(true)}
-                className="p-2 rounded-xl bg-gray-100 hover:bg-rose-50 transition-colors"
+                className="p-2 rounded-lg bg-gray-100"
               >
                 <Menu className="h-5 w-5 text-gray-600" />
               </button>
             </div>
           </div>
 
-          {/* Search Bar */}
+          {/* Search and Location Bar */}
           <div className="mt-3">
-            <div className="relative" ref={searchRef}>
-              <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
-              <input
-                type="text"
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                placeholder="Search donors, blood types..."
-                className="w-full pl-12 pr-4 py-3 bg-white border border-gray-200 rounded-xl 
-                         focus:outline-none focus:ring-2 focus:ring-rose-300 focus:border-transparent
-                         shadow-sm text-sm"
-                onKeyDown={(e) => e.key === 'Enter' && handleSearch(e)}
-              />
-              {searchQuery && (
-                <button
-                  onClick={() => setSearchQuery('')}
-                  className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600"
-                >
-                  <X className="h-4 w-4" />
-                </button>
-              )}
+            <div className="flex items-center space-x-2">
+              <div className="flex-1 relative" ref={searchRef}>
+                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
+                <input
+                  type="text"
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  placeholder="Search donors, hospitals..."
+                  className="w-full pl-10 pr-4 py-2.5 bg-gray-50 border border-gray-200 rounded-lg 
+                           focus:outline-none focus:ring-2 focus:ring-blue-300 focus:border-transparent
+                           text-sm"
+                  onKeyDown={(e) => e.key === 'Enter' && handleSearch(e)}
+                />
+              </div>
+              
+              <button
+                onClick={() => setIsLocationOpen(!isLocationOpen)}
+                className="p-2.5 rounded-lg bg-gray-50 border border-gray-200"
+              >
+                <MapPin className="h-4 w-4 text-blue-500" />
+              </button>
             </div>
-          </div>
-
-          {/* Location and Notifications */}
-          <div className="mt-3 flex items-center justify-between">
-            <button
-              onClick={() => setIsLocationOpen(!isLocationOpen)}
-              className="flex items-center space-x-2 px-3 py-2 rounded-lg bg-gray-50 hover:bg-gray-100 transition-colors"
-            >
-              <MapPin className="h-4 w-4 text-rose-500" />
-              <span className="text-sm text-gray-700">{currentLocation.split(',')[0]}</span>
-              <ChevronDown className="h-3 w-3 text-gray-400" />
-            </button>
-
-            <button
-              onClick={() => navigate('/notifications')}
-              className="relative p-2 rounded-lg bg-gray-50 hover:bg-gray-100 transition-colors"
-            >
-              <Bell className="h-5 w-5 text-gray-600" />
-              {notifications > 0 && (
-                <span className="absolute -top-1 -right-1 w-5 h-5 bg-red-500 text-white text-xs rounded-full flex items-center justify-center">
-                  {notifications}
-                </span>
-              )}
-            </button>
           </div>
         </div>
       </div>
 
-      {/* Mobile Bottom Navigation */}
-      <nav className="lg:hidden fixed bottom-0 left-0 right-0 z-40 bg-white/95 backdrop-blur-xl 
-                     border-t border-gray-100 shadow-2xl py-3 px-4">
+
+      {/* MOBILE BOTTOM NAVIGATION */}
+      <nav className="md:hidden fixed bottom-0 left-0 right-0 z-40 bg-white border-t border-gray-200 shadow-lg py-2 px-4">
         <div className="flex justify-around items-center">
           {mobileNavItems.map((item) => {
             const Icon = item.icon;
@@ -833,20 +1122,12 @@ const Navbar = () => {
               <button
                 key={item.id}
                 onClick={() => handleTabClick(item.path, item.id)}
-                className={`flex flex-col items-center justify-center relative transition-all duration-300 
-                          ${isActive ? 'transform -translate-y-3' : ''}`}
+                className={`flex flex-col items-center justify-center relative transition-all duration-200 
+                          ${isActive ? 'transform -translate-y-1' : ''}`}
               >
-                {/* Active Indicator */}
-                {isActive && (
-                  <>
-                    <div className="absolute -top-4 w-14 h-14 bg-gradient-to-r from-rose-500/10 to-pink-500/10 rounded-full blur-lg"></div>
-                    <div className="absolute -top-2 w-10 h-1 bg-gradient-to-r from-rose-500 to-pink-500 rounded-full"></div>
-                  </>
-                )}
-
                 {/* Icon Container */}
-                <div className={`p-3 rounded-xl transition-all duration-500 relative ${isActive
-                  ? 'bg-gradient-to-r from-rose-500 to-pink-500 text-white shadow-lg shadow-rose-300/50'
+                <div className={`p-2.5 rounded-lg transition-all duration-200 relative ${isActive
+                  ? `text-white ${getMobileBgColor(item.id)} shadow`
                   : 'bg-gray-100 text-gray-400'
                   }`}>
                   <Icon className={`h-5 w-5 ${isActive ? 'text-white' : item.color}`}
@@ -855,21 +1136,15 @@ const Navbar = () => {
 
                   {/* Badges */}
                   {item.badge && (
-                    <span className="absolute -top-2 -right-2 w-5 h-5 bg-red-500 text-white text-xs 
-                                    rounded-full flex items-center justify-center animate-pulse border-2 border-white">
+                    <span className="absolute -top-1 -right-1 w-4 h-4 bg-red-500 text-white text-[10px] 
+                                    rounded-full flex items-center justify-center animate-pulse border border-white">
                       {item.badge}
                     </span>
-                  )}
-
-                  {/* Pulse effect for important tabs */}
-                  {item.pulse && !isActive && (
-                    <div className="absolute inset-0 rounded-xl border-2 border-amber-400/30 animate-ping"></div>
                   )}
                 </div>
 
                 {/* Label */}
-                <span className={`mt-2 text-xs font-medium transition-colors duration-300 ${isActive ? 'text-rose-600' : 'text-gray-500'
-                  }`}>
+                <span className={`mt-1 text-xs font-medium transition-colors duration-200 ${getMobileTextColor(item.id, isActive)}`}>
                   {item.label}
                 </span>
               </button>
@@ -878,26 +1153,26 @@ const Navbar = () => {
         </div>
       </nav>
 
-      {/* Mobile Full-screen Menu */}
+      {/* MOBILE FULL-SCREEN MENU */}
       {isMobileMenuOpen && (
-        <div className="lg:hidden fixed inset-0 z-50 bg-white/95 backdrop-blur-xl animate-fadeIn overflow-y-auto">
-          <div className="p-6">
+        <div className="md:hidden fixed inset-0 z-50 bg-white animate-slideIn overflow-y-auto">
+          <div className="p-4">
             {/* Header */}
-            <div className="flex items-center justify-between mb-8">
+            <div className="flex items-center justify-between mb-6">
               <div className="flex items-center space-x-3">
-                <div className="bg-gradient-to-r from-rose-500 to-rose-400 w-12 h-12 rounded-full flex items-center justify-center shadow-lg">
+                <div className="bg-gradient-to-r from-blue-600 to-blue-500 w-12 h-12 rounded-full flex items-center justify-center shadow">
                   <Heart className="h-6 w-6 text-white" fill="white" />
                 </div>
                 <div>
-                  <h1 className="font-bold text-2xl bg-gradient-to-r from-rose-600 to-rose-500 bg-clip-text text-transparent">
+                  <h1 className="font-bold text-xl bg-gradient-to-r from-blue-600 to-blue-500 bg-clip-text text-transparent">
                     LifeStream
                   </h1>
-                  <p className="text-sm text-gray-600">Save Lives, Donate Today</p>
+                  <p className="text-sm text-gray-600">Saving Lives Together</p>
                 </div>
               </div>
               <button
                 onClick={() => setIsMobileMenuOpen(false)}
-                className="p-3 rounded-xl bg-gray-100 hover:bg-gray-200 transition-colors"
+                className="p-2 rounded-lg bg-gray-100"
               >
                 <X className="h-5 w-5 text-gray-600" />
               </button>
@@ -905,133 +1180,113 @@ const Navbar = () => {
 
             {/* User Section */}
             {isLoggedIn ? (
-              <div className="bg-gradient-to-r from-rose-50 to-pink-50 rounded-2xl p-5 mb-8 border border-rose-100">
-                <div className="flex items-center space-x-4">
-                  <div className="w-16 h-16 rounded-full bg-gradient-to-r from-rose-400 to-rose-300 
-                                flex items-center justify-center text-white font-bold text-2xl shadow-lg">
+              <div className="bg-gradient-to-r from-blue-50 to-blue-100 rounded-xl p-4 mb-6 border border-blue-200">
+                <div className="flex items-center space-x-3">
+                  <div className={`w-14 h-14 rounded-full ${userTypeConfig?.gradient || 'bg-gradient-to-r from-blue-600 to-blue-500'} 
+                                flex items-center justify-center text-white font-bold text-xl shadow`}>
                     {getUserInitials()}
                   </div>
                   <div className="flex-1">
-                    <h3 className="font-bold text-xl text-gray-800">{getUserDisplayName()}</h3>
-                    <div className="flex items-center space-x-2 mt-2">
-                      <span className="text-sm bg-white text-rose-600 px-3 py-1 rounded-full border border-rose-200">
+                    <h3 className="font-bold text-lg text-gray-800">{getUserDisplayName()}</h3>
+                    <div className="flex items-center space-x-2 mt-1">
+                      <span className="text-sm bg-white text-blue-600 px-3 py-1 rounded-full border border-blue-200">
                         {getUserTypeLabel()}
-                      </span>
-                      <span className="text-sm bg-white text-amber-600 px-3 py-1 rounded-full border border-amber-200">
-                        <Star className="h-3 w-3 inline mr-1" fill="currentColor" />
-                        {getUserStats().level}
                       </span>
                     </div>
                   </div>
                 </div>
 
                 {/* Quick Stats */}
-                <div className="grid grid-cols-3 gap-3 mt-6">
-                  <div className="text-center p-3 bg-white rounded-xl border border-rose-100">
-                    <div className="text-lg font-bold text-rose-600">{getUserStats().donations}</div>
+                <div className="grid grid-cols-3 gap-3 mt-4">
+                  <div className="text-center p-3 bg-white rounded-lg border border-red-100">
+                    <div className="text-lg font-bold text-red-600">{userStats.donations}</div>
                     <div className="text-xs text-gray-600">Donations</div>
                   </div>
-                  <div className="text-center p-3 bg-white rounded-xl border border-blue-100">
-                    <div className="text-lg font-bold text-blue-600">{getUserStats().donations * 3}</div>
+                  <div className="text-center p-3 bg-white rounded-lg border border-blue-100">
+                    <div className="text-lg font-bold text-blue-600">{userStats.livesSaved}</div>
                     <div className="text-xs text-gray-600">Lives Saved</div>
                   </div>
-                  <div className="text-center p-3 bg-white rounded-xl border border-emerald-100">
-                    <div className="text-lg font-bold text-emerald-600">{getUserStats().points}</div>
+                  <div className="text-center p-3 bg-white rounded-lg border border-green-100">
+                    <div className="text-lg font-bold text-green-600">{userStats.points}</div>
                     <div className="text-xs text-gray-600">Points</div>
                   </div>
                 </div>
               </div>
             ) : (
-              <div className="grid grid-cols-2 gap-3 mb-8">
+              <div className="grid grid-cols-2 gap-3 mb-6">
                 <button
                   onClick={() => {
-                    navigate('/auth');
+                    handleLoginClick();
                     setIsMobileMenuOpen(false);
                   }}
-                  className="px-4 py-4 text-rose-600 hover:text-rose-700 font-medium rounded-xl 
-                           hover:bg-rose-50 transition-all duration-300 flex items-center justify-center space-x-2 border border-rose-200"
+                  className="px-4 py-3 text-blue-600 font-medium rounded-lg border border-blue-200 hover:bg-blue-50 transition-colors"
                 >
-                  <LogIn className="h-5 w-5" />
-                  <span>Login</span>
+                  Login
                 </button>
                 <button
                   onClick={() => {
-                    navigate('/auth');
+                    handleRegisterClick();
                     setIsMobileMenuOpen(false);
                   }}
-                  className="px-4 py-4 bg-gradient-to-r from-rose-500 via-rose-400 to-pink-500 text-white 
-                           rounded-xl font-semibold shadow-lg shadow-rose-200/50 hover:shadow-xl 
-                           hover:shadow-rose-300/50 transition-all duration-300 hover:from-rose-600 
-                           hover:via-rose-500 hover:to-pink-600 flex items-center justify-center space-x-2"
+                  className="px-4 py-3 bg-gradient-to-r from-blue-600 to-blue-500 text-white 
+                           font-semibold rounded-lg hover:shadow transition-all"
                 >
-                  <UserPlus className="h-5 w-5" />
-                  <span>Register</span>
+                  Register
                 </button>
               </div>
             )}
 
             {/* Navigation Links */}
-            <div className="space-y-1 mb-8">
-              <h3 className="font-bold text-gray-800 mb-4 px-2">Navigation</h3>
+            <div className="space-y-1 mb-6">
+              <h3 className="font-bold text-gray-800 mb-3">Navigation</h3>
               {[...mainNavItems, ...secondaryNavItems].map((item) => (
                 <button
                   key={item.id}
                   onClick={() => handleTabClick(item.path, item.id)}
-                  className={`w-full text-left px-4 py-4 rounded-xl flex items-center justify-between 
-                           transition-all duration-200 ${activeTab === item.id ? 'bg-rose-50 text-rose-600' : 'hover:bg-gray-50'}`}
+                  className={`w-full text-left px-4 py-3 rounded-lg flex items-center justify-between 
+                           transition-colors ${activeTab === item.id ? 'bg-blue-50 text-blue-600' : 'hover:bg-gray-50'}`}
                 >
                   <div className="flex items-center space-x-3">
-                    <div className={`p-2.5 rounded-lg ${activeTab === item.id ? 'bg-rose-100' : 'bg-gray-100'}`}>
-                      <item.icon className={`h-5 w-5 ${activeTab === item.id ? 'text-rose-600' : 'text-gray-600'}`} />
+                    <div className={`p-2 rounded-lg ${activeTab === item.id ? item.bgColor : 'bg-gray-100'}`}>
+                      <item.icon className={`h-5 w-5 ${activeTab === item.id ? item.textColor : 'text-gray-600'}`} />
                     </div>
                     <div className="text-left">
                       <div className="font-medium">{item.label}</div>
                       <div className="text-xs text-gray-500">{item.description}</div>
                     </div>
                   </div>
-                  {item.badge && (
-                    <span className="w-6 h-6 bg-red-500 text-white text-xs rounded-full flex items-center justify-center">
-                      {item.badge}
-                    </span>
-                  )}
+                  <ChevronRight className="h-4 w-4 text-gray-400" />
                 </button>
               ))}
             </div>
 
-            {/* Profile Links (if logged in) */}
-            {isLoggedIn && (
-              <div className="space-y-1 mb-8">
-                <h3 className="font-bold text-gray-800 mb-4 px-2">Profile</h3>
-                {profileItems.map((item, idx) => (
-                  <button
-                    key={idx}
-                    onClick={() => {
-                      navigate(item.path);
-                      setIsMobileMenuOpen(false);
-                    }}
-                    className="w-full text-left px-4 py-3 rounded-xl flex items-center space-x-3 hover:bg-gray-50 transition-all duration-200"
-                  >
-                    <div className={`p-2.5 rounded-lg ${item.color.replace('text-', 'bg-').replace('-600', '-50').replace('-700', '-50')}`}>
-                      <item.icon className={`h-5 w-5 ${item.color}`} />
+            {/* Contact Info */}
+            <div className="bg-gradient-to-r from-gray-50 to-gray-100 rounded-xl p-4 mb-6 border border-gray-200">
+              <h3 className="font-bold text-gray-800 mb-3">Contact & Support</h3>
+              <div className="space-y-2">
+                {contactInfo.map((item, idx) => {
+                  const Icon = item.icon;
+                  return (
+                    <div key={idx} className={`flex items-center space-x-3 px-3 py-2 rounded-lg ${item.bgColor}`}>
+                      <Icon className={`h-4 w-4 ${item.textColor}`} />
+                      <div className="flex-1">
+                        <div className="text-xs text-gray-600">{item.label}</div>
+                        <div className={`font-medium ${item.textColor}`}>{item.value}</div>
+                      </div>
                     </div>
-                    <div className="text-left">
-                      <div className="font-medium text-gray-800">{item.label}</div>
-                      <div className="text-xs text-gray-500">{item.description}</div>
-                    </div>
-                  </button>
-                ))}
+                  );
+                })}
               </div>
-            )}
+            </div>
 
             {/* Emergency Section */}
-            <div className="bg-gradient-to-r from-red-50 to-rose-50 rounded-2xl p-5 mb-8 border border-red-100">
-              <h3 className="font-bold text-gray-800 mb-3">Emergency Assistance</h3>
-              <p className="text-sm text-gray-600 mb-4">Need immediate help? Our team is available 24/7</p>
+            <div className="bg-gradient-to-r from-red-50 to-red-100 rounded-xl p-4 mb-6 border border-red-200">
+              <h3 className="font-bold text-gray-800 mb-2">Emergency Assistance</h3>
+              <p className="text-sm text-gray-600 mb-4">Need immediate help? Available 24/7</p>
               <button
                 onClick={handleEmergency}
-                className="w-full px-4 py-4 bg-gradient-to-r from-red-500 via-rose-500 to-pink-500 
-                         text-white rounded-xl font-bold shadow-lg shadow-red-200/50 
-                         flex items-center justify-center space-x-2"
+                className="w-full px-4 py-3 bg-gradient-to-r from-red-600 to-red-500 
+                         text-white rounded-lg font-bold flex items-center justify-center space-x-2"
               >
                 <Ambulance className="h-5 w-5" />
                 <span>Emergency Request</span>
@@ -1039,12 +1294,12 @@ const Navbar = () => {
             </div>
 
             {/* Footer */}
-            <div className="text-center">
+            <div className="text-center pt-4 border-t border-gray-200">
               {isLoggedIn && (
                 <button
                   onClick={handleLogout}
-                  className="w-full px-4 py-4 bg-gray-100 text-gray-700 rounded-xl font-medium 
-                           hover:bg-red-50 hover:text-red-600 transition-all duration-300 mb-4"
+                  className="w-full px-4 py-3 bg-gray-100 text-gray-700 rounded-lg font-medium 
+                           hover:bg-red-50 hover:text-red-600 transition-colors mb-4"
                 >
                   Logout
                 </button>
@@ -1055,12 +1310,12 @@ const Navbar = () => {
         </div>
       )}
 
-      {/* Search Modal */}
+      {/* SEARCH MODAL */}
       {isSearchOpen && (
         <div className="fixed inset-0 z-50 bg-black/20 backdrop-blur-sm animate-fadeIn">
           <div className="absolute inset-0" onClick={() => setIsSearchOpen(false)}></div>
-          <div className="absolute top-20 left-1/2 transform -translate-x-1/2 w-full max-w-2xl px-4">
-            <div className="bg-white rounded-2xl shadow-2xl p-4 animate-fadeIn">
+          <div className="absolute top-4 left-1/2 transform -translate-x-1/2 w-full max-w-2xl px-4">
+            <div className="bg-white rounded-xl shadow-2xl p-4 animate-fadeIn">
               <div className="relative">
                 <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400" />
                 <input
@@ -1068,24 +1323,24 @@ const Navbar = () => {
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
                   placeholder="Search for blood donors, hospitals, information..."
-                  className="w-full pl-12 pr-10 py-4 bg-gray-50 border border-gray-200 rounded-xl 
-                           focus:outline-none focus:ring-2 focus:ring-rose-300 focus:border-transparent
-                           text-base placeholder-gray-400"
+                  className="w-full pl-12 pr-10 py-3 bg-gray-50 border border-gray-200 rounded-lg 
+                           focus:outline-none focus:ring-2 focus:ring-blue-300 focus:border-transparent
+                           text-sm"
                   autoFocus
                   onKeyDown={(e) => e.key === 'Enter' && handleSearch(e)}
                 />
                 <button
                   onClick={() => setIsSearchOpen(false)}
-                  className="absolute right-3 top-1/2 transform -translate-y-1/2 p-2 text-gray-400 hover:text-gray-600"
+                  className="absolute right-3 top-1/2 transform -translate-y-1/2 p-1 text-gray-400 hover:text-gray-600"
                 >
                   <X className="h-5 w-5" />
                 </button>
               </div>
 
               {/* Quick Links */}
-              <div className="mt-6">
-                <h4 className="font-semibold text-gray-800 mb-3">Quick Links</h4>
-                <div className="grid grid-cols-2 gap-3">
+              <div className="mt-4">
+                <h4 className="font-semibold text-gray-800 mb-2 text-sm">Quick Links</h4>
+                <div className="grid grid-cols-2 gap-2">
                   {quickLinks.map((link, idx) => (
                     <button
                       key={idx}
@@ -1093,10 +1348,10 @@ const Navbar = () => {
                         navigate(link.path);
                         setIsSearchOpen(false);
                       }}
-                      className={`px-4 py-3 rounded-xl ${link.color} flex items-center space-x-2 hover:opacity-90 transition-opacity`}
+                      className={`px-3 py-2 rounded-lg ${link.bgColor} border ${link.borderColor} flex items-center space-x-2 hover:opacity-90 transition-opacity`}
                     >
-                      <link.icon className="h-4 w-4" />
-                      <span className="text-sm font-medium">{link.label}</span>
+                      <link.icon className={`h-4 w-4 ${link.textColor}`} />
+                      <span className={`text-sm font-medium ${link.textColor}`}>{link.label}</span>
                     </button>
                   ))}
                 </div>
@@ -1107,7 +1362,7 @@ const Navbar = () => {
       )}
 
       {/* Add padding to account for fixed navbar */}
-      <div className="lg:pt-24 pt-48"></div>
+      <div className="lg:pt-16 md:pt-16 pt-36"></div>
     </>
   );
 };

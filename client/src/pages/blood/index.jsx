@@ -6,6 +6,7 @@ import HowBloodDonationWorks from "./components/HowBloodDonationWorks";
 import UrgentBloodRequests from "./components/UrgentBloodRequests";
 import BenefitsOfDonation from "./components/BenefitsOfDonation";
 import BloodDonationFAQ from "./components/BloodDonationFAQ";
+import BloodRequestForm from "./components/BloodRequestForm";
 
 function BloodPages() {
   useEffect(() => {
@@ -16,6 +17,7 @@ function BloodPages() {
     <>
       <BloodHeroSection />
       <BloodTypes />
+      <BloodRequestForm />
       <BloodDonationEligibility />
       <HowBloodDonationWorks />
       <UrgentBloodRequests />

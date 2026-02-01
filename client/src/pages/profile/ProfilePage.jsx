@@ -10,7 +10,7 @@ import {
   Droplets, Activity, Award, History, Star, Gift, Clock,
   
   // Organ Donor Icons
-  ActivityIcon, FileText,
+  Activity as ActivityIcon, FileText,
   
   // Patient Icons
   Ambulance, Hospital, Users as UsersIcon, AlertTriangle,
@@ -49,7 +49,11 @@ const ProfilePage = () => {
 
     for (const type of userTypes) {
       const token = localStorage.getItem(`${type.key}Token`);
-      const data = localStorage.getItem(type.key);
+      const dataKey = localStorage.getItem('currentUserType') === type.key ? 
+        'currentUserData' : 
+        `${type.key}Data`;
+      
+      const data = localStorage.getItem(dataKey);
       
       if (token && data) {
         try {
@@ -65,14 +69,46 @@ const ProfilePage = () => {
           
           // Set default values for missing fields
           const defaults = getUserTypeDefaults(type.key);
-          setUserData(prev => ({ ...defaults, ...prev }));
-          setFormData(prev => ({ ...defaults, ...prev }));
+          const mergedData = { ...defaults, ...parsedData };
+          
+          setUserData(mergedData);
+          setFormData(mergedData);
+          
+          // Store current user type for future reference
+          localStorage.setItem('currentUserType', type.key);
+          localStorage.setItem('currentUserData', JSON.stringify(mergedData));
           
           setLoading(false);
           return;
         } catch (error) {
           console.error('Error parsing user data:', error);
         }
+      }
+    }
+    
+    // Also check for currentUserData as fallback
+    const currentUserData = localStorage.getItem('currentUserData');
+    const currentUserType = localStorage.getItem('currentUserType');
+    
+    if (currentUserData && currentUserType) {
+      try {
+        const parsedData = JSON.parse(currentUserData);
+        const type = userTypes.find(t => t.key === currentUserType);
+        
+        if (type) {
+          setUserType({
+            id: type.key,
+            label: type.label,
+            color: type.color,
+            icon: type.icon
+          });
+          setUserData(parsedData);
+          setFormData(parsedData);
+          setLoading(false);
+          return;
+        }
+      } catch (error) {
+        console.error('Error parsing current user data:', error);
       }
     }
     
@@ -96,7 +132,8 @@ const ProfilePage = () => {
         donationCount: 0,
         points: 0,
         level: 'Beginner',
-        status: 'active'
+        status: 'active',
+        userType: 'bloodDonor'
       },
       organDonor: {
         name: '',
@@ -108,7 +145,8 @@ const ProfilePage = () => {
         familyConsent: false,
         legalDocument: false,
         registrationDate: new Date().toISOString(),
-        status: 'pending'
+        status: 'pending',
+        userType: 'organDonor'
       },
       patient: {
         name: '',
@@ -122,7 +160,8 @@ const ProfilePage = () => {
         doctorName: '',
         emergencyContact: '',
         address: '',
-        status: 'active'
+        status: 'active',
+        userType: 'patient'
       },
       user: {
         name: '',
@@ -135,7 +174,8 @@ const ProfilePage = () => {
         occupation: '',
         organization: '',
         joinDate: new Date().toISOString(),
-        status: 'active'
+        status: 'active',
+        userType: 'general'
       }
     };
     
@@ -157,6 +197,8 @@ const ProfilePage = () => {
         // Handle boolean checkboxes
         setFormData(prev => ({ ...prev, [name]: checked }));
       }
+    } else if (type === 'radio') {
+      setFormData(prev => ({ ...prev, [name]: value }));
     } else {
       setFormData(prev => ({ ...prev, [name]: value }));
     }
@@ -177,18 +219,24 @@ const ProfilePage = () => {
         return;
       }
 
-      // Simulate API call (replace with actual API)
+      // Simulate API call
       await new Promise(resolve => setTimeout(resolve, 1000));
 
-      // Update local storage
+      // Update local storage with all necessary keys
       const updatedData = { 
         ...formData, 
         updatedAt: new Date().toISOString(),
-        lastUpdated: new Date().toLocaleString()
+        lastUpdated: new Date().toLocaleString(),
+        userType: userType.id // Ensure userType is set
       };
       
+      // Store data in multiple places for reliability
+      localStorage.setItem(`${userType.id}Data`, JSON.stringify(updatedData));
+      localStorage.setItem('currentUserData', JSON.stringify(updatedData));
+      localStorage.setItem('currentUserType', userType.id);
+      
+      // Also store in the main key for compatibility
       localStorage.setItem(userType.id, JSON.stringify(updatedData));
-      localStorage.setItem(userType.id + 'Data', JSON.stringify(updatedData));
       
       setUserData(updatedData);
       setIsEditing(false);
@@ -216,15 +264,33 @@ const ProfilePage = () => {
     if (!formData.email?.trim()) errors.push('Email is required');
     if (!formData.phone?.trim()) errors.push('Phone number is required');
     
+    // Email validation
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (formData.email && !emailRegex.test(formData.email)) {
+      errors.push('Please enter a valid email address');
+    }
+    
+    // Phone validation (basic)
+    const phoneRegex = /^[0-9]{10}$/;
+    if (formData.phone && !phoneRegex.test(formData.phone.replace(/\D/g, ''))) {
+      errors.push('Please enter a valid 10-digit phone number');
+    }
+    
     // Type-specific validations
     if (userType.id === 'bloodDonor') {
       if (!formData.bloodGroup) errors.push('Blood group is required');
       if (formData.age && (formData.age < 18 || formData.age > 65)) {
         errors.push('Age must be between 18 and 65');
       }
+      if (formData.weight && formData.weight < 45) {
+        errors.push('Weight must be at least 45 kg');
+      }
     }
     
     if (userType.id === 'organDonor') {
+      if (formData.age && formData.age < 18) {
+        errors.push('You must be at least 18 years old to register as an organ donor');
+      }
       if (!formData.familyConsent) errors.push('Family consent is required');
       if (!formData.legalDocument) errors.push('Legal documentation agreement is required');
     }
@@ -241,7 +307,10 @@ const ProfilePage = () => {
       localStorage.removeItem(`${type}Data`);
     });
     
-    navigate('/select-role');
+    localStorage.removeItem('currentUserData');
+    localStorage.removeItem('currentUserType');
+    
+    navigate('/auth');
   };
 
   // Get stats based on user type
@@ -249,7 +318,7 @@ const ProfilePage = () => {
     if (!userData) return [];
     
     const baseStats = [
-      { label: 'Account Status', value: userData.status || 'Active', icon: CheckCircle, color: 'text-emerald-500', bg: 'bg-emerald-50' },
+      { label: 'Account Status', value: userData.status === 'active' ? 'Active' : 'Pending', icon: CheckCircle, color: 'text-emerald-500', bg: 'bg-emerald-50' },
       { label: 'Member Since', value: new Date(userData.registrationDate || userData.joinDate || Date.now()).toLocaleDateString(), icon: Calendar, color: 'text-blue-500', bg: 'bg-blue-50' }
     ];
 
@@ -271,14 +340,14 @@ const ProfilePage = () => {
       
       case 'patient':
         return [
-          { label: 'Urgency Level', value: userData.urgencyLevel || 'Normal', icon: AlertTriangle, color: userData.urgencyLevel === 'emergency' ? 'text-red-500' : 'text-amber-500', bg: userData.urgencyLevel === 'emergency' ? 'bg-red-50' : 'bg-amber-50' },
+          { label: 'Urgency Level', value: (userData.urgencyLevel || 'Normal').charAt(0).toUpperCase() + (userData.urgencyLevel || 'Normal').slice(1), icon: AlertTriangle, color: userData.urgencyLevel === 'emergency' ? 'text-red-500' : userData.urgencyLevel === 'urgent' ? 'text-amber-500' : 'text-blue-500', bg: userData.urgencyLevel === 'emergency' ? 'bg-red-50' : userData.urgencyLevel === 'urgent' ? 'bg-amber-50' : 'bg-blue-50' },
           { label: 'Hospital', value: userData.hospitalName || 'Not specified', icon: Hospital, color: 'text-blue-500', bg: 'bg-blue-50' },
           ...baseStats
         ];
       
       case 'user':
         return [
-          { label: 'User Type', value: userData.userType || 'Supporter', icon: Users, color: 'text-blue-500', bg: 'bg-blue-50' },
+          { label: 'User Type', value: userData.userType ? userData.userType.charAt(0).toUpperCase() + userData.userType.slice(1) : 'Supporter', icon: Users, color: 'text-blue-500', bg: 'bg-blue-50' },
           { label: 'Interests', value: (userData.interests || []).length, icon: BookOpen, color: 'text-purple-500', bg: 'bg-purple-50' },
           ...baseStats
         ];
@@ -299,32 +368,32 @@ const ProfilePage = () => {
     switch (userType.id) {
       case 'bloodDonor':
         return [
-          { label: 'Schedule Donation', icon: Calendar, onClick: () => {}, color: 'text-red-600' },
-          { label: 'View Donation History', icon: History, onClick: () => {}, color: 'text-rose-600' },
-          { label: 'Redeem Rewards', icon: Gift, onClick: () => {}, color: 'text-amber-600' },
+          { label: 'Schedule Donation', icon: Calendar, onClick: () => navigate('/schedule-donation'), color: 'text-red-600' },
+          { label: 'View Donation History', icon: History, onClick: () => navigate('/donation-history'), color: 'text-rose-600' },
+          { label: 'Redeem Rewards', icon: Gift, onClick: () => navigate('/rewards'), color: 'text-amber-600' },
           ...baseActions
         ];
       
       case 'organDonor':
         return [
-          { label: 'Update Medical Info', icon: FileText, onClick: () => {}, color: 'text-emerald-600' },
+          { label: 'Update Medical Info', icon: FileText, onClick: () => navigate('/medical-info'), color: 'text-emerald-600' },
           { label: 'Download Pledge Certificate', icon: Download, onClick: () => {}, color: 'text-green-600' },
           ...baseActions
         ];
       
       case 'patient':
         return [
-          { label: 'Request Help', icon: AlertTriangle, onClick: () => {}, color: 'text-red-600' },
-          { label: 'Find Donors', icon: UsersIcon, onClick: () => {}, color: 'text-blue-600' },
-          { label: 'Hospital Contacts', icon: Hospital, onClick: () => {}, color: 'text-amber-600' },
+          { label: 'Request Help', icon: AlertTriangle, onClick: () => navigate('/request-help'), color: 'text-red-600' },
+          { label: 'Find Donors', icon: UsersIcon, onClick: () => navigate('/find-donors'), color: 'text-blue-600' },
+          { label: 'Hospital Contacts', icon: Hospital, onClick: () => navigate('/hospitals'), color: 'text-amber-600' },
           ...baseActions
         ];
       
       case 'user':
         return [
-          { label: 'Explore Events', icon: Calendar, onClick: () => {}, color: 'text-blue-600' },
-          { label: 'Volunteer Opportunities', icon: Users, onClick: () => {}, color: 'text-cyan-600' },
-          { label: 'Community Forum', icon: Globe, onClick: () => {}, color: 'text-purple-600' },
+          { label: 'Explore Events', icon: Calendar, onClick: () => navigate('/events'), color: 'text-blue-600' },
+          { label: 'Volunteer Opportunities', icon: Users, onClick: () => navigate('/volunteer'), color: 'text-cyan-600' },
+          { label: 'Community Forum', icon: Globe, onClick: () => navigate('/forum'), color: 'text-purple-600' },
           ...baseActions
         ];
       
@@ -348,7 +417,7 @@ const ProfilePage = () => {
                   name="bloodGroup"
                   value={formData.bloodGroup || ''}
                   onChange={handleInputChange}
-                  className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-red-300 focus:border-transparent"
+                  className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-red-300 focus:border-transparent disabled:bg-gray-50 disabled:cursor-not-allowed"
                   disabled={!isEditing}
                 >
                   <option value="">Select Blood Group</option>
@@ -365,10 +434,11 @@ const ProfilePage = () => {
                   name="age"
                   value={formData.age || ''}
                   onChange={handleInputChange}
-                  className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-red-300 focus:border-transparent"
+                  className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-red-300 focus:border-transparent disabled:bg-gray-50 disabled:cursor-not-allowed"
                   disabled={!isEditing}
                   min="18"
                   max="65"
+                  placeholder="18-65"
                 />
               </div>
 
@@ -379,9 +449,10 @@ const ProfilePage = () => {
                   name="weight"
                   value={formData.weight || ''}
                   onChange={handleInputChange}
-                  className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-red-300 focus:border-transparent"
+                  className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-red-300 focus:border-transparent disabled:bg-gray-50 disabled:cursor-not-allowed"
                   disabled={!isEditing}
                   min="45"
+                  placeholder="Min. 45kg"
                 />
               </div>
 
@@ -392,7 +463,7 @@ const ProfilePage = () => {
                   name="lastDonationDate"
                   value={formData.lastDonationDate || ''}
                   onChange={handleInputChange}
-                  className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-red-300 focus:border-transparent"
+                  className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-red-300 focus:border-transparent disabled:bg-gray-50 disabled:cursor-not-allowed"
                   disabled={!isEditing}
                 />
               </div>
@@ -408,17 +479,17 @@ const ProfilePage = () => {
               <label className="block text-sm font-medium text-gray-700 mb-2">Organs to Donate</label>
               <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
                 {organs.map(organ => (
-                  <label key={organ} className={`flex items-center space-x-2 p-3 rounded-lg border ${isEditing ? 'cursor-pointer hover:bg-gray-50' : ''}`}>
+                  <label key={organ} className={`flex items-center space-x-2 p-3 rounded-lg border ${isEditing ? 'cursor-pointer hover:bg-gray-50' : 'cursor-default'} ${(formData.organsToDonate || []).includes(organ) ? 'border-emerald-300 bg-emerald-50' : ''}`}>
                     <input
                       type="checkbox"
                       name="organsToDonate"
                       value={organ}
                       checked={(formData.organsToDonate || []).includes(organ)}
                       onChange={handleInputChange}
-                      className="h-4 w-4 text-emerald-500 rounded disabled:opacity-50"
+                      className="h-4 w-4 text-emerald-500 rounded disabled:opacity-50 disabled:cursor-not-allowed"
                       disabled={!isEditing}
                     />
-                    <span className="text-sm text-gray-700">{organ}</span>
+                    <span className={`text-sm ${(formData.organsToDonate || []).includes(organ) ? 'text-emerald-700 font-medium' : 'text-gray-700'}`}>{organ}</span>
                   </label>
                 ))}
               </div>
@@ -432,9 +503,10 @@ const ProfilePage = () => {
                   name="age"
                   value={formData.age || ''}
                   onChange={handleInputChange}
-                  className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-emerald-300 focus:border-transparent"
+                  className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-emerald-300 focus:border-transparent disabled:bg-gray-50 disabled:cursor-not-allowed"
                   disabled={!isEditing}
                   min="18"
+                  placeholder="Min. 18 years"
                 />
               </div>
 
@@ -444,7 +516,7 @@ const ProfilePage = () => {
                   name="medicalHistory"
                   value={formData.medicalHistory || ''}
                   onChange={handleInputChange}
-                  className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-emerald-300 focus:border-transparent resize-none"
+                  className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-emerald-300 focus:border-transparent resize-none disabled:bg-gray-50 disabled:cursor-not-allowed"
                   disabled={!isEditing}
                   rows="3"
                   placeholder="Any medical conditions or history..."
@@ -453,30 +525,30 @@ const ProfilePage = () => {
             </div>
 
             <div className="space-y-4 mt-6">
-              <label className={`flex items-start space-x-3 ${isEditing ? 'cursor-pointer' : ''}`}>
+              <label className={`flex items-start space-x-3 ${isEditing ? 'cursor-pointer' : 'cursor-default'}`}>
                 <input
                   type="checkbox"
                   name="familyConsent"
                   checked={formData.familyConsent || false}
                   onChange={handleInputChange}
-                  className="h-4 w-4 text-emerald-500 rounded mt-0.5 disabled:opacity-50"
+                  className={`h-4 w-4 text-emerald-500 rounded mt-0.5 ${isEditing ? '' : 'cursor-not-allowed'}`}
                   disabled={!isEditing}
                 />
-                <span className="text-sm text-gray-700">
+                <span className={`text-sm ${formData.familyConsent ? 'text-emerald-700 font-medium' : 'text-gray-700'}`}>
                   I have discussed organ donation with my family and have their consent
                 </span>
               </label>
 
-              <label className={`flex items-start space-x-3 ${isEditing ? 'cursor-pointer' : ''}`}>
+              <label className={`flex items-start space-x-3 ${isEditing ? 'cursor-pointer' : 'cursor-default'}`}>
                 <input
                   type="checkbox"
                   name="legalDocument"
                   checked={formData.legalDocument || false}
                   onChange={handleInputChange}
-                  className="h-4 w-4 text-emerald-500 rounded mt-0.5 disabled:opacity-50"
+                  className={`h-4 w-4 text-emerald-500 rounded mt-0.5 ${isEditing ? '' : 'cursor-not-allowed'}`}
                   disabled={!isEditing}
                 />
-                <span className="text-sm text-gray-700">
+                <span className={`text-sm ${formData.legalDocument ? 'text-emerald-700 font-medium' : 'text-gray-700'}`}>
                   I agree to complete the required legal documentation for organ donation
                 </span>
               </label>
@@ -504,7 +576,7 @@ const ProfilePage = () => {
                 <label className="block text-sm font-medium text-gray-700 mb-2">Patient Type</label>
                 <div className="grid grid-cols-3 gap-2">
                   {patientTypes.map(type => (
-                    <label key={type.value} className={`flex items-center justify-center p-3 rounded-lg border ${isEditing ? 'cursor-pointer hover:bg-gray-50' : ''}`}>
+                    <label key={type.value} className={`flex items-center justify-center p-3 rounded-lg border ${isEditing ? 'cursor-pointer hover:bg-gray-50' : 'cursor-default'} ${formData.patientType === type.value ? 'border-amber-300 bg-amber-50' : ''}`}>
                       <input
                         type="radio"
                         name="patientType"
@@ -528,7 +600,7 @@ const ProfilePage = () => {
                   name="bloodGroup"
                   value={formData.bloodGroup || ''}
                   onChange={handleInputChange}
-                  className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-amber-300 focus:border-transparent"
+                  className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-amber-300 focus:border-transparent disabled:bg-gray-50 disabled:cursor-not-allowed"
                   disabled={!isEditing}
                 >
                   <option value="">Select Blood Group</option>
@@ -538,14 +610,14 @@ const ProfilePage = () => {
                 </select>
               </div>
 
-              <div>
+              <div className="md:col-span-2">
                 <label className="block text-sm font-medium text-gray-700 mb-2">Medical Condition</label>
                 <input
                   type="text"
                   name="medicalCondition"
                   value={formData.medicalCondition || ''}
                   onChange={handleInputChange}
-                  className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-amber-300 focus:border-transparent"
+                  className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-amber-300 focus:border-transparent disabled:bg-gray-50 disabled:cursor-not-allowed"
                   disabled={!isEditing}
                   placeholder="e.g., Blood Cancer, Surgery, Accident"
                 />
@@ -555,7 +627,7 @@ const ProfilePage = () => {
                 <label className="block text-sm font-medium text-gray-700 mb-2">Urgency Level</label>
                 <div className="grid grid-cols-3 gap-2">
                   {urgencyLevels.map(level => (
-                    <label key={level.value} className={`flex items-center justify-center p-3 rounded-lg border ${isEditing ? 'cursor-pointer hover:bg-gray-50' : ''}`}>
+                    <label key={level.value} className={`flex items-center justify-center p-3 rounded-lg border ${isEditing ? 'cursor-pointer hover:bg-gray-50' : 'cursor-default'} ${formData.urgencyLevel === level.value ? 'border-amber-300 bg-amber-50' : ''}`}>
                       <input
                         type="radio"
                         name="urgencyLevel"
@@ -580,7 +652,7 @@ const ProfilePage = () => {
                   name="hospitalName"
                   value={formData.hospitalName || ''}
                   onChange={handleInputChange}
-                  className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-amber-300 focus:border-transparent"
+                  className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-amber-300 focus:border-transparent disabled:bg-gray-50 disabled:cursor-not-allowed"
                   disabled={!isEditing}
                   placeholder="e.g., City General Hospital"
                 />
@@ -593,7 +665,7 @@ const ProfilePage = () => {
                   name="emergencyContact"
                   value={formData.emergencyContact || ''}
                   onChange={handleInputChange}
-                  className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-amber-300 focus:border-transparent"
+                  className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-amber-300 focus:border-transparent disabled:bg-gray-50 disabled:cursor-not-allowed"
                   disabled={!isEditing}
                   placeholder="Name and phone number"
                 />
@@ -623,7 +695,7 @@ const ProfilePage = () => {
                 {userTypes.map(type => {
                   const IconComponent = type.icon;
                   return (
-                    <label key={type.value} className={`flex flex-col items-center justify-center p-3 rounded-lg border ${isEditing ? 'cursor-pointer hover:bg-gray-50' : ''}`}>
+                    <label key={type.value} className={`flex flex-col items-center justify-center p-3 rounded-lg border ${isEditing ? 'cursor-pointer hover:bg-gray-50' : 'cursor-default'} ${formData.userType === type.value ? 'border-blue-300 bg-blue-50' : ''}`}>
                       <input
                         type="radio"
                         name="userType"
@@ -651,7 +723,7 @@ const ProfilePage = () => {
                   name="location"
                   value={formData.location || ''}
                   onChange={handleInputChange}
-                  className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-300 focus:border-transparent"
+                  className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-300 focus:border-transparent disabled:bg-gray-50 disabled:cursor-not-allowed"
                   disabled={!isEditing}
                   placeholder="City, State"
                 />
@@ -664,7 +736,7 @@ const ProfilePage = () => {
                   name="occupation"
                   value={formData.occupation || ''}
                   onChange={handleInputChange}
-                  className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-300 focus:border-transparent"
+                  className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-300 focus:border-transparent disabled:bg-gray-50 disabled:cursor-not-allowed"
                   disabled={!isEditing}
                   placeholder="e.g., Student, Teacher, Doctor"
                 />
@@ -677,7 +749,7 @@ const ProfilePage = () => {
                   name="organization"
                   value={formData.organization || ''}
                   onChange={handleInputChange}
-                  className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-300 focus:border-transparent"
+                  className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-300 focus:border-transparent disabled:bg-gray-50 disabled:cursor-not-allowed"
                   disabled={!isEditing}
                   placeholder="e.g., ABC Hospital, XYZ NGO"
                 />
@@ -688,32 +760,32 @@ const ProfilePage = () => {
               <label className="block text-sm font-medium text-gray-700 mb-2">Areas of Interest</label>
               <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
                 {interestsList.map(interest => (
-                  <label key={interest} className={`flex items-center space-x-2 ${isEditing ? 'cursor-pointer hover:bg-gray-50 p-2 rounded' : ''}`}>
+                  <label key={interest} className={`flex items-center space-x-2 ${isEditing ? 'cursor-pointer hover:bg-gray-50 p-2 rounded' : 'p-2 cursor-default'} ${(formData.interests || []).includes(interest) ? 'border-blue-300 bg-blue-50' : ''}`}>
                     <input
                       type="checkbox"
                       name="interests"
                       value={interest}
                       checked={(formData.interests || []).includes(interest)}
                       onChange={handleInputChange}
-                      className="h-4 w-4 text-blue-500 rounded disabled:opacity-50"
+                      className="h-4 w-4 text-blue-500 rounded disabled:opacity-50 disabled:cursor-not-allowed"
                       disabled={!isEditing}
                     />
-                    <span className="text-sm text-gray-700">{interest}</span>
+                    <span className={`text-sm ${(formData.interests || []).includes(interest) ? 'text-blue-700 font-medium' : 'text-gray-700'}`}>{interest}</span>
                   </label>
                 ))}
               </div>
             </div>
 
-            <label className={`flex items-center space-x-3 ${isEditing ? 'cursor-pointer' : ''}`}>
+            <label className={`flex items-center space-x-3 ${isEditing ? 'cursor-pointer' : 'cursor-default'}`}>
               <input
                 type="checkbox"
                 name="notifications"
                 checked={formData.notifications || false}
                 onChange={handleInputChange}
-                className="h-4 w-4 text-blue-500 rounded disabled:opacity-50"
+                className="h-4 w-4 text-blue-500 rounded disabled:opacity-50 disabled:cursor-not-allowed"
                 disabled={!isEditing}
               />
-              <span className="text-sm text-gray-700">
+              <span className={`text-sm ${formData.notifications ? 'text-blue-700 font-medium' : 'text-gray-700'}`}>
                 Receive notifications about donation drives and community activities
               </span>
             </label>

@@ -39,6 +39,10 @@ const bloodDonorSchema = new mongoose.Schema(
     address: {
       type: String,
     },
+    // BloodDonor & OrganDonor schema
+    isAvailable: { type: Boolean, default: true },
+    resetOTP: String,
+    resetOTPExpire: Date,
   },
   { timestamps: true }
 );
@@ -47,14 +51,14 @@ const bloodDonorSchema = new mongoose.Schema(
 // 🔐 PASSWORD HASH (before save)
 // 🔹 Pre-save hook without next()
 bloodDonorSchema.pre('save', async function () {
-    if (!this.isModified('password')) return; // Only hash if password changed
-    const salt = await bcrypt.genSalt(10);
-    this.password = await bcrypt.hash(this.password, salt);
+  if (!this.isModified('password')) return; // Only hash if password changed
+  const salt = await bcrypt.genSalt(10);
+  this.password = await bcrypt.hash(this.password, salt);
 });
 
 // Compare password method
 bloodDonorSchema.methods.comparePassword = async function (candidatePassword) {
-    return await bcrypt.compare(candidatePassword, this.password);
+  return await bcrypt.compare(candidatePassword, this.password);
 };
 
 

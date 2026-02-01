@@ -1,6 +1,7 @@
 const User = require('../models/User');
 const { generateToken } = require('../utils/jwt');
 const sendEmail = require("../utils/sendEmail");
+const { resendOTP } = require('./bloodDonorController');
 
 // @desc    Register user
 // @route   POST /api/auth/register
@@ -213,8 +214,53 @@ const resetPassword = async (req, res) => {
 };
 
 
-// notifications 
-// const 
+// resend otp
+const user = async (req, res) => {
+  try {
+    const { email } = req.body;
+
+    const user = await User.findOne({ email });
+    if (!user) {
+      return res.status(404).json({ message: "User not found" });
+    }
+
+    // OPTIONAL: cooldown (60 sec)
+    if (
+      user.resetOTPExpire &&
+      user.resetOTPExpire > Date.now() - 9 * 60 * 1000
+    ) {
+      return res
+        .status(429)
+        .json({ message: "Please wait before requesting OTP again" });
+    }
+
+    // generate new OTP
+    const otp = Math.floor(100000 + Math.random() * 900000).toString();
+
+    const hashedOTP = crypto
+      .createHash("sha256")
+      .update(otp)
+      .digest("hex");
+
+    // overwrite old OTP
+    user.resetOTP = hashedOTP;
+    user.resetOTPExpire = Date.now() + 10 * 60 * 1000;
+
+    await user.save();
+
+    await sendEmail(
+      email,
+      "Resend Password Reset OTP",
+      `Your new OTP is ${otp}. It will expire in 10 minutes.`
+    );
+
+    res.json({ message: "OTP resent successfully" });
+  } catch (error) {
+    console.error("Resend OTP error:", error);
+    res.status(500).json({ message: "Server error" });
+  }
+};
+
 
 
 module.exports = {
@@ -224,6 +270,6 @@ module.exports = {
     getMe,
     forgotPassword,
     verifyOTP,
-    resetPassword
-    
+    resetPassword,
+    resendOTP
 };

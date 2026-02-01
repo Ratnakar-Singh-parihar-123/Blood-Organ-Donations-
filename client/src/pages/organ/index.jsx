@@ -7,6 +7,7 @@ import SafetyAndProcess from "./components/SafetyAndProcess";
 import ImpactStories from "./components/ImpactStories";
 import MythsVsFacts from "./components/MythsVsFacts";
 import OrganDonationCTA from "./components/OrganDonationCTA";
+import OrganRequestForm from "./components/OrganRequestForm";
 
 function OrganPages() {
   useEffect(() => {
@@ -17,6 +18,7 @@ function OrganPages() {
     <>
       <OrganHeroSections />
       <OrgansList />
+      <OrganRequestForm />
       <EligibilitySection />
       <HowOrganDonationWorks />
       <SafetyAndProcess />

@@ -1,783 +1,566 @@
-import React, { useState, useEffect } from 'react';
+import React from "react";
 import { 
   Heart, 
   Droplets, 
-  ArrowRight, 
-  MapPin,
-  Shield,
-  Clock,
-  Users,
-  Sparkles,
+  Calendar, 
+  Shield, 
+  Clock, 
+  User, 
+  Award,
   ChevronRight,
-  Zap,
-  AlertCircle,
-  X,
   CheckCircle,
-  User,
+  MapPin,
   Phone,
-  Mail,
-  Calendar,
-  FileText,
-  Thermometer
-} from 'lucide-react';
+  Star,
+  TrendingUp,
+  AlertCircle,
+  ArrowRight,
+  RefreshCw,
+  Zap,
+  Target
+} from "lucide-react";
 
 const BloodHeroSection = () => {
-  const [isVisible, setIsVisible] = useState(false);
-  const [bloodDropPosition, setBloodDropPosition] = useState(0);
-  const [pulse, setPulse] = useState(false);
-  const [showDonationForm, setShowDonationForm] = useState(false);
-  const [formSubmitted, setFormSubmitted] = useState(false);
-  const [currentBg, setCurrentBg] = useState(0);
-  const [formData, setFormData] = useState({
-    name: '',
-    age: '',
-    bloodGroup: '',
-    phone: '',
-    email: '',
-    donationDate: '',
-    address: '',
-    previousDonation: 'no',
-    healthCondition: ''
-  });
-
-  // Background images array
-  const backgroundImages = [
-    'https://images.unsplash.com/photo-1588776814546-1ffcf47267a5?ixlib=rb-4.0.3&auto=format&fit=crop&w=1920&q=80',
-    'https://images.unsplash.com/photo-1579684385127-1ef15d508118?ixlib=rb-4.0.3&auto=format&fit=crop&w=1920&q=80',
-    'https://images.unsplash.com/photo-1584036561566-baf8f5f1b144?ixlib=rb-4.0.3&auto=format&fit=crop&w=1920&q=80',
-    'https://images.unsplash.com/photo-1559757148-5c350d0d3c56?ixlib=rb-4.0.3&auto=format&fit=crop&w=1920&q=80'
-  ];
-
-  // Initialize animations and background slideshow
-  useEffect(() => {
-    setIsVisible(true);
-    
-    // Animate blood drop
-    const dropInterval = setInterval(() => {
-      setBloodDropPosition(prev => {
-        if (prev >= 100) return 0;
-        return prev + 10;
-      });
-    }, 300);
-
-    // Pulse animation
-    const pulseInterval = setInterval(() => {
-      setPulse(prev => !prev);
-    }, 1500);
-
-    // Background slideshow
-    const bgInterval = setInterval(() => {
-      setCurrentBg(prev => (prev + 1) % backgroundImages.length);
-    }, 6000);
-
-    return () => {
-      clearInterval(dropInterval);
-      clearInterval(pulseInterval);
-      clearInterval(bgInterval);
-    };
-  }, []);
-
-  const stats = [
-    { value: '36,000', label: 'Units Needed Daily', icon: AlertCircle, color: 'text-rose-500' },
-    { value: 'Every 2 sec', label: 'Someone Needs Blood', icon: Clock, color: 'text-amber-500' },
-    { value: '3', label: 'Lives Per Donation', icon: Users, color: 'text-emerald-500' },
-    { value: '45 min', label: 'Donation Time', icon: Shield, color: 'text-blue-500' }
-  ];
-
-  const donationCenters = [
-    { name: 'City Blood Bank', distance: '1.2 km', availability: 'Open Now' },
-    { name: 'Community Hospital', distance: '2.5 km', availability: 'Open Now' },
-    { name: 'Red Cross Center', distance: '3.8 km', availability: 'Open until 8 PM' }
-  ];
-
-  const bloodGroups = ['A+', 'A-', 'B+', 'B-', 'O+', 'O-', 'AB+', 'AB-'];
-
-  const handleInputChange = (e) => {
-    const { name, value } = e.target;
-    setFormData(prev => ({
-      ...prev,
-      [name]: value
-    }));
-  };
-
-  const handleSubmit = (e) => {
-    e.preventDefault();
-    // Here you would typically send data to backend
-    console.log('Form submitted:', formData);
-    setFormSubmitted(true);
-    
-    // Reset form after 3 seconds
-    setTimeout(() => {
-      setFormSubmitted(false);
-      setShowDonationForm(false);
-      setFormData({
-        name: '',
-        age: '',
-        bloodGroup: '',
-        phone: '',
-        email: '',
-        donationDate: '',
-        address: '',
-        previousDonation: 'no',
-        healthCondition: ''
-      });
-    }, 3000);
-  };
-
   return (
-    <>
-      <section className="relative min-h-screen lg:min-h-[90vh] overflow-hidden">
-        
-        {/* Background Slideshow */}
-        <div className="absolute inset-0 z-0">
-          {backgroundImages.map((img, index) => (
-            <div
-              key={index}
-              className={`absolute inset-0 transition-opacity duration-1000 ${
-                currentBg === index ? 'opacity-30' : 'opacity-0'
-              }`}
-              style={{
-                backgroundImage: `linear-gradient(to right, rgba(255,255,255,0.9), rgba(255,255,255,0.7)), url(${img})`,
-                backgroundSize: 'cover',
-                backgroundPosition: 'center',
-                backgroundRepeat: 'no-repeat'
-              }}
-            />
-          ))}
-          
-          {/* Gradient Overlay */}
-          <div className="absolute inset-0 bg-gradient-to-b from-white via-white/80 to-rose-50/30"></div>
-          
-          {/* Animated Background Elements */}
-          <div className="absolute inset-0 overflow-hidden">
-            {/* Floating Blood Drops */}
-            {[...Array(8)].map((_, i) => (
-              <div
-                key={i}
-                className="absolute text-rose-200/30 animate-float"
-                style={{
-                  left: `${10 + i * 12}%`,
-                  top: `${15 + (i % 4) * 25}%`,
-                  animationDelay: `${i * 0.7}s`,
-                  animationDuration: `${4 + Math.random() * 4}s`
-                }}
-              >
-                <Droplets className="h-16 w-16" fill="currentColor" />
-              </div>
-            ))}
-            
-            {/* Animated Falling Blood Drop */}
-            <div
-              className="absolute left-1/2 transform -translate-x-1/2 z-10"
-              style={{
-                top: `${bloodDropPosition}%`,
-                opacity: bloodDropPosition > 90 ? 0 : 1,
-                transition: 'top 0.3s linear, opacity 0.3s'
-              }}
-            >
-              <div className="relative">
-                <Droplets className="h-12 w-12 text-rose-600" fill="#dc2626" />
-                <div className="absolute inset-0 bg-rose-600 rounded-full blur-sm animate-pulse"></div>
-              </div>
-            </div>
-          </div>
-        </div>
+    <div className="bg-gradient-to-b from-red-50 via-white to-white">
+      {/* ================= HERO SECTION ================= */}
+      <section className="relative overflow-hidden">
+        {/* Background Elements */}
+        <div className="absolute top-0 right-0 w-1/3 h-1/3 bg-gradient-to-br from-red-200/30 to-pink-200/20 rounded-full -translate-y-1/3 translate-x-1/3 blur-3xl"></div>
+        <div className="absolute bottom-0 left-0 w-1/3 h-1/3 bg-gradient-to-tr from-red-100/30 to-rose-100/20 rounded-full translate-y-1/3 -translate-x-1/3 blur-3xl"></div>
 
-        {/* Main Content */}
-        <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-20 lg:pt-28 pb-20">
-          <div className="grid lg:grid-cols-2 gap-12 items-center">
-            
-            {/* Left Column - Text Content */}
-            <div className={`space-y-8 transition-all duration-1000 ${isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-10'}`}>
-              
-              {/* Trust Badge */}
-              <div className="inline-flex items-center space-x-2 bg-white/90 backdrop-blur-sm px-4 py-2 rounded-full border border-rose-100 shadow-lg">
-                <Sparkles className="h-4 w-4 text-rose-500" />
-                <span className="text-sm font-medium text-gray-700">Trusted by 50K+ Donors</span>
-                <div className="flex -space-x-2">
-                  {[1,2,3].map((i) => (
-                    <div key={i} className="w-6 h-6 rounded-full bg-gradient-to-r from-rose-400 to-rose-300 border-2 border-white shadow-sm"></div>
-                  ))}
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 md:py-20 lg:py-28">
+          <div className="grid lg:grid-cols-2 gap-10 lg:gap-16 items-center">
+            {/* Left Content */}
+            <div className="relative z-10 order-2 lg:order-1">
+              <div className="inline-flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-red-600 to-rose-600 rounded-full text-white text-sm font-medium mb-6 shadow-lg shadow-red-500/20">
+                <Heart className="h-4 w-4" fill="white" />
+                <span>Join 50,000+ Lifesavers Today</span>
+              </div>
+
+              <h1 className="text-4xl sm:text-5xl lg:text-6xl font-bold text-gray-900 leading-tight tracking-tight">
+                Give Blood,
+                <span className="block text-transparent bg-clip-text bg-gradient-to-r from-red-600 to-rose-600">
+                  Save Lives
+                </span>
+                Every Drop Counts
+              </h1>
+
+              <p className="mt-4 sm:mt-6 text-lg text-gray-600 max-w-xl leading-relaxed">
+                Your single blood donation can save up to 3 lives. Join our 
+                community of heroes and be the reason someone gets to see tomorrow.
+              </p>
+
+              {/* Stats */}
+              <div className="grid grid-cols-2 sm:grid-cols-3 gap-4 mt-8">
+                <div className="bg-white p-4 rounded-xl shadow-sm border border-red-100">
+                  <div className="flex items-center gap-2">
+                    <User className="h-5 w-5 text-red-600" />
+                    <span className="text-2xl font-bold text-gray-900">50K+</span>
+                  </div>
+                  <p className="text-sm text-gray-500 mt-1">Active Donors</p>
                 </div>
-              </div>
-
-              {/* Main Headline */}
-              <div className="space-y-4">
-                <h1 className="text-4xl sm:text-5xl lg:text-6xl font-bold tracking-tight">
-                  <span className="block text-gray-900">Donate Blood,</span>
-                  <span className="block bg-gradient-to-r from-rose-700 via-rose-600 to-rose-500 bg-clip-text text-transparent">
-                    Save Lives
-                  </span>
-                </h1>
-                
-                {/* Subtext */}
-                <p className="text-lg sm:text-xl text-gray-700 max-w-xl leading-relaxed">
-                  Every 2 seconds, someone needs blood. Your single donation can save up to 
-                  <span className="font-semibold text-rose-600"> 3 lives</span>. Join our community of everyday heroes today.
-                </p>
-              </div>
-
-              {/* Emergency Alert */}
-              <div className="bg-gradient-to-r from-rose-50/90 to-pink-50/90 backdrop-blur-sm rounded-2xl p-4 border border-rose-200 shadow-lg">
-                <div className="flex items-center space-x-3">
-                  <div className="p-2 bg-rose-100 rounded-lg">
-                    <AlertCircle className="h-5 w-5 text-rose-600" />
+                <div className="bg-white p-4 rounded-xl shadow-sm border border-rose-100">
+                  <div className="flex items-center gap-2">
+                    <Droplets className="h-5 w-5 text-rose-600" />
+                    <span className="text-2xl font-bold text-gray-900">150K+</span>
                   </div>
-                  <div>
-                    <div className="font-bold text-gray-900">URGENT NEED</div>
-                    <div className="text-rose-600 font-semibold">O- blood type critically low</div>
-                    <div className="text-sm text-gray-600 mt-1">Immediate donations needed</div>
+                  <p className="text-sm text-gray-500 mt-1">Lives Saved</p>
+                </div>
+                <div className="bg-white p-4 rounded-xl shadow-sm border border-red-100 col-span-2 sm:col-span-1">
+                  <div className="flex items-center gap-2">
+                    <Clock className="h-5 w-5 text-red-600" />
+                    <span className="text-2xl font-bold text-gray-900">15 min</span>
                   </div>
+                  <p className="text-sm text-gray-500 mt-1">Avg. Donation</p>
                 </div>
               </div>
 
               {/* CTA Buttons */}
-              <div className="flex flex-col sm:flex-row gap-4 pt-4">
-                {/* Primary CTA - Donate Now */}
-                <button 
-                  onClick={() => setShowDonationForm(true)}
-                  className="group relative px-8 py-4 bg-gradient-to-r from-rose-600 to-rose-500 text-white rounded-2xl font-semibold text-lg shadow-xl shadow-rose-300 hover:shadow-2xl hover:shadow-rose-400 transition-all duration-300 hover:scale-105 active:scale-95 flex items-center justify-center space-x-2"
-                >
-                  <div className="absolute inset-0 bg-gradient-to-r from-rose-700 to-rose-600 rounded-2xl opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
-                  <Droplets className="h-6 w-6 relative z-10" />
-                  <span className="relative z-10">Donate Now</span>
-                  <ArrowRight className="h-5 w-5 relative z-10 group-hover:translate-x-1 transition-transform" />
-                  
-                  {/* Pulse Effect */}
-                  <div className={`absolute inset-0 rounded-2xl border-2 border-rose-400 transition-all duration-1000 ${
-                    pulse ? 'scale-110 opacity-30' : 'scale-100 opacity-0'
-                  }`}></div>
+              <div className="flex flex-col sm:flex-row gap-4 mt-10">
+                <button className="group relative bg-gradient-to-r from-red-600 to-rose-600 hover:from-red-700 hover:to-rose-700 text-white px-8 py-4 rounded-xl font-semibold text-lg shadow-lg shadow-red-500/25 hover:shadow-xl hover:shadow-red-500/30 transition-all duration-300 transform hover:-translate-y-0.5">
+                  <span className="flex items-center justify-center gap-2">
+                    Donate Blood Now
+                    <svg className="w-5 h-5 group-hover:translate-x-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M13 7l5 5m0 0l-5 5m5-5H6" />
+                    </svg>
+                  </span>
                 </button>
 
-                {/* Secondary CTA - Find Blood */}
-                <button className="group px-8 py-4 bg-white/90 backdrop-blur-sm text-gray-800 rounded-2xl font-semibold text-lg border-2 border-rose-100 hover:border-rose-300 shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105 active:scale-95 flex items-center justify-center space-x-2">
-                  <MapPin className="h-5 w-5 text-rose-500" />
-                  <span>Find Blood</span>
-                  <ChevronRight className="h-5 w-5 text-rose-500 group-hover:translate-x-1 transition-transform" />
+                <button className="group flex items-center justify-center gap-3 px-8 py-4 bg-white text-gray-700 rounded-xl font-medium border-2 border-gray-200 hover:border-red-300 hover:bg-red-50 transition-all duration-300">
+                  <Calendar className="h-5 w-5 text-red-600 group-hover:text-red-700" />
+                  <span>Schedule Donation</span>
                 </button>
               </div>
 
-              {/* Quick Stats */}
-              <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 pt-4">
-                {stats.map((stat, idx) => (
-                  <div key={idx} className={`bg-white/90 backdrop-blur-sm p-4 rounded-xl border border-gray-100 shadow-lg hover:shadow-xl transition-all duration-300 hover:-translate-y-1 ${
-                    isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-10'
-                  }`} 
-                       style={{ transitionDelay: `${idx * 100}ms` }}>
-                    <div className="flex items-center space-x-2">
-                      <div className={`p-2 rounded-lg ${stat.color.replace('text-', 'bg-')}/10`}>
-                        <stat.icon className={`h-5 w-5 ${stat.color}`} />
-                      </div>
-                      <div>
-                        <div className="text-xl font-bold text-gray-900">{stat.value}</div>
-                        <div className="text-sm text-gray-600">{stat.label}</div>
-                      </div>
-                    </div>
-                  </div>
-                ))}
+              {/* Trust Badges */}
+              <div className="mt-12">
+                <p className="text-sm text-gray-500 mb-4">Certified by leading health organizations</p>
+                <div className="flex flex-wrap gap-4 items-center">
+                  <div className="h-8 text-gray-400">🏥</div>
+                  <div className="h-8 text-gray-400">🔬</div>
+                  <div className="h-8 text-gray-400">⚕️</div>
+                  <div className="h-8 text-gray-400">🏛️</div>
+                  <div className="text-sm text-gray-500 font-medium">+ 12 more</div>
+                </div>
               </div>
             </div>
 
-            {/* Right Column - Visual Element */}
-            <div className={`relative ${isVisible ? 'opacity-100 translate-x-0' : 'opacity-0 translate-x-10'}`}>
-              
-              {/* Main Illustration Container */}
-              <div className="relative max-w-lg mx-auto">
+            {/* Right Image */}
+            <div className="relative order-1 lg:order-2 lg:h-full">
+              {/* Main Card */}
+              <div className="relative bg-gradient-to-br from-white to-red-50 rounded-3xl shadow-2xl shadow-red-500/10 p-6 lg:p-8 overflow-hidden">
+                {/* Background Pattern */}
+                <div className="absolute top-0 right-0 w-64 h-64 bg-gradient-to-br from-red-100/50 to-rose-100/30 rounded-full -translate-y-32 translate-x-32"></div>
                 
+                {/* Main Image */}
+                <div className="relative z-10">
+                  <img
+                    src="https://vims.ac.in/vims-hospital/wp-content/uploads/2025/08/Who-Can-Donate-Blood-1024x1024.png"
+                    alt="Blood Donation Hero"
+                    className="w-full h-auto rounded-2xl shadow-lg object-cover"
+                  />
+                </div>
+
                 {/* Floating Emergency Card */}
-                <div className="absolute -top-6 -left-6 z-20">
-                  <div className="bg-white/95 backdrop-blur-sm p-6 rounded-2xl shadow-2xl border border-rose-100 animate-float-slow">
-                    <div className="flex items-center space-x-3">
-                      <div className="p-3 bg-rose-50 rounded-xl">
-                        <Zap className="h-6 w-6 text-rose-500" />
+                <div className="absolute bottom-6 left-6 right-6 bg-gradient-to-r from-red-700 to-rose-700 text-white rounded-2xl p-4 shadow-xl shadow-red-600/25 transform hover:-translate-y-1 transition-transform duration-300">
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-3">
+                      <div className="bg-white/20 p-2 rounded-lg backdrop-blur-sm">
+                        <AlertCircle className="h-6 w-6" />
                       </div>
                       <div>
-                        <div className="font-bold text-gray-900">Emergency Ready</div>
-                        <div className="text-sm text-gray-600">24/7 Blood Supply</div>
+                        <p className="font-bold text-lg">Urgent Need</p>
+                        <p className="text-sm text-white/90">Type O- Required</p>
                       </div>
+                    </div>
+                    <button className="bg-white text-red-700 hover:bg-gray-100 px-4 py-2 rounded-lg font-semibold text-sm transition-colors">
+                      Donate Now
+                    </button>
+                  </div>
+                </div>
+
+                {/* Floating Stats Card */}
+                <div className="absolute top-6 right-6 bg-white/90 backdrop-blur-sm rounded-xl p-4 shadow-lg">
+                  <div className="flex items-center gap-3">
+                    <div className="w-12 h-12 bg-red-100 rounded-xl flex items-center justify-center">
+                      <Droplets className="h-6 w-6 text-red-600" />
+                    </div>
+                    <div>
+                      <p className="text-2xl font-bold text-gray-900">450ml</p>
+                      <p className="text-sm text-gray-600">Per Donation</p>
                     </div>
                   </div>
                 </div>
 
-                {/* Floating Impact Card */}
-                <div className="absolute -bottom-6 -right-6 z-20">
-                  <div className="bg-white/95 backdrop-blur-sm p-6 rounded-2xl shadow-2xl border border-emerald-100 animate-float-delayed">
-                    <div className="flex items-center space-x-3">
-                      <div className="p-3 bg-emerald-50 rounded-xl">
-                        <Users className="h-6 w-6 text-emerald-500" />
-                      </div>
-                      <div>
-                        <div className="font-bold text-gray-900">3 Lives</div>
-                        <div className="text-sm text-gray-600">Per Donation</div>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-
-                {/* Central Heart Illustration */}
-                <div className="relative bg-gradient-to-br from-white/95 to-rose-50/70 backdrop-blur-sm rounded-3xl p-8 shadow-2xl border border-rose-100/50 overflow-hidden">
-                  
-                  {/* Background Pattern */}
-                  <div className="absolute inset-0 opacity-10">
-                    <div className="absolute top-0 left-0 w-full h-full">
-                      <Heart className="w-full h-full text-rose-300" fill="currentColor" />
-                    </div>
-                  </div>
-
-                  {/* Animated Heart with Blood Drop */}
-                  <div className="relative z-10 flex flex-col items-center justify-center py-12">
-                    
-                    {/* Pulsing Rings */}
-                    <div className="absolute w-56 h-56 border-2 border-rose-300/30 rounded-full animate-pulse-slow"></div>
-                    <div className="absolute w-64 h-64 border-2 border-rose-400/20 rounded-full animate-pulse-slower"></div>
-                    
-                    {/* Heart Container */}
+                {/* Floating Donor Card */}
+                <div className="absolute top-1/4 -left-4 bg-white rounded-xl p-4 shadow-lg transform hover:-translate-x-1 transition-transform duration-300">
+                  <div className="flex items-center gap-3">
                     <div className="relative">
-                      
-                      {/* Glow Effect */}
-                      <div className="absolute inset-0 bg-gradient-to-r from-rose-600 to-rose-500 rounded-full blur-xl opacity-40 animate-pulse"></div>
-                      
-                      {/* Heart with Blood Drop */}
-                      <div className="relative bg-gradient-to-r from-rose-600 to-rose-500 w-48 h-48 rounded-3xl flex items-center justify-center shadow-2xl shadow-rose-400/50">
-                        <Heart className="h-32 w-32 text-white" fill="white" />
-                        
-                        {/* Animated Blood Drop */}
-                        <div className="absolute top-4 right-4 animate-bounce-slow">
-                          <div className="relative">
-                            <Droplets className="h-12 w-12 text-white" fill="white" />
-                            <div className="absolute inset-0 bg-white rounded-full blur-sm"></div>
-                          </div>
-                        </div>
-                      </div>
+                      <img
+                        src="https://images.unsplash.com/photo-1560250097-0b93528c311a?ixlib=rb-4.0.3&auto=format&fit=crop&w=100&q=80"
+                        alt="Donor"
+                        className="w-12 h-12 rounded-full object-cover border-2 border-white shadow"
+                      />
+                      <div className="absolute -bottom-1 -right-1 w-5 h-5 bg-green-500 rounded-full border-2 border-white"></div>
                     </div>
-
-                    {/* Connection Dots */}
-                    <div className="flex items-center justify-center mt-12 space-x-6">
-                      {[1, 2, 3].map((i) => (
-                        <div key={i} className="flex flex-col items-center">
-                          <div className={`w-10 h-10 rounded-full ${i === 2 ? 'bg-gradient-to-r from-rose-600 to-rose-500' : 'bg-gray-400'} flex items-center justify-center shadow-lg`}>
-                            {i === 2 ? (
-                              <Users className="h-5 w-5 text-white" />
-                            ) : (
-                              <Heart className="h-5 w-5 text-gray-600" />
-                            )}
-                          </div>
-                          <div className="h-6 w-0.5 bg-gradient-to-b from-rose-400 to-transparent mt-2"></div>
-                        </div>
-                      ))}
+                    <div>
+                      <p className="font-semibold text-gray-900">Alex M.</p>
+                      <p className="text-sm text-gray-600">12 Donations</p>
                     </div>
                   </div>
                 </div>
-              </div>
-
-              {/* Nearby Centers */}
-              <div className="mt-8 bg-white/95 backdrop-blur-sm rounded-2xl border border-gray-100 p-6 shadow-xl">
-                <div className="flex items-center justify-between mb-4">
-                  <h3 className="font-bold text-gray-900">Nearby Donation Centers</h3>
-                  <span className="text-sm text-rose-600 font-medium">3 available</span>
-                </div>
-                
-                <div className="space-y-3">
-                  {donationCenters.map((center, index) => (
-                    <div key={index} className="flex items-center justify-between p-3 bg-gray-50/80 rounded-lg hover:bg-gray-100/80 transition-colors">
-                      <div>
-                        <div className="font-medium text-gray-900">{center.name}</div>
-                        <div className="text-sm text-gray-600">{center.distance} away</div>
-                      </div>
-                      <div className={`px-3 py-1 rounded-full text-xs font-medium ${
-                        center.availability.includes('Open') 
-                          ? 'bg-emerald-100 text-emerald-700'
-                          : 'bg-amber-100 text-amber-700'
-                      }`}>
-                        {center.availability}
-                      </div>
-                    </div>
-                  ))}
-                </div>
-                
-                <button className="w-full mt-4 py-3 bg-rose-50 text-rose-600 font-medium rounded-lg hover:bg-rose-100 transition-colors flex items-center justify-center space-x-2">
-                  <MapPin className="h-5 w-5" />
-                  <span>View All Centers</span>
-                </button>
-              </div>
-            </div>
-          </div>
-
-          {/* Mobile Quick Actions */}
-          <div className="lg:hidden mt-12">
-            <div className="grid grid-cols-2 gap-4">
-              <button className="p-4 bg-white/95 backdrop-blur-sm rounded-xl border border-gray-100 shadow-lg hover:shadow-xl transition-all hover:-translate-y-1">
-                <div className="flex items-center space-x-3">
-                  <div className="p-2 bg-rose-50 rounded-lg">
-                    <Clock className="h-5 w-5 text-rose-500" />
-                  </div>
-                  <div>
-                    <div className="font-medium text-gray-900">Book Slot</div>
-                    <div className="text-sm text-gray-600">Quick appointment</div>
-                  </div>
-                </div>
-              </button>
-              
-              <button className="p-4 bg-white/95 backdrop-blur-sm rounded-xl border border-gray-100 shadow-lg hover:shadow-xl transition-all hover:-translate-y-1">
-                <div className="flex items-center space-x-3">
-                  <div className="p-2 bg-blue-50 rounded-lg">
-                    <Shield className="h-5 w-5 text-blue-500" />
-                  </div>
-                  <div>
-                    <div className="font-medium text-gray-900">Eligibility</div>
-                    <div className="text-sm text-gray-600">Check if you can donate</div>
-                  </div>
-                </div>
-              </button>
-            </div>
-          </div>
-
-          {/* Scroll Indicator */}
-          <div className="absolute bottom-8 left-1/2 transform -translate-x-1/2 animate-bounce z-20">
-            <div className="flex flex-col items-center space-y-2">
-              <div className="text-xs text-gray-600 font-medium">Scroll to learn more</div>
-              <div className="w-6 h-10 border-2 border-rose-300 rounded-full flex justify-center">
-                <div className="w-1 h-3 bg-gradient-to-b from-rose-500 to-rose-400 rounded-full mt-2 animate-scroll"></div>
               </div>
             </div>
           </div>
         </div>
       </section>
 
-      {/* Donation Form Modal */}
-      {showDonationForm && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm">
-          <div className="relative w-full max-w-2xl max-h-[90vh] overflow-y-auto">
-            {formSubmitted ? (
-              /* Success Message */
-              <div className="bg-gradient-to-br from-emerald-50 to-white rounded-2xl shadow-2xl border border-emerald-100 p-8">
-                <div className="flex flex-col items-center text-center space-y-6">
-                  <div className="w-24 h-24 bg-emerald-100 rounded-full flex items-center justify-center">
-                    <CheckCircle className="h-12 w-12 text-emerald-600" />
+      {/* ================= WHY DONATE SECTION ================= */}
+      <section className="py-16 md:py-24 lg:py-32 px-4 sm:px-6 lg:px-8">
+        <div className="max-w-7xl mx-auto">
+          <div className="grid lg:grid-cols-2 gap-12 lg:gap-20 items-center">
+            {/* Image Section */}
+            <div className="relative order-2 lg:order-1">
+              <div className="relative bg-gradient-to-br from-white to-red-50 rounded-3xl shadow-xl shadow-red-500/10 p-4 overflow-hidden">
+                <img
+                  src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRvI2XEX02CsZIHdkbrqfQLANikxWgHquQgcg&s"
+                  alt="Why Donate Blood"
+                  className="w-full h-auto rounded-2xl shadow-lg"
+                />
+                
+                {/* Floating Card */}
+                <div className="absolute -bottom-4 -right-4 bg-white rounded-2xl shadow-xl p-6 max-w-xs">
+                  <div className="flex items-center gap-3">
+                    <div className="w-12 h-12 bg-gradient-to-r from-red-500 to-rose-500 rounded-xl flex items-center justify-center">
+                      <Shield className="h-6 w-6 text-white" />
+                    </div>
+                    <div>
+                      <p className="font-bold text-gray-900">100% Safe</p>
+                      <p className="text-sm text-gray-600">Sterilized process</p>
+                    </div>
                   </div>
-                  <div>
-                    <h3 className="text-2xl font-bold text-gray-900 mb-2">
-                      Thank You for Registering!
-                    </h3>
-                    <p className="text-gray-600">
-                      Your donation request has been submitted successfully. 
-                      Our team will contact you within 24 hours to schedule your appointment.
-                    </p>
-                  </div>
-                  <button
-                    onClick={() => setShowDonationForm(false)}
-                    className="px-6 py-3 bg-emerald-600 text-white font-semibold rounded-lg hover:bg-emerald-700 transition-colors"
-                  >
-                    Close
-                  </button>
                 </div>
               </div>
-            ) : (
-              /* Donation Form */
-              <div className="bg-gradient-to-br from-white to-rose-50/50 rounded-2xl shadow-2xl border border-rose-100 overflow-hidden">
-                {/* Header */}
-                <div className="bg-gradient-to-r from-rose-600 to-rose-500 p-6">
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center space-x-3">
-                      <div className="p-2 bg-white/20 rounded-lg">
-                        <Droplets className="h-6 w-6 text-white" />
+            </div>
+
+            {/* Content Section */}
+            <div className="order-1 lg:order-2">
+              <div className="inline-flex items-center gap-2 px-4 py-2 bg-red-100 text-red-700 rounded-full text-sm font-medium mb-6">
+                <Target className="h-4 w-4" />
+                <span>The Power of Giving</span>
+              </div>
+
+              <h2 className="text-3xl sm:text-4xl lg:text-5xl font-bold text-gray-900">
+                Why Donate
+                <span className="block text-transparent bg-clip-text bg-gradient-to-r from-red-600 to-rose-600">
+                  Blood?
+                </span>
+              </h2>
+
+              <p className="mt-4 text-lg text-gray-600">
+                Blood is the most precious gift anyone can give to another person — 
+                the gift of life. A decision to donate your blood can save multiple lives.
+              </p>
+
+              {/* Key Points */}
+              <div className="space-y-6 mt-8">
+                {[
+                  {
+                    icon: Heart,
+                    title: "Save Lives",
+                    desc: "One donation can save up to 3 lives"
+                  },
+                  {
+                    icon: Zap,
+                    title: "Health Benefits",
+                    desc: "Reduces risk of heart disease & burns calories"
+                  },
+                  {
+                    icon: User,
+                    title: "Community Impact",
+                    desc: "Be part of a lifesaving network"
+                  },
+                  {
+                    icon: Award,
+                    title: "Free Health Check",
+                    desc: "Get your blood pressure & hemoglobin tested"
+                  }
+                ].map((item, idx) => {
+                  const Icon = item.icon;
+                  return (
+                    <div key={idx} className="flex items-start gap-4 p-4 bg-white rounded-xl border border-gray-100 hover:border-red-200 transition-colors">
+                      <div className="w-12 h-12 bg-red-50 rounded-lg flex items-center justify-center flex-shrink-0">
+                        <Icon className="h-6 w-6 text-red-600" />
                       </div>
                       <div>
-                        <h2 className="text-2xl font-bold text-white">Become a Blood Donor</h2>
-                        <p className="text-rose-100">Fill the form to schedule your donation</p>
+                        <h3 className="font-bold text-gray-900">{item.title}</h3>
+                        <p className="text-gray-600 mt-1">{item.desc}</p>
                       </div>
                     </div>
-                    <button
-                      onClick={() => setShowDonationForm(false)}
-                      className="p-2 hover:bg-white/20 rounded-lg transition-colors"
-                    >
-                      <X className="h-6 w-6 text-white" />
-                    </button>
+                  );
+                })}
+              </div>
+
+              <button className="mt-10 group flex items-center gap-2 text-red-600 font-semibold text-lg hover:text-red-700 transition-colors">
+                Learn More About Benefits
+                <ChevronRight className="h-5 w-5 group-hover:translate-x-1 transition-transform" />
+              </button>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* ================= HOW IT WORKS SECTION ================= */}
+      <section className="py-16 md:py-24 lg:py-32 bg-gradient-to-b from-white to-red-50 px-4 sm:px-6 lg:px-8">
+        <div className="max-w-7xl mx-auto">
+          <div className="text-center">
+            <div className="inline-flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-red-600 to-rose-600 rounded-full text-white text-sm font-medium mb-6">
+              <RefreshCw className="h-4 w-4" />
+              <span>Simple & Safe Process</span>
+            </div>
+
+            <h2 className="text-3xl sm:text-4xl lg:text-5xl font-bold text-gray-900 mb-4">
+              How It Works
+            </h2>
+            <p className="text-lg text-gray-600 max-w-2xl mx-auto">
+              Donating blood is simple, safe, and takes less time than you think. 
+              Follow these 4 easy steps to become a lifesaver.
+            </p>
+          </div>
+
+          {/* Steps */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 lg:gap-8 mt-12 lg:mt-20">
+            {[
+              {
+                number: "01",
+                title: "Register & Check Eligibility",
+                desc: "Quick sign-up and health questionnaire",
+                icon: User
+              },
+              {
+                number: "02",
+                title: "Health Screening",
+                desc: "Free health check and blood test",
+                icon: Shield
+              },
+              {
+                number: "03",
+                title: "Donate Blood",
+                desc: "Safe, sterile process (10-15 mins)",
+                icon: Droplets
+              },
+              {
+                number: "04",
+                title: "Refresh & Reward",
+                desc: "Snacks and recovery (plus donor perks!)",
+                icon: Award
+              }
+            ].map((step, idx) => {
+              const Icon = step.icon;
+              return (
+                <div key={idx} className="group relative">
+                  {/* Connecting Line (Desktop) */}
+                  {idx < 3 && (
+                    <div className="hidden lg:block absolute top-12 left-3/4 w-full h-0.5 bg-gradient-to-r from-red-200 to-rose-200 group-hover:from-red-400 group-hover:to-rose-400 transition-colors z-0"></div>
+                  )}
+
+                  <div className="relative bg-white rounded-2xl shadow-lg border border-gray-100 p-6 lg:p-8 transition-all duration-300 group-hover:shadow-xl group-hover:-translate-y-2 group-hover:border-red-200 z-10">
+                    {/* Step Number */}
+                    <div className="absolute -top-4 -left-4 w-16 h-16 bg-gradient-to-r from-red-600 to-rose-600 rounded-2xl flex items-center justify-center text-white font-bold text-2xl shadow-lg">
+                      {step.number}
+                    </div>
+
+                    {/* Icon */}
+                    <div className="mb-6 pt-4">
+                      <div className="w-14 h-14 bg-red-50 rounded-xl flex items-center justify-center group-hover:scale-110 transition-transform">
+                        <Icon className="h-7 w-7 text-red-600" />
+                      </div>
+                    </div>
+
+                    {/* Content */}
+                    <h3 className="text-xl font-bold text-gray-900 mb-3">{step.title}</h3>
+                    <p className="text-gray-600">{step.desc}</p>
+
+                    {/* Arrow */}
+                    <div className="mt-6 opacity-0 group-hover:opacity-100 transition-opacity">
+                      <ArrowRight className="h-5 w-5 text-red-600" />
+                    </div>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+
+          {/* CTA */}
+          <div className="text-center mt-16">
+            <button className="group bg-gradient-to-r from-red-600 to-rose-600 hover:from-red-700 hover:to-rose-700 text-white px-8 py-4 rounded-xl font-semibold text-lg shadow-lg shadow-red-500/25 hover:shadow-xl hover:shadow-red-500/30 transition-all duration-300 inline-flex items-center gap-2">
+              Start Your Donation Journey
+              <ArrowRight className="h-5 w-5 group-hover:translate-x-1 transition-transform" />
+            </button>
+            <p className="text-sm text-gray-500 mt-4">It only takes 30 minutes to save a life</p>
+          </div>
+        </div>
+      </section>
+
+      {/* ================= TESTIMONIALS SECTION ================= */}
+      <section className="py-16 md:py-24 lg:py-32 px-4 sm:px-6 lg:px-8">
+        <div className="max-w-7xl mx-auto">
+          <div className="text-center">
+            <div className="inline-flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-amber-500 to-orange-500 rounded-full text-white text-sm font-medium mb-6">
+              <Star className="h-4 w-4" fill="white" />
+              <span>Hero Stories</span>
+            </div>
+
+            <h2 className="text-3xl sm:text-4xl lg:text-5xl font-bold text-gray-900 mb-4">
+              Stories That
+              <span className="block text-transparent bg-clip-text bg-gradient-to-r from-red-600 to-rose-600">
+                Inspire
+              </span>
+            </h2>
+            <p className="text-lg text-gray-600 max-w-2xl mx-auto">
+              Hear from donors and recipients whose lives have been touched by 
+              the gift of blood donation.
+            </p>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mt-12 lg:mt-20">
+            {[
+              {
+                quote: "I've donated 15 times. Knowing my blood helped save lives gives me immense satisfaction. The process is so smooth and the staff are incredibly supportive.",
+                name: "Mark Peterson",
+                role: "Regular Donor",
+                donations: "15 Donations",
+                image: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?ixlib=rb-4.0.3&auto=format&fit=crop&w=200&q=80"
+              },
+              {
+                quote: "Blood donors saved my life after my accident. I'll forever be grateful to those anonymous heroes. Now I donate regularly to pay it forward.",
+                name: "Andrew Thompson",
+                role: "Recipient & Donor",
+                donations: "8 Donations",
+                image: "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?ixlib=rb-4.0.3&auto=format&fit=crop&w=200&q=80"
+              }
+            ].map((testimonial, idx) => (
+              <div key={idx} className="group relative">
+                <div className="absolute -inset-0.5 bg-gradient-to-r from-red-500 to-rose-500 rounded-3xl blur opacity-20 group-hover:opacity-30 transition-opacity"></div>
+                <div className="relative bg-white rounded-3xl p-8 shadow-lg">
+                  <div className="flex items-start gap-4">
+                    <img
+                      src={testimonial.image}
+                      alt={testimonial.name}
+                      className="w-16 h-16 rounded-full object-cover border-4 border-white shadow"
+                    />
+                    <div className="flex-1">
+                      <div className="flex items-center gap-1 mb-2">
+                        {[...Array(5)].map((_, i) => (
+                          <Star key={i} className="h-4 w-4 text-amber-500" fill="currentColor" />
+                        ))}
+                      </div>
+                      <p className="text-gray-700 text-lg italic mb-6">"{testimonial.quote}"</p>
+                      <div className="flex items-center justify-between">
+                        <div>
+                          <p className="font-bold text-gray-900">{testimonial.name}</p>
+                          <p className="text-sm text-gray-600">{testimonial.role}</p>
+                        </div>
+                        <div className="px-3 py-1 bg-red-50 text-red-700 rounded-full text-sm font-medium">
+                          {testimonial.donations}
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* ================= CTA SECTION ================= */}
+      <section className="py-16 md:py-24 lg:py-32 px-4 sm:px-6 lg:px-8">
+        <div className="max-w-6xl mx-auto">
+          <div className="relative overflow-hidden rounded-3xl">
+            {/* Background Pattern */}
+            <div className="absolute inset-0 bg-gradient-to-r from-red-700 via-red-600 to-rose-600"></div>
+            <div className="absolute top-0 right-0 w-1/3 h-1/3 bg-gradient-to-br from-white/10 to-transparent rounded-full -translate-y-1/3 translate-x-1/3 blur-3xl"></div>
+            
+            <div className="relative p-8 md:p-12 lg:p-16 text-white">
+              <div className="grid lg:grid-cols-2 gap-8 items-center">
+                <div>
+                  <div className="inline-flex items-center gap-2 px-4 py-2 bg-white/20 backdrop-blur-sm rounded-full text-white text-sm font-medium mb-6">
+                    <Heart className="h-4 w-4" fill="white" />
+                    <span>Join the Lifesaver Movement</span>
+                  </div>
+
+                  <h2 className="text-3xl sm:text-4xl lg:text-5xl font-bold mb-4">
+                    Ready to Make a
+                    <span className="block">Real Difference?</span>
+                  </h2>
+                  <p className="text-lg text-red-100 mb-8 max-w-lg">
+                    Your decision to donate blood today can give someone a tomorrow. 
+                    Join thousands of heroes in our lifesaving community.
+                  </p>
+
+                  {/* Quick Stats */}
+                  <div className="grid grid-cols-2 gap-4 mb-8">
+                    <div className="bg-white/10 backdrop-blur-sm rounded-xl p-4">
+                      <p className="text-2xl font-bold">450ml</p>
+                      <p className="text-sm text-red-200">Per Donation</p>
+                    </div>
+                    <div className="bg-white/10 backdrop-blur-sm rounded-xl p-4">
+                      <p className="text-2xl font-bold">3 Lives</p>
+                      <p className="text-sm text-red-200">Can Be Saved</p>
+                    </div>
                   </div>
                 </div>
 
-                {/* Form */}
-                <form onSubmit={handleSubmit} className="p-6 space-y-6">
-                  <div className="grid md:grid-cols-2 gap-6">
-                    {/* Name */}
-                    <div className="space-y-2">
-                      <label className="flex items-center space-x-2 text-sm font-medium text-gray-700">
-                        <User className="h-4 w-4" />
-                        <span>Full Name *</span>
-                      </label>
-                      <input
-                        type="text"
-                        name="name"
-                        value={formData.name}
-                        onChange={handleInputChange}
-                        required
-                        className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:border-rose-300 focus:ring-2 focus:ring-rose-100 transition-all outline-none"
-                        placeholder="Enter your full name"
-                      />
-                    </div>
-
-                    {/* Age */}
-                    <div className="space-y-2">
-                      <label className="flex items-center space-x-2 text-sm font-medium text-gray-700">
-                        <Calendar className="h-4 w-4" />
-                        <span>Age *</span>
-                      </label>
-                      <input
-                        type="number"
-                        name="age"
-                        value={formData.age}
-                        onChange={handleInputChange}
-                        min="18"
-                        max="65"
-                        required
-                        className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:border-rose-300 focus:ring-2 focus:ring-rose-100 transition-all outline-none"
-                        placeholder="Must be 18-65 years"
-                      />
-                    </div>
-
-                    {/* Blood Group */}
-                    <div className="space-y-2">
-                      <label className="flex items-center space-x-2 text-sm font-medium text-gray-700">
-                        <Droplets className="h-4 w-4" />
-                        <span>Blood Group *</span>
-                      </label>
-                      <select
-                        name="bloodGroup"
-                        value={formData.bloodGroup}
-                        onChange={handleInputChange}
-                        required
-                        className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:border-rose-300 focus:ring-2 focus:ring-rose-100 transition-all outline-none"
-                      >
-                        <option value="">Select Blood Group</option>
-                        {bloodGroups.map(group => (
-                          <option key={group} value={group}>{group}</option>
-                        ))}
-                      </select>
-                    </div>
-
-                    {/* Phone */}
-                    <div className="space-y-2">
-                      <label className="flex items-center space-x-2 text-sm font-medium text-gray-700">
-                        <Phone className="h-4 w-4" />
-                        <span>Phone Number *</span>
-                      </label>
-                      <input
-                        type="tel"
-                        name="phone"
-                        value={formData.phone}
-                        onChange={handleInputChange}
-                        required
-                        className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:border-rose-300 focus:ring-2 focus:ring-rose-100 transition-all outline-none"
-                        placeholder="Enter phone number"
-                      />
-                    </div>
-
-                    {/* Email */}
-                    <div className="space-y-2">
-                      <label className="flex items-center space-x-2 text-sm font-medium text-gray-700">
-                        <Mail className="h-4 w-4" />
-                        <span>Email Address</span>
-                      </label>
-                      <input
-                        type="email"
-                        name="email"
-                        value={formData.email}
-                        onChange={handleInputChange}
-                        className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:border-rose-300 focus:ring-2 focus:ring-rose-100 transition-all outline-none"
-                        placeholder="Enter email address"
-                      />
-                    </div>
-
-                    {/* Donation Date */}
-                    <div className="space-y-2">
-                      <label className="flex items-center space-x-2 text-sm font-medium text-gray-700">
-                        <Calendar className="h-4 w-4" />
-                        <span>Preferred Donation Date *</span>
-                      </label>
-                      <input
-                        type="date"
-                        name="donationDate"
-                        value={formData.donationDate}
-                        onChange={handleInputChange}
-                        required
-                        min={new Date().toISOString().split('T')[0]}
-                        className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:border-rose-300 focus:ring-2 focus:ring-rose-100 transition-all outline-none"
-                      />
-                    </div>
-                  </div>
-
-                  {/* Address */}
-                  <div className="space-y-2">
-                    <label className="flex items-center space-x-2 text-sm font-medium text-gray-700">
-                      <MapPin className="h-4 w-4" />
-                      <span>Address *</span>
-                    </label>
-                    <textarea
-                      name="address"
-                      value={formData.address}
-                      onChange={handleInputChange}
-                      required
-                      rows="3"
-                      className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:border-rose-300 focus:ring-2 focus:ring-rose-100 transition-all outline-none resize-none"
-                      placeholder="Enter your complete address"
-                    />
-                  </div>
-
-                  <div className="grid md:grid-cols-2 gap-6">
-                    {/* Previous Donation */}
-                    <div className="space-y-2">
-                      <label className="flex items-center space-x-2 text-sm font-medium text-gray-700">
-                        <FileText className="h-4 w-4" />
-                        <span>Have you donated blood before? *</span>
-                      </label>
-                      <div className="flex space-x-4">
-                        <label className="flex items-center space-x-2">
-                          <input
-                            type="radio"
-                            name="previousDonation"
-                            value="yes"
-                            checked={formData.previousDonation === 'yes'}
-                            onChange={handleInputChange}
-                            className="text-rose-500"
-                          />
-                          <span>Yes</span>
-                        </label>
-                        <label className="flex items-center space-x-2">
-                          <input
-                            type="radio"
-                            name="previousDonation"
-                            value="no"
-                            checked={formData.previousDonation === 'no'}
-                            onChange={handleInputChange}
-                            className="text-rose-500"
-                          />
-                          <span>No</span>
-                        </label>
-                      </div>
-                    </div>
-
-                    {/* Health Condition */}
-                    <div className="space-y-2">
-                      <label className="flex items-center space-x-2 text-sm font-medium text-gray-700">
-                        <Thermometer className="h-4 w-4" />
-                        <span>Current Health Condition</span>
-                      </label>
-                      <input
-                        type="text"
-                        name="healthCondition"
-                        value={formData.healthCondition}
-                        onChange={handleInputChange}
-                        className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:border-rose-300 focus:ring-2 focus:ring-rose-100 transition-all outline-none"
-                        placeholder="Any medical conditions?"
-                      />
-                    </div>
-                  </div>
-
-                  {/* Terms */}
-                  <div className="flex items-start space-x-3 p-4 bg-rose-50 rounded-xl">
-                    <input
-                      type="checkbox"
-                      required
-                      className="mt-1 text-rose-500"
-                    />
-                    <div className="text-sm text-gray-600">
-                      I confirm that I am between 18-65 years old, weigh at least 50kg, 
-                      and have not donated blood in the last 3 months. I declare that I 
-                      am in good health and free from any blood-borne diseases.
-                    </div>
-                  </div>
-
-                  {/* Submit Button */}
-                  <div className="flex flex-col sm:flex-row gap-4 pt-4">
-                    <button
-                      type="submit"
-                      className="flex-1 px-8 py-4 bg-gradient-to-r from-rose-600 to-rose-500 text-white rounded-xl font-semibold text-lg shadow-lg hover:shadow-xl hover:scale-105 transition-all duration-300 flex items-center justify-center space-x-2"
-                    >
-                      <Droplets className="h-6 w-6" />
-                      <span>Submit Donation Request</span>
+                <div className="bg-white/10 backdrop-blur-sm rounded-2xl p-8 border border-white/20">
+                  <h3 className="text-2xl font-bold mb-6">Start Saving Lives Today</h3>
+                  <div className="space-y-4">
+                    <button className="w-full bg-white text-red-700 hover:bg-gray-100 px-6 py-4 rounded-xl font-semibold text-lg transition-all duration-300 hover:scale-105 flex items-center justify-center gap-2">
+                      <Droplets className="h-5 w-5" />
+                      Register as Donor
                     </button>
-                    <button
-                      type="button"
-                      onClick={() => setShowDonationForm(false)}
-                      className="px-8 py-4 bg-white text-gray-700 rounded-xl font-semibold text-lg border-2 border-gray-200 hover:border-gray-300 transition-all duration-300"
-                    >
-                      Cancel
+                    <button className="w-full bg-transparent border-2 border-white text-white hover:bg-white/10 px-6 py-4 rounded-xl font-semibold text-lg transition-all duration-300 flex items-center justify-center gap-2">
+                      <Calendar className="h-5 w-5" />
+                      Schedule Appointment
+                    </button>
+                    <button className="w-full bg-transparent text-white hover:text-red-100 px-6 py-3 rounded-xl font-medium transition-colors flex items-center justify-center gap-2">
+                      <Phone className="h-4 w-4" />
+                      Emergency: Call 108
                     </button>
                   </div>
-                </form>
+                </div>
               </div>
-            )}
+            </div>
           </div>
         </div>
-      )}
+      </section>
 
-      {/* Custom Animations */}
-      <style jsx global>{`
-        @keyframes float {
-          0%, 100% { transform: translateY(0px) rotate(0deg); }
-          50% { transform: translateY(-20px) rotate(5deg); }
-        }
-        
-        @keyframes float-slow {
-          0%, 100% { transform: translateY(0px); }
-          50% { transform: translateY(-15px); }
-        }
-        
-        @keyframes float-delayed {
-          0%, 100% { transform: translateY(0px) translateX(0px); }
-          33% { transform: translateY(-12px) translateX(8px); }
-          66% { transform: translateY(8px) translateX(-8px); }
-        }
-        
-        @keyframes bounce-slow {
-          0%, 100% { transform: translateY(0); }
-          50% { transform: translateY(-20px); }
-        }
-        
-        @keyframes pulse-slow {
-          0%, 100% { opacity: 0.3; transform: scale(1); }
-          50% { opacity: 0.6; transform: scale(1.05); }
-        }
-        
-        @keyframes pulse-slower {
-          0%, 100% { opacity: 0.2; transform: scale(1); }
-          50% { opacity: 0.5; transform: scale(1.1); }
-        }
-        
-        @keyframes scroll {
-          0% { transform: translateY(0); opacity: 1; }
-          100% { transform: translateY(15px); opacity: 0; }
-        }
-        
-        .animate-float {
-          animation: float 8s ease-in-out infinite;
-        }
-        
-        .animate-float-slow {
-          animation: float-slow 10s ease-in-out infinite;
-        }
-        
-        .animate-float-delayed {
-          animation: float-delayed 12s ease-in-out infinite;
-        }
-        
-        .animate-bounce-slow {
-          animation: bounce-slow 4s ease-in-out infinite;
-        }
-        
-        .animate-pulse-slow {
-          animation: pulse-slow 5s cubic-bezier(0.4, 0, 0.6, 1) infinite;
-        }
-        
-        .animate-pulse-slower {
-          animation: pulse-slower 7s cubic-bezier(0.4, 0, 0.6, 1) infinite;
-        }
-        
-        .animate-scroll {
-          animation: scroll 2.5s ease-in-out infinite;
-        }
-      `}</style>
-    </>
+      {/* ================= FAQ SECTION ================= */}
+      <section className="py-16 md:py-24 lg:py-32 px-4 sm:px-6 lg:px-8 bg-gradient-to-b from-white to-gray-50">
+        <div className="max-w-4xl mx-auto">
+          <div className="text-center mb-12">
+            <h2 className="text-3xl sm:text-4xl lg:text-5xl font-bold text-gray-900 mb-4">
+              Common Questions
+              <span className="block text-transparent bg-clip-text bg-gradient-to-r from-red-600 to-rose-600">
+                Answered
+              </span>
+            </h2>
+            <p className="text-lg text-gray-600">
+              Everything you need to know about blood donation
+            </p>
+          </div>
+
+          <div className="space-y-4">
+            {[
+              {
+                question: "Who can donate blood?",
+                answer: "Generally, anyone between 18-65 years, weighing over 50kg, in good health. Specific criteria apply."
+              },
+              {
+                question: "How often can I donate blood?",
+                answer: "Every 56 days (approximately 8 weeks) for whole blood donation."
+              },
+              {
+                question: "Is blood donation safe?",
+                answer: "Yes, sterile equipment is used only once. The process is supervised by trained professionals."
+              },
+              {
+                question: "How long does it take?",
+                answer: "Registration, screening, donation, and recovery take about 30-45 minutes total."
+              },
+              {
+                question: "Will I feel weak after donating?",
+                answer: "Most people feel perfectly fine. We provide refreshments and recommend resting for 15 minutes."
+              }
+            ].map((faq, idx) => (
+              <div key={idx} className="group bg-white rounded-2xl border border-gray-200 hover:border-red-300 transition-all duration-300 hover:shadow-lg overflow-hidden">
+                <button className="w-full text-left p-6 flex items-center justify-between hover:bg-red-50 transition-colors">
+                  <div className="flex items-center gap-4">
+                    <div className="w-10 h-10 bg-red-100 rounded-lg flex items-center justify-center flex-shrink-0">
+                      <span className="font-bold text-red-700">{idx + 1}</span>
+                    </div>
+                    <h3 className="text-lg font-semibold text-gray-900">{faq.question}</h3>
+                  </div>
+                  <ChevronRight className="h-5 w-5 text-gray-400 group-hover:text-red-600 group-hover:rotate-90 transition-transform" />
+                </button>
+                <div className="px-6 pb-6 pl-20">
+                  <p className="text-gray-600">{faq.answer}</p>
+                </div>
+              </div>
+            ))}
+          </div>
+
+          {/* Additional Help */}
+          <div className="text-center mt-12">
+            <div className="inline-flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-blue-600 to-cyan-600 text-white rounded-xl font-medium">
+              <Phone className="h-4 w-4" />
+              <span>Need Help? Call our Donor Support: 1800-123-456</span>
+            </div>
+          </div>
+        </div>
+      </section>
+    </div>
   );
 };
 

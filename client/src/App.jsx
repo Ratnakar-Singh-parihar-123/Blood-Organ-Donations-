@@ -19,6 +19,7 @@ import ProfilePage from "./pages/profile/ProfilePage";
 import SettingsPage from "./pages/setting/SettingsPage";
 import ForgetPassword from "./pages/forget-password/ForgetPassword";
 import Notifications from "./notifications/NotificationsComponent";
+import PatientMatches from "./pages/PatientMatches/PatientMatches";
 
 // Authentication Modals (for modals on UserTypeSelectionPage)
 // import BloodDonorAuthModal from "./components/auth/BloodDonorAuthModal";
@@ -62,6 +63,14 @@ function App() {
             </ProtectedRoute>
           } 
         />
+        <Route 
+        path="/patient-matches"
+        element={
+          <ProtectedRoute>
+            <PatientMatches />
+          </ProtectedRoute>
+        }
+        /> 
         
         <Route 
           path="/settings" 
