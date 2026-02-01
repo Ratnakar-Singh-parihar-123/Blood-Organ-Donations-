@@ -140,7 +140,7 @@ const Dashboard = () => {
                                     Dashboard Overview
                                 </h1>
                                 <p className="text-gray-600 text-sm md:text-base mt-1">
-                                    Real-time insights and analytics for LifeStream Platform
+                                    Real-time insights and analytics for JeevanDaan Platform
                                 </p>
                             </div>
                         </div>
@@ -391,7 +391,7 @@ const Dashboard = () => {
                         </div>
                         <div className="text-sm text-gray-500">
                             <p>Last sync: {lastUpdated?.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}</p>
-                            <p className="text-xs mt-1">© 2024 LifeStream • Dashboard v2.0</p>
+                            <p className="text-xs mt-1">© 2024 JeevanDaan • Dashboard v2.0</p>
                         </div>
                     </div>
                 </div>

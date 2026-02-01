@@ -643,7 +643,7 @@ const EmergencyRequestPage = () => {
             </div>
             <div className="text-center sm:text-right">
               <div className="text-sm text-gray-400 mb-2">For life-threatening emergencies only</div>
-              <div className="text-xs text-gray-500">© LifeStream Emergency Response System</div>
+              <div className="text-xs text-gray-500">© JeevanDaan Emergency Response System</div>
             </div>
           </div>
         </div>

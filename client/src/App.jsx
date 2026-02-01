@@ -18,7 +18,7 @@ import EmergencyRequestPage from "./pages/emergency-request/EmergencyRequestPage
 import ProfilePage from "./pages/profile/ProfilePage";
 import SettingsPage from "./pages/setting/SettingsPage";
 import ForgetPassword from "./pages/forget-password/ForgetPassword";
-import Notifications from "./notifications/NotificationsComponent";
+// import Notifications from "./notifications/Notifications";
 import PatientMatches from "./pages/PatientMatches/PatientMatches";
 
 // Authentication Modals (for modals on UserTypeSelectionPage)
@@ -43,7 +43,7 @@ function App() {
         <Route path="/about" element={<AboutPage />} />
         <Route path="/urgent-requests" element={<UrgentRequestsPage />} />
         <Route path="/forgot-password" element={<ForgetPassword />} />
-        <Route path="/notifications" element={<Notifications />} />
+        {/* <Route path="/notifications" element={<Notifications />} /> */}
         
         {/* Protected Routes - Require Login */}
         <Route 

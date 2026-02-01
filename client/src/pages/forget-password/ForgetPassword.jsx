@@ -970,13 +970,13 @@ function ForgetPassword() {
                 </div>
                 <div>
                   <p className="text-xl font-bold bg-gradient-to-r from-rose-600 to-pink-600 bg-clip-text text-transparent">
-                    LifeStream
+                    JeevanDaan
                   </p>
                   <p className="text-xs text-gray-500">Saving lives through donation</p>
                 </div>
               </div>
               <div className="text-right">
-                <p className="text-xs text-gray-400">© {new Date().getFullYear()} LifeStream. All rights reserved.</p>
+                <p className="text-xs text-gray-400">© {new Date().getFullYear()} JeevanDaan. All rights reserved.</p>
                 <p className="text-xs text-gray-400 mt-1">v2.1.0 • Secure Platform</p>
               </div>
             </div>

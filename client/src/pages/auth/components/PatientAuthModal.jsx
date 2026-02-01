@@ -5,7 +5,7 @@ import {
   ChevronRight
 } from 'lucide-react';
 import { patientAuthAPI } from '../../../api';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate , Link} from 'react-router-dom';
 
 const PatientAuthModal = ({ isOpen, onClose }) => {
   const navigate = useNavigate();
@@ -386,9 +386,9 @@ const PatientAuthModal = ({ isOpen, onClose }) => {
                     </button>
                   </div>
                   <div className="flex justify-end mt-2">
-                    <a href="/forgot-password" className="text-sm text-red-500 hover:text-red-600 font-medium">
+                    <Link to="/forgot-password" className="text-sm text-red-500 hover:text-red-600 font-medium">
                       Forgot Password?
-                    </a>
+                    </Link>
                   </div>
                 </div>
 

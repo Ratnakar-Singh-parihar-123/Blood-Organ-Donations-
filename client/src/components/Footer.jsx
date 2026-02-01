@@ -125,7 +125,7 @@ const Footer = () => {
               </div>
               <div>
                 <h2 className="text-3xl font-bold bg-gradient-to-r from-rose-700 to-rose-600 bg-clip-text text-transparent">
-                  LifeStream
+                  JeevanDaan
                 </h2>
                 <p className="text-gray-600 font-medium">Blood & Organ Donation Network</p>
                 <div className="flex items-center mt-2">
@@ -284,14 +284,14 @@ const Footer = () => {
             <div className="space-y-4">
               <div className="flex items-center space-x-3 text-gray-600">
                 <Mail className="h-5 w-5 text-rose-500" />
-                <a href="mailto:help@lifestream.com" className="hover:text-rose-600 transition-colors">
-                  help@lifestream.com
+                <a href="mailto:help@JeevanDaan.com" className="hover:text-rose-600 transition-colors">
+                  help@JeevanDaan.com
                 </a>
               </div>
               <div className="flex items-start space-x-3 text-gray-600">
                 <MapPin className="h-5 w-5 text-rose-500 mt-1" />
                 <div>
-                  <div className="font-medium">LifeStream HQ</div>
+                  <div className="font-medium">JeevanDaan HQ</div>
                   <div className="text-sm text-gray-500">Mumbai, Maharashtra 400001</div>
                 </div>
               </div>
@@ -343,7 +343,7 @@ const Footer = () => {
               <span className="font-bold text-gray-900">Together, We Save Lives</span>
             </div>
             <p className="text-gray-600 text-sm">
-              © {currentYear} LifeStream • A non-profit healthcare initiative
+              © {currentYear} JeevanDaan • A non-profit healthcare initiative
             </p>
           </div>
 

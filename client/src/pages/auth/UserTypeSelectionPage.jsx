@@ -121,7 +121,7 @@ const UserTypeSelectionPage = () => {
               <Heart className="h-8 w-8 text-white" fill="white" />
             </div>
             <div>
-              <h1 className="text-3xl md:text-4xl font-bold text-gray-900">LifeStream</h1>
+              <h1 className="text-3xl md:text-4xl font-bold text-gray-900">JeevanDaan</h1>
               <p className="text-gray-600 mt-2">Uniting Donors & Patients</p>
             </div>
           </div>

@@ -23,17 +23,20 @@ const Navbar = () => {
   const searchRef = useRef(null);
   const profileRef = useRef(null);
   const moreRef = useRef(null);
+  const notificationBellRef = useRef(null);
 
   const [activeTab, setActiveTab] = useState('home');
   const [isScrolled, setIsScrolled] = useState(false);
+  const [showNotifications, setShowNotifications] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [isSearchOpen, setIsSearchOpen] = useState(false);
   const [isProfileOpen, setIsProfileOpen] = useState(false);
   const [isLocationOpen, setIsLocationOpen] = useState(false);
   const [isMoreOpen, setIsMoreOpen] = useState(false);
   const [currentLocation, setCurrentLocation] = useState('Mumbai, India');
-  const [notifications, setNotifications] = useState([]);
-  const [unreadCount, setUnreadCount] = useState(0);
+  const [unreadCount, setUnreadCount] = useState(3); // Start with 3 for demo
+  const [isNewNotification, setIsNewNotification] = useState(false);
+  const [isBellAnimating, setIsBellAnimating] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [userData, setUserData] = useState(null);
@@ -41,39 +44,51 @@ const Navbar = () => {
   const [userTypeConfig, setUserTypeConfig] = useState(null);
   const [windowWidth, setWindowWidth] = useState(window.innerWidth);
 
+  // Import Notifications component dynamically to avoid SSR issues
+  const [NotificationsComponent, setNotificationsComponent] = useState(null);
+
+  useEffect(() => {
+    // Dynamically import Notifications component
+    import('../notifications/Notifications').then(module => {
+      setNotificationsComponent(() => module.default);
+    }).catch(err => {
+      console.error('Failed to load Notifications component:', err);
+    });
+  }, []);
+
   // User type configurations
   const userTypesConfig = [
-    { 
-      key: 'bloodDonor', 
-      label: 'Blood Donor', 
-      icon: Droplets, 
+    {
+      key: 'bloodDonor',
+      label: 'Blood Donor',
+      icon: Droplets,
       gradient: 'bg-gradient-to-r from-red-600 to-red-500',
       textColor: 'text-red-600',
       bgColor: 'bg-red-50',
       borderColor: 'border-red-200'
     },
-    { 
-      key: 'organDonor', 
-      label: 'Organ Donor', 
-      icon: ActivityIcon, 
+    {
+      key: 'organDonor',
+      label: 'Organ Donor',
+      icon: ActivityIcon,
       gradient: 'bg-gradient-to-r from-green-600 to-emerald-500',
       textColor: 'text-green-600',
       bgColor: 'bg-green-50',
       borderColor: 'border-green-200'
     },
-    { 
-      key: 'patient', 
-      label: 'Patient/Family', 
-      icon: Ambulance, 
+    {
+      key: 'patient',
+      label: 'Patient/Family',
+      icon: Ambulance,
       gradient: 'bg-gradient-to-r from-blue-600 to-blue-500',
       textColor: 'text-blue-600',
       bgColor: 'bg-blue-50',
       borderColor: 'border-blue-200'
     },
-    { 
-      key: 'user', 
-      label: 'Community Member', 
-      icon: Users, 
+    {
+      key: 'user',
+      label: 'Community Member',
+      icon: Users,
       gradient: 'bg-gradient-to-r from-indigo-600 to-blue-500',
       textColor: 'text-indigo-600',
       bgColor: 'bg-indigo-50',
@@ -88,26 +103,71 @@ const Navbar = () => {
       if (window.innerWidth >= 1024) {
         setIsMobileMenuOpen(false);
       }
+      // Close notifications on mobile when resizing to desktop
+      if (window.innerWidth >= 768 && showNotifications) {
+        setShowNotifications(false);
+      }
     };
     window.addEventListener('resize', handleResize);
     return () => window.removeEventListener('resize', handleResize);
-  }, []);
+  }, [showNotifications]);
 
   // Check login status
   useEffect(() => {
     checkUserAuth();
-    
+
     const handleStorageChange = () => {
       checkUserAuth();
     };
-    
+
     window.addEventListener('storage', handleStorageChange);
     return () => window.removeEventListener('storage', handleStorageChange);
   }, [location]);
 
+  // Simulate notification updates
+  useEffect(() => {
+    let interval;
+
+    if (isLoggedIn) {
+      interval = setInterval(() => {
+        // 20% chance to get a notification every 30 seconds
+        if (Math.random() < 0.2) {
+          handleNewNotification();
+        }
+      }, 30000); // Check every 30 seconds
+    }
+
+    return () => clearInterval(interval);
+  }, [isLoggedIn]);
+
+  const handleNewNotification = () => {
+    setUnreadCount(prev => {
+      const newCount = prev + 1;
+      
+      // Show animation effects
+      setIsNewNotification(true);
+      setIsBellAnimating(true);
+      
+      // Play notification sound
+      setTimeout(() => {
+        const notificationSound = new Audio('https://assets.mixkit.co/sfx/preview/mixkit-correct-answer-tone-2870.mp4');
+        notificationSound.volume = 0.3;
+        notificationSound.play().catch(console.log);
+      }, 100);
+
+      // Reset animations after 2 seconds
+      setTimeout(() => {
+        setIsNewNotification(false);
+        setIsBellAnimating(false);
+      }, 2000);
+      
+      return newCount;
+    });
+  };
+
   const checkUserAuth = () => {
     let foundUser = false;
-    
+
     for (const type of userTypesConfig) {
       const token = localStorage.getItem(`${type.key}Token`);
       const data = localStorage.getItem(`${type.key}Data`) || localStorage.getItem(type.key);
@@ -120,7 +180,7 @@ const Navbar = () => {
           setUserType(type.key);
           setUserTypeConfig(type);
           foundUser = true;
-          
+
           localStorage.setItem('currentUserType', type.key);
           localStorage.setItem('currentUserData', data);
           break;
@@ -133,12 +193,12 @@ const Navbar = () => {
     if (!foundUser) {
       const currentUserData = localStorage.getItem('currentUserData');
       const currentUserType = localStorage.getItem('currentUserType');
-      
+
       if (currentUserData && currentUserType) {
         try {
           const parsedData = JSON.parse(currentUserData);
           const type = userTypesConfig.find(t => t.key === currentUserType);
-          
+
           if (type) {
             setIsLoggedIn(true);
             setUserData(parsedData);
@@ -173,6 +233,22 @@ const Navbar = () => {
     else if (path.includes('/auth')) setActiveTab('auth');
     else if (path.includes('/settings')) setActiveTab('settings');
   }, [location]);
+
+  // Close notifications when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      // Check if click is outside notifications bell and notifications panel
+      if (showNotifications && 
+          notificationBellRef.current && 
+          !notificationBellRef.current.contains(event.target) &&
+          !event.target.closest('.notification-panel')) {
+        setShowNotifications(false);
+      }
+    };
+
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, [showNotifications]);
 
   // Main navigation items
   const mainNavItems = [
@@ -365,7 +441,7 @@ const Navbar = () => {
             description: 'Your rewards'
           }
         ];
-      
+
       case 'organDonor':
         return [
           ...baseItems,
@@ -386,7 +462,7 @@ const Navbar = () => {
             description: 'Health information'
           }
         ];
-      
+
       case 'patient':
         return [
           ...baseItems,
@@ -407,7 +483,7 @@ const Navbar = () => {
             description: 'Hospital information'
           }
         ];
-      
+
       case 'user':
         return [
           ...baseItems,
@@ -428,7 +504,7 @@ const Navbar = () => {
             description: 'Upcoming events'
           }
         ];
-      
+
       default:
         return baseItems;
     }
@@ -436,34 +512,34 @@ const Navbar = () => {
 
   // Quick links for search
   const quickLinks = [
-    { 
-      label: 'Blood Donation Process', 
-      path: '/process', 
-      icon: Droplets, 
+    {
+      label: 'Blood Donation Process',
+      path: '/process',
+      icon: Droplets,
       bgColor: 'bg-red-50',
       borderColor: 'border-red-200',
       textColor: 'text-red-600'
     },
-    { 
-      label: 'Organ Donation Info', 
-      path: '/organ-info', 
-      icon: ActivityIcon, 
+    {
+      label: 'Organ Donation Info',
+      path: '/organ-info',
+      icon: ActivityIcon,
       bgColor: 'bg-green-50',
       borderColor: 'border-green-200',
       textColor: 'text-green-600'
     },
-    { 
-      label: 'Donor Eligibility', 
-      path: '/eligibility', 
-      icon: Shield, 
+    {
+      label: 'Donor Eligibility',
+      path: '/eligibility',
+      icon: Shield,
       bgColor: 'bg-blue-50',
       borderColor: 'border-blue-200',
       textColor: 'text-blue-600'
     },
-    { 
-      label: 'Find Blood Bank', 
-      path: '/blood-banks', 
-      icon: Hospital, 
+    {
+      label: 'Find Blood Bank',
+      path: '/blood-banks',
+      icon: Hospital,
       bgColor: 'bg-red-50',
       borderColor: 'border-red-200',
       textColor: 'text-red-600'
@@ -473,7 +549,7 @@ const Navbar = () => {
   // Contact info
   const contactInfo = [
     { icon: Phone, label: 'Emergency Helpline', value: '108', bgColor: 'bg-red-50', textColor: 'text-red-600' },
-    { icon: Mail, label: 'Support Email', value: 'help@lifestream.org', bgColor: 'bg-blue-50', textColor: 'text-blue-600' },
+    { icon: Mail, label: 'Support Email', value: 'help@JeevanDaan.org', bgColor: 'bg-blue-50', textColor: 'text-blue-600' },
     { icon: Users, label: 'Volunteer Support', value: '1800-123-456', bgColor: 'bg-green-50', textColor: 'text-green-600' }
   ];
 
@@ -505,16 +581,17 @@ const Navbar = () => {
       localStorage.removeItem(type);
       localStorage.removeItem(`${type}Data`);
     });
-    
+
     localStorage.removeItem('currentUserData');
     localStorage.removeItem('currentUserType');
-    
+
     setIsLoggedIn(false);
     setUserData(null);
     setUserType('');
     setUserTypeConfig(null);
     setIsProfileOpen(false);
-    
+    setShowNotifications(false);
+
     window.location.href = '/';
   };
 
@@ -529,14 +606,15 @@ const Navbar = () => {
     setIsLocationOpen(false);
   };
 
-  // Scroll effect
-  useEffect(() => {
-    const handleScroll = () => {
-      setIsScrolled(window.scrollY > 20);
-    };
-    window.addEventListener('scroll', handleScroll);
-    return () => window.removeEventListener('scroll', handleScroll);
-  }, []);
+  // Handle notification click
+  const handleNotificationClick = () => {
+    setShowNotifications(!showNotifications);
+    // Only reset count when opening notifications
+    if (!showNotifications && unreadCount > 0) {
+      setUnreadCount(0);
+      setIsNewNotification(false);
+    }
+  };
 
   // Close dropdowns on click outside
   useEffect(() => {
@@ -557,6 +635,15 @@ const Navbar = () => {
     document.addEventListener('mousedown', handleClickOutside);
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, [isProfileOpen, isMoreOpen, isLocationOpen, isSearchOpen]);
+
+  // Scroll effect
+  useEffect(() => {
+    const handleScroll = () => {
+      setIsScrolled(window.scrollY > 20);
+    };
+    window.addEventListener('scroll', handleScroll);
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, []);
 
   // Get user initials
   const getUserInitials = () => {
@@ -605,7 +692,7 @@ const Navbar = () => {
       if (itemId === 'organ') return 'text-white bg-gradient-to-r from-green-600 to-green-500';
       return 'text-white bg-gradient-to-r from-blue-600 to-blue-500';
     }
-    
+
     if (itemId === 'blood') return 'text-gray-700 hover:text-red-600 hover:bg-red-50';
     if (itemId === 'organ') return 'text-gray-700 hover:text-green-600 hover:bg-green-50';
     return 'text-gray-700 hover:text-blue-600 hover:bg-blue-50';
@@ -643,10 +730,6 @@ const Navbar = () => {
           }
         }
         
-        .animate-fadeIn {
-          animation: fadeIn 0.3s ease-out forwards;
-        }
-        
         @keyframes slideIn {
           from {
             transform: translateX(-100%);
@@ -656,8 +739,74 @@ const Navbar = () => {
           }
         }
         
+        @keyframes ring {
+          0% {
+            transform: rotate(0deg);
+          }
+          25% {
+            transform: rotate(-10deg);
+          }
+          75% {
+            transform: rotate(10deg);
+          }
+          100% {
+            transform: rotate(0deg);
+          }
+        }
+        
+        @keyframes ping {
+          75%, 100% {
+            transform: scale(1.5);
+            opacity: 0;
+          }
+        }
+        
+        @keyframes countBounce {
+          0%, 100% {
+            transform: scale(1);
+          }
+          50% {
+            transform: scale(1.2);
+          }
+        }
+        
+        @keyframes newNotification {
+          0% {
+            transform: scale(0);
+            opacity: 0;
+          }
+          70% {
+            transform: scale(1.3);
+            opacity: 1;
+          }
+          100% {
+            transform: scale(1);
+            opacity: 1;
+          }
+        }
+        
+        .animate-fadeIn {
+          animation: fadeIn 0.3s ease-out forwards;
+        }
+        
         .animate-slideIn {
           animation: slideIn 0.3s ease-out forwards;
+        }
+        
+        .animate-ring {
+          animation: ring 0.5s ease-in-out;
+        }
+        
+        .animate-ping {
+          animation: ping 1s cubic-bezier(0, 0, 0.2, 1) infinite;
+        }
+        
+        .animate-countBounce {
+          animation: countBounce 0.3s ease-out;
+        }
+        
+        .animate-newNotification {
+          animation: newNotification 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
         }
         
         .scrollbar-hide::-webkit-scrollbar {
@@ -671,7 +820,7 @@ const Navbar = () => {
       `}</style>
 
       {/* DESKTOP NAVBAR */}
-      <nav className={`hidden lg:block fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${isScrolled
+      <nav className={`hidden lg:block fixed top-0 left-0 right-0 z-40 transition-all duration-300 ${isScrolled
         ? 'bg-white shadow-lg py-2 border-b border-gray-200'
         : 'bg-white py-3'
         }`}>
@@ -691,7 +840,7 @@ const Navbar = () => {
               </div>
               <div className="text-left">
                 <h1 className="text-xl font-bold bg-gradient-to-r from-blue-600 to-blue-500 bg-clip-text text-transparent">
-                  LifeStream
+                  JeevanDaan
                 </h1>
                 <p className="text-xs text-gray-600 font-medium">Saving Lives Together</p>
               </div>
@@ -709,7 +858,7 @@ const Navbar = () => {
                     <item.icon className={`h-4 w-4 ${activeTab === item.id ? 'text-white' : 'text-gray-500'}`} />
                     <span className="whitespace-nowrap text-sm font-medium">{item.label}</span>
                     {item.badge && (
-                      <span className="absolute -top-1 -right-1 w-5 h-5 bg-red-500 text-white text-xs rounded-full flex items-center justify-center animate-pulse shadow">
+                      <span className="absolute -top-1 -right-1 w-5 h-5 bg-red-500 text-white text-xs rounded-full flex items-center justify-center animate-countBounce shadow">
                         {item.badge}
                       </span>
                     )}
@@ -821,23 +970,56 @@ const Navbar = () => {
                 <div className="absolute -top-1 -right-1 w-2 h-2 bg-white rounded-full animate-ping"></div>
               </button>
 
-              {/* Notifications */}
-              <button
-                onClick={() => {
-                  navigate("/notifications");
-                  setUnreadCount(0);
-                }}
-                className="relative p-2 rounded-lg bg-gray-100 hover:bg-blue-50 text-gray-600 
-                 hover:text-blue-500 transition-all duration-200"
-              >
-                <Bell className="h-4 w-4" />
-                {unreadCount > 0 && (
-                  <span className="absolute -top-1 -right-1 w-5 h-5 bg-gradient-to-r from-red-500 to-red-400 text-white text-xs 
-                        rounded-full flex items-center justify-center shadow">
-                    {unreadCount}
-                  </span>
-                )}
-              </button>
+              {/* Notifications Bell */}
+              <div className="relative" ref={notificationBellRef}>
+                <button
+                  onClick={handleNotificationClick}
+                  className="relative p-2 rounded-lg bg-gray-100 hover:bg-blue-50 text-gray-600 
+                           hover:text-blue-500 transition-all duration-200 group"
+                >
+                  {/* Bell Icon with optional animation */}
+                  <div className={`relative ${isBellAnimating ? "animate-ring" : ""}`}>
+                    <Bell className={`h-4 w-4 ${unreadCount > 0 ? "text-red-500" : ""}`} />
+
+                    {/* New Notification Glow */}
+                    {isNewNotification && (
+                      <div className="absolute inset-0 rounded-full bg-gradient-to-r from-red-500/30 to-pink-500/30 animate-ping"></div>
+                    )}
+                  </div>
+
+                  {/* Count Badge */}
+                  {unreadCount > 0 && (
+                    <span className="absolute -top-1 -right-1 w-5 h-5 bg-gradient-to-r from-red-500 to-red-400 text-white text-xs 
+                         rounded-full flex items-center justify-center shadow animate-newNotification">
+                      {unreadCount > 9 ? "9+" : unreadCount}
+                    </span>
+                  )}
+
+                  {/* Sparkle / Ping for New Notification */}
+                  {isNewNotification && unreadCount > 0 && (
+                    <div className="absolute -top-2 -right-2">
+                      {[...Array(3)].map((_, i) => (
+                        <div
+                          key={i}
+                          className="absolute w-1 h-1 bg-yellow-400 rounded-full animate-ping"
+                          style={{
+                            animationDelay: `${i * 0.2}s`,
+                            transform: `rotate(${i * 120}deg) translate(6px)`,
+                          }}
+                        />
+                      ))}
+                    </div>
+                  )}
+
+                  {/* Tooltip */}
+                  <div className="absolute -top-10 left-1/2 transform -translate-x-1/2 bg-gray-900 text-white text-xs py-1 px-2 
+                    rounded opacity-0 group-hover:opacity-100 transition-opacity duration-200 whitespace-nowrap z-50">
+                    {unreadCount > 0 ? `${unreadCount} new notification${unreadCount > 1 ? "s" : ""}` : "Notifications"}
+                    <div className="absolute bottom-0 left-1/2 transform -translate-x-1/2 translate-y-1/2 w-2 h-2 
+                      bg-gray-900 rotate-45"></div>
+                  </div>
+                </button>
+              </div>
 
               {/* User Profile or Auth */}
               {isLoggedIn ? (
@@ -963,7 +1145,7 @@ const Navbar = () => {
         }`}>
         <div className="max-w-4xl mx-auto px-4">
           <div className="flex items-center justify-between">
-            
+
             {/* Logo */}
             <button
               onClick={() => navigate('/')}
@@ -974,7 +1156,7 @@ const Navbar = () => {
               </div>
               <div>
                 <h1 className="font-bold text-lg bg-gradient-to-r from-blue-600 to-blue-500 bg-clip-text text-transparent">
-                  LifeStream
+                  JeevanDaan
                 </h1>
               </div>
             </button>
@@ -1005,7 +1187,23 @@ const Navbar = () => {
                 <Ambulance className="h-4 w-4 mr-1" />
                 <span className="hidden sm:inline">Emergency</span>
               </button>
-              
+
+              {/* Tablet Notifications */}
+              <div className="relative" ref={notificationBellRef}>
+                <button
+                  onClick={handleNotificationClick}
+                  className="relative p-1.5 rounded-lg bg-gray-100"
+                >
+                  <Bell className={`h-4 w-4 ${unreadCount > 0 ? 'text-red-500' : 'text-gray-600'}`} />
+                  {unreadCount > 0 && (
+                    <span className="absolute -top-1 -right-1 w-4 h-4 bg-gradient-to-r from-red-500 to-red-400 text-white text-xs 
+                          rounded-full flex items-center justify-center shadow animate-countBounce">
+                      {unreadCount > 9 ? '9+' : unreadCount}
+                    </span>
+                  )}
+                </button>
+              </div>
+
               {isLoggedIn ? (
                 <button
                   onClick={() => setIsProfileOpen(!isProfileOpen)}
@@ -1046,7 +1244,7 @@ const Navbar = () => {
               </div>
               <div>
                 <h1 className="font-bold text-lg bg-gradient-to-r from-blue-600 to-blue-500 bg-clip-text text-transparent">
-                  LifeStream
+                  JeevanDaan
                 </h1>
               </div>
             </button>
@@ -1058,21 +1256,28 @@ const Navbar = () => {
                 className="relative p-2 rounded-lg bg-red-50 text-red-600 border border-red-200"
               >
                 <Ambulance className="h-5 w-5" />
-                <div className="absolute -top-1 -right-1 w-2 h-2 bg-red-500 rounded-full animate-pulse"></div>
+                <div className="absolute -top-1 -right-1 w-2 h-2 bg-red-500 rounded-full animate-ping"></div>
               </button>
-              
-              <button
-                onClick={() => navigate('/notifications')}
-                className="relative p-2 rounded-lg bg-gray-100"
-              >
-                <Bell className="h-5 w-5 text-gray-600" />
-                {unreadCount > 0 && (
-                  <span className="absolute -top-1 -right-1 w-5 h-5 bg-red-500 text-white text-xs rounded-full flex items-center justify-center">
-                    {unreadCount}
-                  </span>
-                )}
-              </button>
-              
+
+              {/* Mobile Notifications */}
+              <div className="relative" ref={notificationBellRef}>
+                <button
+                  onClick={handleNotificationClick}
+                  className="relative p-2 rounded-lg bg-gray-100"
+                >
+                  <Bell className={`h-5 w-5 ${unreadCount > 0 ? 'text-red-500' : 'text-gray-600'} ${isBellAnimating ? 'animate-ring' : ''}`} />
+                  {unreadCount > 0 && (
+                    <>
+                      <span className="absolute -top-1 -right-1 w-5 h-5 bg-gradient-to-r from-red-500 to-red-400 text-white text-xs 
+                            rounded-full flex items-center justify-center shadow animate-newNotification">
+                        {unreadCount > 9 ? '9+' : unreadCount}
+                      </span>
+                      <span className="absolute -top-1 -right-1 w-5 h-5 bg-red-400 rounded-full animate-ping opacity-60"></span>
+                    </>
+                  )}
+                </button>
+              </div>
+
               <button
                 onClick={() => setIsMobileMenuOpen(true)}
                 className="p-2 rounded-lg bg-gray-100"
@@ -1098,7 +1303,7 @@ const Navbar = () => {
                   onKeyDown={(e) => e.key === 'Enter' && handleSearch(e)}
                 />
               </div>
-              
+
               <button
                 onClick={() => setIsLocationOpen(!isLocationOpen)}
                 className="p-2.5 rounded-lg bg-gray-50 border border-gray-200"
@@ -1109,7 +1314,6 @@ const Navbar = () => {
           </div>
         </div>
       </div>
-
 
       {/* MOBILE BOTTOM NAVIGATION */}
       <nav className="md:hidden fixed bottom-0 left-0 right-0 z-40 bg-white border-t border-gray-200 shadow-lg py-2 px-4">
@@ -1137,7 +1341,7 @@ const Navbar = () => {
                   {/* Badges */}
                   {item.badge && (
                     <span className="absolute -top-1 -right-1 w-4 h-4 bg-red-500 text-white text-[10px] 
-                                    rounded-full flex items-center justify-center animate-pulse border border-white">
+                                    rounded-full flex items-center justify-center animate-countBounce border border-white">
                       {item.badge}
                     </span>
                   )}
@@ -1165,7 +1369,7 @@ const Navbar = () => {
                 </div>
                 <div>
                   <h1 className="font-bold text-xl bg-gradient-to-r from-blue-600 to-blue-500 bg-clip-text text-transparent">
-                    LifeStream
+                    JeevanDaan
                   </h1>
                   <p className="text-sm text-gray-600">Saving Lives Together</p>
                 </div>
@@ -1192,6 +1396,11 @@ const Navbar = () => {
                       <span className="text-sm bg-white text-blue-600 px-3 py-1 rounded-full border border-blue-200">
                         {getUserTypeLabel()}
                       </span>
+                      {unreadCount > 0 && (
+                        <span className="text-sm bg-red-100 text-red-600 px-2 py-1 rounded-full border border-red-200 font-medium">
+                          {unreadCount} notifications
+                        </span>
+                      )}
                     </div>
                   </div>
                 </div>
@@ -1304,7 +1513,7 @@ const Navbar = () => {
                   Logout
                 </button>
               )}
-              <p className="text-sm text-gray-500">© 2024 LifeStream. All rights reserved.</p>
+              <p className="text-sm text-gray-500">© 2024 JeevanDaan. All rights reserved.</p>
             </div>
           </div>
         </div>
@@ -1358,6 +1567,19 @@ const Navbar = () => {
               </div>
             </div>
           </div>
+        </div>
+      )}
+
+      {/* Render Notifications Component when toggled */}
+      {showNotifications && NotificationsComponent && (
+        <div className="notification-panel">
+          <NotificationsComponent 
+            onClose={() => setShowNotifications(false)}
+            onNotificationRead={() => {
+              // Reset unread count when notifications are read
+              setUnreadCount(0);
+            }}
+          />
         </div>
       )}
 

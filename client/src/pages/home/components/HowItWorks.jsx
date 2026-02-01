@@ -125,7 +125,7 @@ const HowItWorks = () => {
           <h2 className="text-3xl sm:text-4xl lg:text-5xl font-bold text-gray-900 mb-4">
             How 
             <span className="bg-gradient-to-r from-rose-600 to-rose-500 bg-clip-text text-transparent mx-2">
-              LifeStream
+              JeevanDaan
             </span>
             Works
           </h2>
@@ -306,7 +306,7 @@ const HowItWorks = () => {
         {/* Features Grid */}
         <div className="mt-20">
           <h3 className="text-2xl font-bold text-center text-gray-900 mb-8">
-            Why Choose LifeStream?
+            Why Choose JeevanDaan?
           </h3>
           
           <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-6">

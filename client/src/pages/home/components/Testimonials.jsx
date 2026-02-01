@@ -93,7 +93,7 @@ const Testimonials = () => {
       id: 6,
       name: 'Sunita Reddy',
       role: 'Regular Donor (45 times)',
-      story: 'Started donating in college, now it\'s part of my routine. LifeStream makes it so easy with their app reminders and mobile donation vans.',
+      story: 'Started donating in college, now it\'s part of my routine. JeevanDaan makes it so easy with their app reminders and mobile donation vans.',
       rating: 5,
       category: 'donor',
       location: 'Hyderabad',

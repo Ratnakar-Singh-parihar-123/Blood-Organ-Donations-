@@ -123,7 +123,7 @@ const WhyDonate = () => {
     {
       name: 'Rajesh Kumar',
       role: 'Regular Donor (45 times)',
-      content: 'Donating blood gives me immense satisfaction knowing I\'m saving lives. The LifeStream team makes it so easy and comfortable.',
+      content: 'Donating blood gives me immense satisfaction knowing I\'m saving lives. The JeevanDaan team makes it so easy and comfortable.',
       avatar: 'RK'
     },
     {

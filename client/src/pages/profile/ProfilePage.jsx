@@ -830,7 +830,7 @@ const ProfilePage = () => {
                 <IconComponent className="h-6 w-6 text-white" />
               </div>
               <div>
-                <span className="text-xl font-bold text-gray-900">LifeStream</span>
+                <span className="text-xl font-bold text-gray-900">JeevanDaan</span>
                 <span className="text-xs text-gray-600 ml-2">Profile</span>
               </div>
             </Link>
@@ -1067,7 +1067,7 @@ const ProfilePage = () => {
                     </div>
                     <div>
                       <div className="font-medium text-gray-900">Account Created</div>
-                      <div className="text-sm text-gray-500">You joined LifeStream community</div>
+                      <div className="text-sm text-gray-500">You joined JeevanDaan community</div>
                     </div>
                   </div>
                   <div className="text-sm text-gray-500">
@@ -1177,7 +1177,7 @@ const ProfilePage = () => {
       <footer className="mt-12 py-6 border-t border-gray-100">
         <div className="max-w-7xl mx-auto px-4 text-center">
           <p className="text-gray-600 text-sm">
-            LifeStream Profile Management • {userType.label} Account • 
+            JeevanDaan Profile Management • {userType.label} Account • 
             <span className="ml-2 text-gray-500">
               Last updated: {userData.lastUpdated ? new Date(userData.lastUpdated).toLocaleString() : 'Never'}
             </span>

@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { X, Eye, EyeOff, User, Mail, Lock, Phone, Heart, Home, AlertCircle, UserCog } from 'lucide-react';
 import { organDonorAuthAPI } from '../../../api';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate , Link } from 'react-router-dom';
 
 const OrganDonorAuthModal = ({ isOpen, onClose }) => {
   const navigate = useNavigate();
@@ -261,7 +261,8 @@ const OrganDonorAuthModal = ({ isOpen, onClose }) => {
                 <div className="flex items-center justify-between mb-5">
                   {/* <label className="block text-sm font-semibold text-gray-700">Password</label> */}
                   <button type="button" className="text-sm text-blue-500 hover:text-blue-600 font-medium">
-                    <a href="/forgot-password">Forgot Password?</a>
+                    <Link to="/forgot-password">Forgot Password?</Link>
+                    
                   </button>
                 </div>
               </div>

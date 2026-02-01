@@ -323,7 +323,7 @@ const VideoModal = ({ isOpen, onClose }) => {
               <div className="flex items-center justify-between">
                 <div className="bg-black/60 backdrop-blur-sm rounded-lg px-4 py-2">
                   <h3 className="text-white font-semibold text-sm md:text-base">
-                    LifeStream Platform Demo
+                    JeevanDaan Platform Demo
                   </h3>
                   <p className="text-emerald-300 text-xs md:text-sm">3 minutes</p>
                 </div>
@@ -475,7 +475,7 @@ const VideoModal = ({ isOpen, onClose }) => {
           <div className="hidden md:block mt-6 bg-white/10 backdrop-blur-sm rounded-2xl p-6 border border-white/20">
             <h3 className="text-white text-xl font-bold mb-3">About This Demo</h3>
             <p className="text-gray-300 mb-4">
-              This video demonstrates how the LifeStream platform connects donors with recipients, 
+              This video demonstrates how the JeevanDaan platform connects donors with recipients, 
               manages emergency requests, and streamlines the donation process to save lives efficiently.
             </p>
             <div className="grid grid-cols-3 gap-4">
@@ -506,7 +506,7 @@ const VideoModal = ({ isOpen, onClose }) => {
 
       {/* Mobile Bottom Info */}
       <div className="md:hidden fixed bottom-6 left-4 right-4 bg-black/60 backdrop-blur-sm rounded-xl p-4 border border-white/20">
-        <h3 className="text-white font-semibold mb-2">LifeStream Platform Demo</h3>
+        <h3 className="text-white font-semibold mb-2">JeevanDaan Platform Demo</h3>
         <p className="text-gray-300 text-sm">
           Learn how our platform saves lives in 3 minutes
         </p>
