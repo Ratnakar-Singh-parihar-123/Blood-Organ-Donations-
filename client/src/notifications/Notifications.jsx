@@ -1,11 +1,13 @@
-import { useEffect, useState, useRef } from "react";
+import { useEffect, useState, useRef, useCallback } from "react";
 import { socket } from "../socket/socket";
 import { 
   Bell, X, AlertCircle, CheckCircle, Heart, Activity, 
   Droplets, MapPin, Volume2, VolumeX, UserCircle,
-  Search, Trash2, Settings, Mail, MessageSquare,
-  ArrowRight, Bookmark, Share2, Calendar, Clock,
-  Filter, ExternalLink, Shield, Star
+  Search, Trash2, Mail, MessageSquare, Clock,
+  ArrowRight, Calendar, Filter, ExternalLink, 
+  Shield, Star, ChevronRight, MoreVertical,
+  BellRing, Zap, PhoneCall, AlertTriangle,
+  Home, Hospital, Users, RefreshCw
 } from "lucide-react";
 
 export default function Notifications({ onClose, onNotificationRead }) {
@@ -16,21 +18,24 @@ export default function Notifications({ onClose, onNotificationRead }) {
   const [filter, setFilter] = useState("all");
   const [searchQuery, setSearchQuery] = useState("");
   const [loading, setLoading] = useState(true);
+  const [hasNewNotifications, setHasNewNotifications] = useState(false);
   const [stats, setStats] = useState({
     total: 0,
     unread: 0,
-    today: 0
+    today: 0,
+    urgent: 0
   });
   
   const modalRef = useRef(null);
-  const audioRef = useRef(null);
+  const notificationsEndRef = useRef(null);
   const notificationSoundRef = useRef(null);
+  const urgentSoundRef = useRef(null);
 
   // Close modal when clicking outside
   useEffect(() => {
     const handleClickOutside = (event) => {
       if (modalRef.current && !modalRef.current.contains(event.target)) {
-        onClose();
+        handleClose();
       }
     };
 
@@ -41,8 +46,11 @@ export default function Notifications({ onClose, onNotificationRead }) {
   // Prevent body scroll when modal is open
   useEffect(() => {
     document.body.style.overflow = 'hidden';
+    document.body.style.paddingRight = '0px';
+    
     return () => {
       document.body.style.overflow = 'auto';
+      document.body.style.paddingRight = '0px';
     };
   }, []);
 
@@ -50,8 +58,8 @@ export default function Notifications({ onClose, onNotificationRead }) {
   useEffect(() => {
     fetchNotifications();
     
-    // Set up polling for notifications every 30 seconds
-    const interval = setInterval(fetchNotifications, 30000);
+    // Set up polling for notifications every 20 seconds
+    const interval = setInterval(fetchNotifications, 20000);
     
     return () => clearInterval(interval);
   }, []);
@@ -63,14 +71,29 @@ export default function Notifications({ onClose, onNotificationRead }) {
         headers: {
           'Authorization': `Bearer ${token}`,
           'Content-Type': 'application/json'
-        }
+        },
+        cache: 'no-cache'
       });
       
       const data = await res.json();
       
       if (data.success) {
-        setNotifications(data.notifications || []);
-        updateStats(data.notifications || []);
+        const sortedNotifications = (data.notifications || [])
+          .sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+        
+        setNotifications(sortedNotifications);
+        updateStats(sortedNotifications);
+        
+        // Check for new notifications
+        const unreadCount = sortedNotifications.filter(n => !n.isRead).length;
+        const previousUnread = parseInt(localStorage.getItem('unread_count') || '0');
+        
+        if (unreadCount > previousUnread) {
+          setHasNewNotifications(true);
+          playNewNotificationSound();
+        }
+        
+        localStorage.setItem('unread_count', unreadCount.toString());
       }
     } catch (err) {
       console.error("Error fetching notifications:", err);
@@ -79,17 +102,19 @@ export default function Notifications({ onClose, onNotificationRead }) {
     }
   };
 
-  const updateStats = (notificationsList) => {
+  const updateStats = useCallback((notificationsList) => {
     const total = notificationsList.length;
     const unread = notificationsList.filter(n => !n.isRead).length;
+    const urgent = notificationsList.filter(n => n.priority === 'high' && !n.isRead).length;
+    
     const today = notificationsList.filter(n => {
       const notificationDate = new Date(n.createdAt);
       const todayDate = new Date();
       return notificationDate.toDateString() === todayDate.toDateString();
     }).length;
 
-    setStats({ total, unread, today });
-  };
+    setStats({ total, unread, today, urgent });
+  }, []);
 
   // Socket connection for real-time notifications
   useEffect(() => {
@@ -100,17 +125,37 @@ export default function Notifications({ onClose, onNotificationRead }) {
     }
 
     const handleNewNotification = (data) => {
-      console.log("🔔 New real-time notification:", data);
-      playNotificationSound();
-      setNotifications(prev => [{ ...data, isNew: true }, ...prev]);
-      updateStats([{ ...data, isNew: true }, ...notifications]);
+      console.log("🎯 New real-time notification:", data);
+      
+      // Play appropriate sound
+      if (data.priority === 'high') {
+        playUrgentNotificationSound();
+      } else {
+        playNotificationSound();
+      }
+      
+      // Add notification with animation
+      setNotifications(prev => {
+        const newList = [{ 
+          ...data, 
+          isNew: true,
+          _id: data._id || Date.now().toString()
+        }, ...prev];
+        updateStats(newList);
+        return newList;
+      });
+      
+      setHasNewNotifications(true);
       
       // Show browser notification if permitted
-      if (Notification.permission === "granted") {
-        new Notification(data.title, {
+      if (Notification.permission === "granted" && !document.hasFocus()) {
+        new Notification(data.title || "New Notification", {
           body: data.message,
           icon: "/logo.png",
-          tag: data._id
+          tag: data._id,
+          badge: "/badge.png",
+          requireInteraction: data.priority === 'high',
+          vibrate: data.priority === 'high' ? [200, 100, 200] : [200]
         });
       }
     };
@@ -119,22 +164,30 @@ export default function Notifications({ onClose, onNotificationRead }) {
       setNotifications(prev =>
         prev.map(n => n._id === data.notificationId ? { ...n, isRead: true } : n)
       );
-      updateStats(notifications.map(n => n._id === data.notificationId ? { ...n, isRead: true } : n));
     };
 
-    socket.on("new-notification", handleNewNotification);
-    socket.on("notification-read", handleNotificationRead);
+    socket.on("notification:new", handleNewNotification);
+    socket.on("notification:read", handleNotificationRead);
+    socket.on("notification:delete", (data) => {
+      setNotifications(prev => prev.filter(n => n._id !== data.notificationId));
+    });
 
     return () => {
-      socket.off("new-notification", handleNewNotification);
-      socket.off("notification-read", handleNotificationRead);
+      socket.off("notification:new", handleNewNotification);
+      socket.off("notification:read", handleNotificationRead);
+      socket.off("notification:delete");
+      socket.disconnect();
     };
-  }, [notifications]);
+  }, [updateStats]);
 
   // Request notification permission
   useEffect(() => {
     if (Notification.permission === "default") {
-      Notification.requestPermission();
+      Notification.requestPermission().then(permission => {
+        if (permission === "granted") {
+          console.log("🔔 Notification permission granted");
+        }
+      });
     }
   }, []);
 
@@ -145,10 +198,38 @@ export default function Notifications({ onClose, onNotificationRead }) {
     }
   };
 
+  const playUrgentNotificationSound = () => {
+    if (!isMuted && urgentSoundRef.current) {
+      urgentSoundRef.current.currentTime = 0;
+      urgentSoundRef.current.play().catch(e => console.log("Urgent audio play failed:", e));
+    }
+  };
+
+  const playNewNotificationSound = () => {
+    if (!isMuted) {
+      const audio = new Audio("https://assets.mixkit.co/sfx/preview/mixkit-happy-bell-alert-601.mp3");
+      audio.volume = 0.6;
+      audio.play().catch(e => console.log("New notification sound failed:", e));
+    }
+  };
+
   const handleMuteToggle = () => {
     const newMutedState = !isMuted;
     setIsMuted(newMutedState);
     localStorage.setItem('notifications_muted', newMutedState.toString());
+    
+    // Show feedback
+    if (newMutedState) {
+      console.log("🔕 Notifications muted");
+    } else {
+      console.log("🔔 Notifications unmuted");
+      playNotificationSound();
+    }
+  };
+
+  const handleClose = () => {
+    setHasNewNotifications(false);
+    onClose();
   };
 
   const markAsRead = async (id) => {
@@ -164,12 +245,10 @@ export default function Notifications({ onClose, onNotificationRead }) {
       
       if (res.ok) {
         setNotifications(prev =>
-          prev.map((n) => (n._id === id ? { ...n, isRead: true } : n))
+          prev.map((n) => (n._id === id ? { ...n, isRead: true, isNew: false } : n))
         );
-        updateStats(notifications.map((n) => (n._id === id ? { ...n, isRead: true } : n)));
         
-        // Emit socket event
-        socket.emit("notification-read", { notificationId: id });
+        socket.emit("notification:read", { notificationId: id });
         
         if (onNotificationRead) onNotificationRead();
       }
@@ -191,9 +270,9 @@ export default function Notifications({ onClose, onNotificationRead }) {
       
       if (res.ok) {
         setNotifications(prev =>
-          prev.map((n) => ({ ...n, isRead: true }))
+          prev.map((n) => ({ ...n, isRead: true, isNew: false }))
         );
-        updateStats(notifications.map((n) => ({ ...n, isRead: true })));
+        setHasNewNotifications(false);
         
         if (onNotificationRead) onNotificationRead();
       }
@@ -217,7 +296,7 @@ export default function Notifications({ onClose, onNotificationRead }) {
       
       if (res.ok) {
         setNotifications(prev => prev.filter(n => n._id !== id));
-        updateStats(notifications.filter(n => n._id !== id));
+        socket.emit("notification:delete", { notificationId: id });
       }
     } catch (err) {
       console.error("Error deleting notification:", err);
@@ -237,69 +316,116 @@ export default function Notifications({ onClose, onNotificationRead }) {
       
       if (res.ok) {
         setNotifications([]);
-        updateStats([]);
+        setHasNewNotifications(false);
       }
     } catch (err) {
       console.error("Error clearing notifications:", err);
     }
   };
 
-  const getNotificationIcon = (type) => {
+  const getNotificationIcon = (type, priority) => {
     const icons = {
-      'blood': { icon: <Droplets className="h-5 w-5" />, color: "text-red-500" },
-      'organ': { icon: <Heart className="h-5 w-5" />, color: "text-purple-500" },
-      'emergency': { icon: <AlertCircle className="h-5 w-5" />, color: "text-amber-500" },
-      'donation': { icon: <Activity className="h-5 w-5" />, color: "text-green-500" },
-      'message': { icon: <MessageSquare className="h-5 w-5" />, color: "text-blue-500" },
-      'system': { icon: <Shield className="h-5 w-5" />, color: "text-gray-500" },
-      'event': { icon: <Calendar className="h-5 w-5" />, color: "text-indigo-500" },
-      'update': { icon: <Bell className="h-5 w-5" />, color: "text-cyan-500" }
+      'blood': { 
+        icon: <Droplets className="h-5 w-5" />, 
+        color: priority === 'high' ? "text-red-600" : "text-red-500",
+        bg: priority === 'high' ? "bg-red-100" : "bg-red-50"
+      },
+      'organ': { 
+        icon: <Heart className="h-5 w-5" />, 
+        color: "text-purple-600",
+        bg: "bg-purple-50"
+      },
+      'emergency': { 
+        icon: <AlertTriangle className="h-5 w-5" />, 
+        color: "text-amber-600",
+        bg: "bg-amber-50"
+      },
+      'donation': { 
+        icon: <Activity className="h-5 w-5" />, 
+        color: "text-green-600",
+        bg: "bg-green-50"
+      },
+      'message': { 
+        icon: <MessageSquare className="h-5 w-5" />, 
+        color: "text-blue-600",
+        bg: "bg-blue-50"
+      },
+      'system': { 
+        icon: <Shield className="h-5 w-5" />, 
+        color: "text-gray-600",
+        bg: "bg-gray-50"
+      },
+      'event': { 
+        icon: <Calendar className="h-5 w-5" />, 
+        color: "text-indigo-600",
+        bg: "bg-indigo-50"
+      },
+      'update': { 
+        icon: <BellRing className="h-5 w-5" />, 
+        color: "text-cyan-600",
+        bg: "bg-cyan-50"
+      },
+      'appointment': { 
+        icon: <Clock className="h-5 w-5" />, 
+        color: "text-teal-600",
+        bg: "bg-teal-50"
+      }
     };
     
-    return icons[type] || { icon: <Bell className="h-5 w-5" />, color: "text-gray-500" };
+    return icons[type] || { 
+      icon: <Bell className="h-5 w-5" />, 
+      color: "text-gray-600",
+      bg: "bg-gray-50"
+    };
   };
 
   const getNotificationStyle = (type, priority = 'normal') => {
     const baseStyles = {
       blood: {
-        bg: "bg-red-50/80",
-        border: "border-red-100",
-        text: "text-red-800",
-        badge: "bg-red-100 text-red-700"
+        bg: "bg-gradient-to-r from-red-50/90 to-red-50/60",
+        border: "border-red-200",
+        text: "text-red-900",
+        badge: "bg-gradient-to-r from-red-100 to-red-200 text-red-800",
+        glow: priority === 'high' ? "shadow-[0_0_20px_rgba(239,68,68,0.15)]" : ""
       },
       organ: {
-        bg: "bg-purple-50/80",
-        border: "border-purple-100",
-        text: "text-purple-800",
-        badge: "bg-purple-100 text-purple-700"
+        bg: "bg-gradient-to-r from-purple-50/90 to-purple-50/60",
+        border: "border-purple-200",
+        text: "text-purple-900",
+        badge: "bg-gradient-to-r from-purple-100 to-purple-200 text-purple-800",
+        glow: priority === 'high' ? "shadow-[0_0_20px_rgba(168,85,247,0.15)]" : ""
       },
       emergency: {
-        bg: "bg-amber-50/80",
-        border: "border-amber-100",
-        text: "text-amber-800",
-        badge: "bg-amber-100 text-amber-700"
+        bg: "bg-gradient-to-r from-amber-50/90 to-amber-50/60",
+        border: "border-amber-200",
+        text: "text-amber-900",
+        badge: "bg-gradient-to-r from-amber-100 to-amber-200 text-amber-800",
+        glow: priority === 'high' ? "shadow-[0_0_20px_rgba(245,158,11,0.15)]" : ""
       },
       donation: {
-        bg: "bg-green-50/80",
-        border: "border-green-100",
-        text: "text-green-800",
-        badge: "bg-green-100 text-green-700"
+        bg: "bg-gradient-to-r from-green-50/90 to-green-50/60",
+        border: "border-green-200",
+        text: "text-green-900",
+        badge: "bg-gradient-to-r from-green-100 to-green-200 text-green-800",
+        glow: priority === 'high' ? "shadow-[0_0_20px_rgba(34,197,94,0.15)]" : ""
       }
     };
     
     const style = baseStyles[type] || {
-      bg: "bg-blue-50/80",
-      border: "border-blue-100",
-      text: "text-blue-800",
-      badge: "bg-blue-100 text-blue-700"
+      bg: "bg-gradient-to-r from-blue-50/90 to-blue-50/60",
+      border: "border-blue-200",
+      text: "text-blue-900",
+      badge: "bg-gradient-to-r from-blue-100 to-blue-200 text-blue-800",
+      glow: ""
     };
     
     if (priority === 'high') {
       return {
         ...style,
-        bg: style.bg.replace('50', '100'),
-        border: "border-red-200",
-        ring: "ring-1 ring-red-200"
+        bg: "bg-gradient-to-r from-red-50/95 to-red-50/70",
+        border: "border-red-300",
+        ring: "ring-2 ring-red-300 ring-opacity-50",
+        glow: "shadow-[0_0_25px_rgba(239,68,68,0.2)] animate-pulse-glow"
       };
     }
     
@@ -309,6 +435,7 @@ export default function Notifications({ onClose, onNotificationRead }) {
   const filteredNotifications = notifications.filter(n => {
     if (filter === 'all') return true;
     if (filter === 'unread') return !n.isRead;
+    if (filter === 'urgent') return n.priority === 'high';
     if (filter === 'today') {
       const notificationDate = new Date(n.createdAt);
       const today = new Date();
@@ -321,7 +448,9 @@ export default function Notifications({ onClose, onNotificationRead }) {
     ? filteredNotifications.filter(n => 
         n.title?.toLowerCase().includes(searchQuery.toLowerCase()) ||
         n.message?.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        n.sender?.name?.toLowerCase().includes(searchQuery.toLowerCase())
+        n.sender?.name?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        n.bloodGroup?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        n.location?.toLowerCase().includes(searchQuery.toLowerCase())
       )
     : filteredNotifications;
 
@@ -346,48 +475,85 @@ export default function Notifications({ onClose, onNotificationRead }) {
     }
     
     if (notification.actionUrl) {
-      window.open(notification.actionUrl, '_blank');
-      onClose();
+      window.location.href = notification.actionUrl;
+      handleClose();
     }
+  };
+
+  const scrollToBottom = () => {
+    notificationsEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+  };
+
+  const handleRefresh = () => {
+    setLoading(true);
+    fetchNotifications();
   };
 
   return (
     <div className="fixed inset-0 z-[9999] flex">
-      {/* Backdrop */}
+      {/* Animated Background */}
       <div 
-        className="absolute inset-0 bg-black/20 backdrop-blur-sm"
-        onClick={onClose}
+        className="absolute inset-0 bg-gradient-to-br from-gray-900/30 via-black/20 to-gray-900/30 backdrop-blur-md"
+        onClick={handleClose}
       />
       
+      {/* Glowing Particles */}
+      <div className="absolute inset-0 overflow-hidden">
+        {[...Array(3)].map((_, i) => (
+          <div
+            key={i}
+            className="absolute w-64 h-64 bg-blue-500/10 rounded-full blur-3xl"
+            style={{
+              top: `${20 + i * 30}%`,
+              left: `${10 + i * 40}%`,
+              animation: `float ${15 + i * 5}s infinite ease-in-out`
+            }}
+          />
+        ))}
+      </div>
+
       {/* Notification Modal */}
       <div 
         ref={modalRef}
-        className="relative ml-auto h-full w-full max-w-md bg-white shadow-2xl animate-slideInRight"
+        className="relative ml-auto h-full w-full max-w-lg bg-gradient-to-b from-white/95 via-white/98 to-white/95 backdrop-blur-xl shadow-2xl border-l border-gray-200/50 animate-slideInRight overflow-hidden"
       >
         {/* Header */}
-        <div className="sticky top-0 z-10 bg-gradient-to-b from-white to-white/95 border-b border-gray-100 p-5">
-          <div className="flex items-center justify-between mb-5">
-            <div className="flex items-center gap-3">
+        <div className="sticky top-0 z-20 bg-gradient-to-b from-white/95 to-white/80 backdrop-blur-lg border-b border-gray-200/50 px-6 pt-6 pb-4">
+          <div className="flex items-center justify-between mb-6">
+            <div className="flex items-center gap-4">
               <div className="relative">
-                <Bell className="h-7 w-7 text-blue-600" />
+                <div className="absolute inset-0 bg-gradient-to-r from-blue-500 to-cyan-500 rounded-xl blur opacity-30"></div>
+                <div className="relative p-3 bg-gradient-to-r from-blue-500 to-cyan-500 rounded-xl shadow-lg">
+                  <Bell className="h-6 w-6 text-white" />
+                </div>
                 {stats.unread > 0 && (
-                  <span className="absolute -top-1 -right-1 h-4 w-4 bg-red-500 text-white text-xs rounded-full flex items-center justify-center font-bold">
+                  <span className="absolute -top-2 -right-2 h-6 w-6 bg-gradient-to-r from-red-500 to-pink-500 text-white text-xs rounded-full flex items-center justify-center font-bold shadow-lg animate-pulse">
                     {stats.unread}
                   </span>
                 )}
               </div>
               <div>
-                <h2 className="text-xl font-bold text-gray-900">Notifications</h2>
-                <p className="text-sm text-gray-500">
-                  {stats.unread} unread • {stats.today} today
+                <h2 className="text-2xl font-bold bg-gradient-to-r from-gray-900 to-gray-700 bg-clip-text text-transparent">
+                  Notifications
+                </h2>
+                <p className="text-sm text-gray-500 mt-1">
+                  {stats.unread} unread • {stats.today} today • {stats.urgent} urgent
                 </p>
               </div>
             </div>
             
-            <div className="flex items-center gap-1">
+            <div className="flex items-center gap-2">
+              <button
+                onClick={handleRefresh}
+                className="p-2.5 hover:bg-gray-100 rounded-xl transition-all duration-200 hover:scale-105 active:scale-95 group"
+                title="Refresh notifications"
+              >
+                <RefreshCw className={`h-5 w-5 text-gray-600 group-active:rotate-180 transition-transform ${loading ? 'animate-spin' : ''}`} />
+              </button>
+              
               <button
                 onClick={handleMuteToggle}
-                className="p-2 hover:bg-gray-100 rounded-lg transition-all duration-200 hover:scale-105"
+                className="p-2.5 hover:bg-gray-100 rounded-xl transition-all duration-200 hover:scale-105 active:scale-95"
                 title={isMuted ? "Unmute sounds" : "Mute sounds"}
               >
                 {isMuted ? (
@@ -398,8 +564,8 @@ export default function Notifications({ onClose, onNotificationRead }) {
               </button>
               
               <button
-                onClick={onClose}
-                className="p-2 hover:bg-gray-100 rounded-lg transition-all duration-200 hover:scale-105"
+                onClick={handleClose}
+                className="p-2.5 hover:bg-gray-100 rounded-xl transition-all duration-200 hover:scale-105 active:scale-95"
                 title="Close notifications"
               >
                 <X className="h-5 w-5 text-gray-600" />
@@ -408,51 +574,54 @@ export default function Notifications({ onClose, onNotificationRead }) {
           </div>
           
           {/* Search Bar */}
-          <div className="relative mb-4">
-            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
-            <input
-              type="text"
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              placeholder="Search notifications..."
-              className="w-full pl-10 pr-10 py-2.5 bg-gray-50 border border-gray-200 rounded-xl 
-                       focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-transparent text-sm
-                       placeholder-gray-400 transition-all duration-200"
-            />
-            {searchQuery && (
-              <button
-                onClick={() => setSearchQuery('')}
-                className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600 transition-colors"
-              >
-                <X className="h-4 w-4" />
-              </button>
-            )}
+          <div className="relative mb-5">
+            <div className="absolute inset-0 bg-gradient-to-r from-blue-500/10 to-cyan-500/10 rounded-2xl blur"></div>
+            <div className="relative">
+              <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
+              <input
+                type="text"
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                placeholder="Search notifications..."
+                className="w-full pl-12 pr-12 py-3.5 bg-white/80 border border-gray-300/50 rounded-2xl 
+                         focus:outline-none focus:ring-3 focus:ring-blue-400/30 focus:border-blue-400/50 text-sm
+                         placeholder-gray-400 transition-all duration-300 backdrop-blur-sm shadow-sm"
+              />
+              {searchQuery && (
+                <button
+                  onClick={() => setSearchQuery('')}
+                  className="absolute right-4 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600 transition-colors p-1"
+                >
+                  <X className="h-4 w-4" />
+                </button>
+              )}
+            </div>
           </div>
           
           {/* Filter Tabs */}
-          <div className="flex items-center gap-2 overflow-x-auto pb-2">
+          <div className="flex items-center gap-2 overflow-x-auto pb-3">
             {[
-              { id: 'all', label: 'All', count: stats.total },
-              { id: 'unread', label: 'Unread', count: stats.unread },
-              { id: 'today', label: 'Today', count: stats.today },
+              { id: 'all', label: 'All', count: stats.total, icon: <Bell className="h-3 w-3" /> },
+              { id: 'unread', label: 'Unread', count: stats.unread, icon: <AlertCircle className="h-3 w-3" /> },
+              { id: 'urgent', label: 'Urgent', count: stats.urgent, icon: <Zap className="h-3 w-3" /> },
+              { id: 'today', label: 'Today', count: stats.today, icon: <Calendar className="h-3 w-3" /> },
               { id: 'blood', label: 'Blood', icon: <Droplets className="h-3 w-3" /> },
-              { id: 'emergency', label: 'Emergency', icon: <AlertCircle className="h-3 w-3" /> },
-              { id: 'donation', label: 'Donation', icon: <Activity className="h-3 w-3" /> },
+              { id: 'emergency', label: 'Emergency', icon: <AlertTriangle className="h-3 w-3" /> },
             ].map((tab) => (
               <button
                 key={tab.id}
                 onClick={() => setFilter(tab.id)}
-                className={`flex items-center gap-1.5 px-3 py-2 rounded-lg text-sm font-medium whitespace-nowrap transition-all duration-200 ${
+                className={`flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-medium whitespace-nowrap transition-all duration-300 transform hover:scale-[1.02] active:scale-[0.98] ${
                   filter === tab.id 
-                    ? 'bg-blue-500 text-white shadow-sm' 
-                    : 'text-gray-600 hover:bg-gray-100 hover:text-gray-900'
+                    ? 'bg-gradient-to-r from-blue-500 to-cyan-500 text-white shadow-lg shadow-blue-500/30' 
+                    : 'text-gray-600 hover:bg-gray-100 hover:text-gray-900 bg-white/50 backdrop-blur-sm border border-gray-200/50'
                 }`}
               >
                 {tab.icon}
                 {tab.label}
                 {tab.count !== undefined && (
-                  <span className={`text-xs px-1.5 py-0.5 rounded-full ${
-                    filter === tab.id ? 'bg-white/20' : 'bg-gray-200'
+                  <span className={`text-xs px-2 py-0.5 rounded-full min-w-[24px] text-center ${
+                    filter === tab.id ? 'bg-white/30' : 'bg-gray-200/80'
                   }`}>
                     {tab.count}
                   </span>
@@ -463,116 +632,164 @@ export default function Notifications({ onClose, onNotificationRead }) {
         </div>
 
         {/* Notifications List */}
-        <div className="overflow-y-auto h-[calc(100vh-180px)]">
+        <div className="overflow-y-auto h-[calc(100vh-220px)] px-4 pb-24">
           {loading ? (
             <div className="flex flex-col items-center justify-center h-full p-8">
-              <div className="w-12 h-12 border-4 border-blue-200 border-t-blue-500 rounded-full animate-spin mb-4"></div>
-              <p className="text-gray-500">Loading notifications...</p>
+              <div className="relative">
+                <div className="w-16 h-16 border-4 border-blue-200 rounded-full animate-spin"></div>
+                <div className="absolute inset-0 flex items-center justify-center">
+                  <Bell className="h-8 w-8 text-blue-500 animate-pulse" />
+                </div>
+              </div>
+              <p className="text-gray-500 mt-4">Loading your notifications...</p>
             </div>
           ) : searchedNotifications.length === 0 ? (
             <div className="flex flex-col items-center justify-center h-full p-8">
-              <div className="w-20 h-20 bg-gradient-to-br from-gray-100 to-gray-200 rounded-2xl flex items-center justify-center mb-4">
+              <div className="w-24 h-24 bg-gradient-to-br from-gray-100 to-gray-200 rounded-3xl flex items-center justify-center mb-6 shadow-inner">
                 {searchQuery ? (
-                  <Search className="h-10 w-10 text-gray-400" />
+                  <Search className="h-12 w-12 text-gray-400" />
                 ) : (
-                  <Bell className="h-10 w-10 text-gray-400" />
+                  <Bell className="h-12 w-12 text-gray-400" />
                 )}
               </div>
-              <h3 className="font-semibold text-gray-700 mb-2 text-lg">
-                {searchQuery ? 'No results found' : 'No notifications yet'}
+              <h3 className="font-semibold text-gray-700 mb-3 text-xl">
+                {searchQuery ? 'No matches found' : 'All caught up!'}
               </h3>
-              <p className="text-sm text-gray-500 text-center max-w-xs">
+              <p className="text-sm text-gray-500 text-center max-w-xs mb-6">
                 {searchQuery 
                   ? `No notifications match "${searchQuery}"`
-                  : "You'll see important updates, alerts, and messages here"}
+                  : "You're up to date with all your notifications"}
               </p>
+              {!searchQuery && (
+                <button
+                  onClick={handleRefresh}
+                  className="flex items-center gap-2 px-5 py-2.5 bg-gradient-to-r from-blue-500 to-cyan-500 text-white rounded-xl font-medium hover:shadow-lg hover:shadow-blue-500/30 transition-all duration-300 transform hover:scale-[1.02]"
+                >
+                  <RefreshCw className="h-4 w-4" />
+                  Refresh
+                </button>
+              )}
             </div>
           ) : (
-            <div className="p-4 space-y-3">
-              {searchedNotifications.map((notification) => {
-                const iconData = getNotificationIcon(notification.type);
+            <div className="space-y-4 py-4">
+              {hasNewNotifications && (
+                <div className="sticky top-2 z-10 flex justify-center">
+                  <div className="px-4 py-2 bg-gradient-to-r from-green-500 to-emerald-500 text-white text-sm font-medium rounded-full shadow-lg shadow-green-500/30 animate-bounce">
+                    New notifications!
+                  </div>
+                </div>
+              )}
+              
+              {searchedNotifications.map((notification, index) => {
+                const iconData = getNotificationIcon(notification.type, notification.priority);
                 const styles = getNotificationStyle(notification.type, notification.priority);
                 
                 return (
                   <div
-                    key={notification._id}
+                    key={notification._id || index}
                     onClick={() => handleNotificationClick(notification)}
-                    className={`relative rounded-xl border transition-all duration-200 hover:shadow-md cursor-pointer group ${
-                      notification.isRead ? 'opacity-80' : ''
-                    } ${styles.bg} ${styles.border} ${styles.ring || ''}`}
+                    className={`relative rounded-2xl border transition-all duration-300 hover:shadow-xl cursor-pointer transform hover:scale-[1.01] active:scale-[0.99] group ${
+                      notification.isRead ? 'opacity-90' : ''
+                    } ${styles.bg} ${styles.border} ${styles.ring || ''} ${styles.glow}`}
+                    style={{
+                      animationDelay: `${index * 50}ms`
+                    }}
                   >
-                    {/* Unread indicator */}
-                    {!notification.isRead && (
-                      <div className="absolute left-3 top-3 w-2 h-2 bg-blue-500 rounded-full animate-pulse" />
+                    {/* New Notification Indicator */}
+                    {notification.isNew && !notification.isRead && (
+                      <div className="absolute -top-2 -right-2 w-4 h-4 bg-gradient-to-r from-green-500 to-emerald-500 rounded-full animate-ping"></div>
                     )}
                     
-                    <div className="p-4">
+                    {/* Unread indicator */}
+                    {!notification.isRead && (
+                      <div className="absolute left-4 top-4 w-2.5 h-2.5 bg-gradient-to-r from-blue-500 to-cyan-500 rounded-full animate-pulse shadow-lg"></div>
+                    )}
+                    
+                    {/* Urgent Badge */}
+                    {notification.priority === 'high' && (
+                      <div className="absolute -top-3 left-1/2 transform -translate-x-1/2 px-3 py-1 bg-gradient-to-r from-red-500 to-pink-500 text-white text-xs font-bold rounded-full shadow-lg z-10">
+                        URGENT
+                      </div>
+                    )}
+                    
+                    <div className="p-5">
                       <div className="flex items-start gap-4">
-                        {/* Icon with sender avatar */}
-                        <div className="flex flex-col items-center">
-                          <div className={`p-2.5 rounded-xl ${iconData.color} bg-white shadow-sm mb-2`}>
+                        {/* Icon */}
+                        <div className={`relative p-3.5 rounded-xl ${iconData.bg} shadow-md group-hover:scale-110 transition-transform duration-300`}>
+                          <div className={`${iconData.color}`}>
                             {iconData.icon}
                           </div>
-                          {notification.sender?.avatar && (
-                            <div className="w-6 h-6 rounded-full overflow-hidden border border-white shadow-sm">
-                              <img 
-                                src={notification.sender.avatar} 
-                                alt={notification.sender.name}
-                                className="w-full h-full object-cover"
-                              />
-                            </div>
-                          )}
                         </div>
 
                         {/* Content */}
                         <div className="flex-1 min-w-0">
-                          <div className="flex items-start justify-between gap-2 mb-2">
-                            <div>
-                              <h4 className={`font-semibold ${styles.text} text-sm`}>
-                                {notification.title}
-                              </h4>
+                          <div className="flex items-start justify-between gap-2 mb-3">
+                            <div className="flex-1">
+                              <div className="flex items-center gap-2 mb-1">
+                                <h4 className={`font-bold ${styles.text} text-base`}>
+                                  {notification.title}
+                                </h4>
+                                {notification.isNew && !notification.isRead && (
+                                  <span className="text-xs px-2 py-0.5 bg-gradient-to-r from-green-500 to-emerald-500 text-white rounded-full">
+                                    NEW
+                                  </span>
+                                )}
+                              </div>
+                              
                               {notification.sender?.name && (
-                                <p className="text-xs text-gray-500 mt-0.5">
-                                  From: {notification.sender.name}
-                                </p>
+                                <div className="flex items-center gap-2">
+                                  {notification.sender.avatar ? (
+                                    <img 
+                                      src={notification.sender.avatar} 
+                                      alt={notification.sender.name}
+                                      className="w-5 h-5 rounded-full"
+                                    />
+                                  ) : (
+                                    <UserCircle className="w-4 h-4 text-gray-400" />
+                                  )}
+                                  <p className="text-xs text-gray-500">
+                                    From: {notification.sender.name}
+                                  </p>
+                                </div>
                               )}
                             </div>
-                            <div className="flex items-center gap-2">
-                              <span className="text-xs text-gray-500 whitespace-nowrap">
+                            
+                            <div className="flex items-start gap-2">
+                              <span className="text-xs text-gray-500 whitespace-nowrap bg-white/50 px-2 py-1 rounded-lg border border-gray-200/50">
                                 {getTimeAgo(notification.createdAt)}
                               </span>
                               <button
                                 onClick={(e) => deleteNotification(notification._id, e)}
-                                className="opacity-0 group-hover:opacity-100 p-1 hover:bg-gray-200 rounded transition-all duration-200"
+                                className="opacity-0 group-hover:opacity-100 p-1.5 hover:bg-gray-200/50 rounded-lg transition-all duration-200"
                                 title="Delete notification"
                               >
-                                <X className="h-3 w-3 text-gray-500" />
+                                <Trash2 className="h-3.5 w-3.5 text-gray-500" />
                               </button>
                             </div>
                           </div>
 
-                          <p className={`text-sm ${styles.text.replace('800', '700')} mb-3`}>
+                          <p className={`text-sm ${styles.text.replace('900', '700')} mb-4 leading-relaxed`}>
                             {notification.message}
                           </p>
 
                           {/* Meta info */}
                           {(notification.location || notification.bloodGroup || notification.hospital) && (
-                            <div className="flex items-center gap-2 mb-3 flex-wrap">
+                            <div className="flex items-center gap-2 mb-4 flex-wrap">
                               {notification.bloodGroup && (
-                                <span className={`inline-flex items-center gap-1 text-xs font-medium ${styles.badge} px-3 py-1.5 rounded-lg`}>
-                                  <Droplets className="h-3 w-3" />
+                                <span className={`inline-flex items-center gap-2 text-xs font-semibold ${styles.badge} px-3 py-2 rounded-xl`}>
+                                  <Droplets className="h-3.5 w-3.5" />
                                   {notification.bloodGroup}
                                 </span>
                               )}
                               {notification.location && (
-                                <span className="inline-flex items-center gap-1 text-xs text-gray-600 bg-white px-3 py-1.5 rounded-lg border border-gray-200">
-                                  <MapPin className="h-3 w-3" />
+                                <span className="inline-flex items-center gap-2 text-xs text-gray-700 bg-white/80 px-3 py-2 rounded-xl border border-gray-300/50 backdrop-blur-sm">
+                                  <MapPin className="h-3.5 w-3.5" />
                                   {notification.location}
                                 </span>
                               )}
                               {notification.hospital && (
-                                <span className="inline-flex items-center gap-1 text-xs text-gray-600 bg-white px-3 py-1.5 rounded-lg border border-gray-200">
-                                  <Activity className="h-3 w-3" />
+                                <span className="inline-flex items-center gap-2 text-xs text-gray-700 bg-white/80 px-3 py-2 rounded-xl border border-gray-300/50 backdrop-blur-sm">
+                                  <Hospital className="h-3.5 w-3.5" />
                                   {notification.hospital}
                                 </span>
                               )}
@@ -580,7 +797,7 @@ export default function Notifications({ onClose, onNotificationRead }) {
                           )}
 
                           {/* Action buttons */}
-                          <div className="flex items-center justify-between pt-3 border-t border-gray-200/50">
+                          <div className="flex items-center justify-between pt-4 border-t border-gray-300/30">
                             <div className="flex items-center gap-2">
                               {!notification.isRead && (
                                 <button
@@ -588,18 +805,11 @@ export default function Notifications({ onClose, onNotificationRead }) {
                                     e.stopPropagation();
                                     markAsRead(notification._id);
                                   }}
-                                  className="flex items-center gap-1 text-xs px-3 py-1.5 bg-green-500 hover:bg-green-600 text-white rounded-lg font-medium transition-colors"
+                                  className="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-green-500 to-emerald-500 hover:from-green-600 hover:to-emerald-600 text-white rounded-xl text-sm font-medium transition-all duration-300 transform hover:scale-[1.02] active:scale-[0.98] shadow-md shadow-green-500/20"
                                 >
-                                  <CheckCircle className="h-3 w-3" />
+                                  <CheckCircle className="h-4 w-4" />
                                   Mark as read
                                 </button>
-                              )}
-                              
-                              {notification.priority === 'high' && (
-                                <span className="inline-flex items-center gap-1 text-xs px-2 py-1 bg-red-100 text-red-700 rounded font-medium">
-                                  <AlertCircle className="h-3 w-3" />
-                                  Urgent
-                                </span>
                               )}
                             </div>
                             
@@ -608,12 +818,12 @@ export default function Notifications({ onClose, onNotificationRead }) {
                                 onClick={(e) => {
                                   e.stopPropagation();
                                   window.open(notification.actionUrl, '_blank');
-                                  onClose();
+                                  handleClose();
                                 }}
-                                className="text-xs text-blue-600 hover:text-blue-800 font-medium inline-flex items-center gap-1 hover:gap-2 transition-all"
+                                className="flex items-center gap-2 text-sm text-blue-600 hover:text-blue-800 font-medium px-4 py-2 hover:bg-blue-50 rounded-xl transition-all duration-300 group/action"
                               >
                                 View details
-                                <ArrowRight className="h-3 w-3" />
+                                <ArrowRight className="h-4 w-4 group-hover/action:translate-x-1 transition-transform" />
                               </button>
                             )}
                           </div>
@@ -623,53 +833,67 @@ export default function Notifications({ onClose, onNotificationRead }) {
                   </div>
                 );
               })}
+              <div ref={notificationsEndRef} />
             </div>
+          )}
+        </div>
+
+        {/* Floating Action Buttons */}
+        <div className="absolute bottom-6 right-6 flex flex-col gap-3">
+          <button
+            onClick={scrollToBottom}
+            className="p-3 bg-gradient-to-r from-gray-800 to-gray-900 text-white rounded-full shadow-2xl hover:shadow-3xl transition-all duration-300 transform hover:scale-110 active:scale-95"
+            title="Scroll to bottom"
+          >
+            <ChevronRight className="h-5 w-5 rotate-90" />
+          </button>
+          
+          {searchedNotifications.length > 0 && (
+            <button
+              onClick={markAllAsRead}
+              disabled={stats.unread === 0}
+              className={`p-3 rounded-full shadow-2xl transition-all duration-300 transform hover:scale-110 active:scale-95 ${
+                stats.unread === 0 
+                  ? 'bg-gradient-to-r from-gray-300 to-gray-400 cursor-not-allowed' 
+                  : 'bg-gradient-to-r from-blue-500 to-cyan-500 hover:shadow-blue-500/30'
+              }`}
+              title="Mark all as read"
+            >
+              <CheckCircle className="h-5 w-5 text-white" />
+            </button>
           )}
         </div>
 
         {/* Footer Actions */}
         {notifications.length > 0 && (
-          <div className="sticky bottom-0 bg-gradient-to-t from-white to-white/95 border-t border-gray-100 p-4">
+          <div className="fixed bottom-0 left-0 right-0 bg-gradient-to-t from-white/95 via-white/90 to-transparent backdrop-blur-lg border-t border-gray-200/50 px-6 py-4">
             <div className="flex items-center justify-between">
-              <button
-                onClick={markAllAsRead}
-                disabled={stats.unread === 0}
-                className={`px-4 py-2 rounded-xl text-sm font-medium transition-all duration-200 flex items-center gap-2 ${
-                  stats.unread === 0 
-                    ? 'bg-gray-100 text-gray-400 cursor-not-allowed' 
-                    : 'bg-gradient-to-r from-blue-500 to-blue-600 text-white hover:from-blue-600 hover:to-blue-700 shadow-sm hover:shadow'
-                }`}
-              >
-                <CheckCircle className="h-4 w-4" />
-                Mark all as read
-              </button>
+              <div className="text-sm text-gray-600">
+                <span className="font-medium">{searchedNotifications.length}</span> notifications shown
+              </div>
               
               <button
                 onClick={clearAllNotifications}
-                className="px-4 py-2 bg-gradient-to-r from-gray-100 to-gray-200 text-gray-700 rounded-xl text-sm font-medium hover:from-gray-200 hover:to-gray-300 transition-all duration-200 shadow-sm hover:shadow flex items-center gap-2"
+                className="flex items-center gap-2 px-5 py-2.5 bg-gradient-to-r from-red-500 to-pink-500 hover:from-red-600 hover:to-pink-600 text-white rounded-xl text-sm font-medium transition-all duration-300 transform hover:scale-[1.02] active:scale-[0.98] shadow-lg shadow-red-500/20"
               >
                 <Trash2 className="h-4 w-4" />
                 Clear all
               </button>
             </div>
-            
-            <div className="text-xs text-gray-500 mt-3 text-center">
-              Notifications are synced in real-time
-            </div>
           </div>
         )}
         
         {/* Audio elements */}
-        <audio ref={audioRef} preload="none">
-          <source src="/notification-sound.mp3" type="audio/mpeg" />
-        </audio>
         <audio ref={notificationSoundRef} preload="auto">
           <source src="https://assets.mixkit.co/sfx/preview/mixkit-correct-answer-tone-2870.mp4" type="audio/mpeg" />
         </audio>
+        <audio ref={urgentSoundRef} preload="auto">
+          <source src="https://assets.mixkit.co/sfx/preview/mixkit-alarm-digital-clock-beep-989.mp4" type="audio/mpeg" />
+        </audio>
       </div>
 
-      {/* CSS Animations */}
-      <style jsx>{`
+      {/* Inline Styles */}
+      <style jsx global>{`
         @keyframes slideInRight {
           from {
             transform: translateX(100%);
@@ -681,42 +905,78 @@ export default function Notifications({ onClose, onNotificationRead }) {
           }
         }
         
-        @keyframes fadeIn {
-          from { opacity: 0; }
-          to { opacity: 1; }
-        }
-        
         @keyframes pulse {
           0%, 100% { opacity: 1; }
           50% { opacity: 0.5; }
         }
         
-        .animate-slideInRight {
-          animation: slideInRight 0.3s ease-out;
+        @keyframes bounce {
+          0%, 100% { transform: translateY(0); }
+          50% { transform: translateY(-5px); }
         }
         
-        .animate-fadeIn {
-          animation: fadeIn 0.2s ease-out;
+        @keyframes float {
+          0%, 100% { transform: translate(0, 0) rotate(0deg); }
+          33% { transform: translate(30px, -50px) rotate(120deg); }
+          66% { transform: translate(-20px, 20px) rotate(240deg); }
+        }
+        
+        @keyframes pulse-glow {
+          0%, 100% { box-shadow: 0 0 25px rgba(239, 68, 68, 0.2); }
+          50% { box-shadow: 0 0 40px rgba(239, 68, 68, 0.3); }
+        }
+        
+        .animate-slideInRight {
+          animation: slideInRight 0.4s cubic-bezier(0.16, 1, 0.3, 1);
         }
         
         .animate-pulse {
           animation: pulse 2s infinite;
         }
         
+        .animate-bounce {
+          animation: bounce 1s infinite;
+        }
+        
+        .animate-pulse-glow {
+          animation: pulse-glow 2s infinite;
+        }
+        
+        .animate-float {
+          animation: float 20s infinite ease-in-out;
+        }
+        
         /* Custom scrollbar */
         .overflow-y-auto::-webkit-scrollbar {
-          width: 6px;
+          width: 8px;
         }
         .overflow-y-auto::-webkit-scrollbar-track {
-          background: #f1f1f1;
+          background: rgba(241, 241, 241, 0.5);
           border-radius: 10px;
+          margin: 4px;
         }
         .overflow-y-auto::-webkit-scrollbar-thumb {
-          background: #c1c1c1;
+          background: linear-gradient(to bottom, #3b82f6, #06b6d4);
           border-radius: 10px;
         }
         .overflow-y-auto::-webkit-scrollbar-thumb:hover {
-          background: #a1a1a1;
+          background: linear-gradient(to bottom, #2563eb, #0891b2);
+        }
+        
+        /* Notification entry animation */
+        @keyframes notificationEntry {
+          from {
+            opacity: 0;
+            transform: translateY(20px) scale(0.95);
+          }
+          to {
+            opacity: 1;
+            transform: translateY(0) scale(1);
+          }
+        }
+        
+        .animate-notification {
+          animation: notificationEntry 0.5s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
         }
       `}</style>
     </div>

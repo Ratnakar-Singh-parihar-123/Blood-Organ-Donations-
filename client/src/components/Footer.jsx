@@ -1,10 +1,10 @@
 import React from 'react';
-import { 
-  Heart, 
-  Phone, 
-  Mail, 
-  MapPin, 
-  Shield, 
+import {
+  Heart,
+  Phone,
+  Mail,
+  MapPin,
+  Shield,
   Droplets,
   Instagram,
   Facebook,
@@ -24,6 +24,7 @@ import {
   Truck,
   Bell
 } from 'lucide-react';
+import jeevandaans from "../../public/jeevandaan.png";
 
 const Footer = () => {
   const currentYear = new Date().getFullYear();
@@ -99,7 +100,7 @@ const Footer = () => {
       </div>
 
       <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        
+
         {/* Stats Banner */}
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-12">
           {stats.map((stat, index) => (
@@ -112,35 +113,55 @@ const Footer = () => {
 
         {/* Main Content */}
         <div className="grid lg:grid-cols-5 gap-8 mb-12">
-          
+
           {/* Brand Section */}
           <div className="lg:col-span-2 space-y-6">
-            <div className="flex flex-col sm:flex-row items-start sm:items-center space-y-4 sm:space-y-0 sm:space-x-4">
+            <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4">
+              {/* Logo Section */}
               <div className="relative">
-                <div className="absolute inset-0 bg-gradient-to-r from-rose-500 to-pink-500 rounded-2xl blur-lg opacity-70"></div>
-                <div className="relative bg-gradient-to-r from-rose-600 to-rose-500 w-16 h-16 rounded-2xl flex items-center justify-center shadow-lg">
-                  <Heart className="h-8 w-8 text-white" fill="white" />
-                  <Droplets className="h-4 w-4 text-white absolute -bottom-1 -right-1" />
+                {/* Glow */}
+                <div className="absolute inset-0 bg-gradient-to-r from-rose-500 to-pink-500 rounded-2xl blur-xl opacity-70"></div>
+
+                {/* Logo Container */}
+                <div className="relative bg-white w-16 h-16 rounded-2xl flex items-center justify-center shadow-xl ring-1 ring-rose-200">
+                  <img
+                    src={jeevandaans}
+                    alt="JeevanDaan Logo"
+                    className="w-10 h-10 object-contain animate-pulse"
+                  />
                 </div>
               </div>
+
+              {/* Text Content */}
               <div>
                 <h2 className="text-3xl font-bold bg-gradient-to-r from-rose-700 to-rose-600 bg-clip-text text-transparent">
                   JeevanDaan
                 </h2>
-                <p className="text-gray-600 font-medium">Blood & Organ Donation Network</p>
+
+                <p className="text-gray-600 font-medium">
+                  Blood & Organ Donation Network
+                </p>
+
+                {/* Rating */}
                 <div className="flex items-center mt-2">
                   <div className="flex">
-                    {[1,2,3,4,5].map(i => (
-                      <Star key={i} className="h-4 w-4 text-amber-400 fill-current" />
+                    {[1, 2, 3, 4, 5].map((i) => (
+                      <Star
+                        key={i}
+                        className="h-4 w-4 text-amber-400 fill-current"
+                      />
                     ))}
                   </div>
-                  <span className="ml-2 text-sm text-gray-500">4.9/5 • Trusted Platform</span>
+                  <span className="ml-2 text-sm text-gray-500">
+                    4.9/5 • Trusted Platform
+                  </span>
                 </div>
               </div>
             </div>
-            
+
+
             <p className="text-gray-600 leading-relaxed">
-              Connecting compassionate donors with those in urgent need through India's most trusted 
+              Connecting compassionate donors with those in urgent need through India's most trusted
               blood and organ donation platform. Your contribution saves lives.
             </p>
 
@@ -206,7 +227,7 @@ const Footer = () => {
 
         {/* Emergency & Contact Section */}
         <div className="grid lg:grid-cols-3 gap-8 mb-12">
-          
+
           {/* Emergency Contacts */}
           <div className="lg:col-span-2">
             <div className="bg-gradient-to-r from-rose-50 to-pink-50 rounded-2xl p-6 border border-rose-100 shadow-sm">
@@ -220,15 +241,15 @@ const Footer = () => {
                     <div className="text-2xl font-bold text-gray-900">+91 98765 43210</div>
                   </div>
                 </div>
-                <a 
-                  href="tel:+919876543210" 
+                <a
+                  href="tel:+919876543210"
                   className="bg-gradient-to-r from-rose-600 to-rose-500 text-white px-6 py-3 rounded-xl font-bold hover:shadow-lg transition-all hover:scale-105 active:scale-95"
                 >
                   <Phone className="inline-block h-4 w-4 mr-2" />
                   CALL NOW
                 </a>
               </div>
-              
+
               <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
                 {emergencyContacts.map((contact, index) => (
                   <div key={index} className={`rounded-xl p-3 border ${contact.color}`}>
@@ -248,7 +269,7 @@ const Footer = () => {
               <p className="text-gray-600 mb-4 text-sm">
                 Subscribe to receive emergency alerts and donation opportunities.
               </p>
-              
+
               {/* Newsletter Form */}
               <div className="mb-6">
                 <div className="flex flex-col sm:flex-row gap-2">
@@ -335,7 +356,7 @@ const Footer = () => {
 
         {/* Bottom Bar */}
         <div className="flex flex-col md:flex-row justify-between items-center space-y-4 md:space-y-0 pt-8 border-t border-gray-200">
-          
+
           {/* Copyright */}
           <div className="text-center md:text-left">
             <div className="flex items-center justify-center md:justify-start space-x-3 mb-2">

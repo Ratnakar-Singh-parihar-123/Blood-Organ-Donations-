@@ -1,13 +1,218 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <link rel="icon" type="image/svg+xml" href="/vite.svg" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>client</title>
-  </head>
-  <body>
-    <div id="root"></div>
-    <script type="module" src="/src/main.jsx"></script>
-  </body>
+
+<head>
+  <!-- Basic Meta -->
+  <meta charset="UTF-8" />
+  <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+  <title>Jeevandaan | Blood & Organ Donation Platform</title>
+
+  <!-- SEO -->
+  <meta name="description"
+    content="Jeevandaan connects blood and organ donors with patients in need. Save lives, become a donor today." />
+  <meta name="keywords" content="blood donation, organ donation, jeevandaan, emergency blood, donor platform" />
+  <meta name="author" content="Jeevandaan" />
+
+  <!-- Favicon -->
+  <link rel="icon" type="image/png" href="/jeevandaan.png" />
+  <link rel="apple-touch-icon" href="/jeevandaan.png" />
+
+  <!-- Font -->
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet" />
+
+  <style>
+    body {
+      margin: 0;
+      font-family: "Inter", sans-serif;
+    }
+
+    /* ================= PRELOADER ================= */
+    #preloader {
+      position: fixed;
+      inset: 0;
+      background:
+        radial-gradient(circle at top, #fff1f2 0%, #fee2e2 40%, #fecaca 100%);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      z-index: 9999;
+      overflow: hidden;
+    }
+
+    /* soft background glow */
+    #preloader::before {
+      content: "";
+      position: absolute;
+      inset: -40%;
+      background: radial-gradient(circle, rgba(239, 68, 68, 0.18), transparent 60%);
+      animation: slowRotate 18s linear infinite;
+    }
+
+    /* ================= LOGO ================= */
+    .logo-wrapper {
+      position: relative;
+      width: 150px;
+      height: 150px;
+      border-radius: 50%;
+      background: rgba(255, 255, 255, 0.9);
+      backdrop-filter: blur(6px);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin-bottom: 26px;
+      box-shadow:
+        0 15px 40px rgba(239, 68, 68, 0.25),
+        inset 0 0 0 1px rgba(239, 68, 68, 0.15);
+      animation: pulseRing 2.4s infinite;
+      z-index: 1;
+    }
+
+    .loader-logo {
+      width: 82px;
+      height: 82px;
+      object-fit: contain;
+      animation: heartbeat 1.8s infinite;
+    }
+
+    /* ================= SPINNER ================= */
+    .spinner {
+      width: 64px;
+      height: 64px;
+      border-radius: 50%;
+      background: conic-gradient(
+        #dc2626,
+        #f97316,
+        #facc15,
+        #22c55e,
+        #3b82f6,
+        #dc2626
+      );
+      mask: radial-gradient(farthest-side, transparent 66%, #000 67%);
+      -webkit-mask: radial-gradient(farthest-side, transparent 66%, #000 67%);
+      animation: spin 1.05s linear infinite;
+      margin-bottom: 20px;
+      z-index: 1;
+    }
+
+    /* ================= TEXT ================= */
+    .loading-text {
+      font-size: 1.25rem;
+      font-weight: 600;
+      color: #7f1d1d;
+      letter-spacing: 0.4px;
+      animation: fadeText 1.6s infinite;
+      z-index: 1;
+    }
+
+    .loading-sub {
+      margin-top: 6px;
+      font-size: 0.85rem;
+      color: #9f1239;
+      opacity: 0.75;
+      z-index: 1;
+    }
+
+    /* ================= ANIMATIONS ================= */
+    @keyframes spin {
+      to {
+        transform: rotate(360deg);
+      }
+    }
+
+    @keyframes heartbeat {
+      0% {
+        transform: scale(1);
+      }
+      15% {
+        transform: scale(1.08);
+      }
+      30% {
+        transform: scale(1);
+      }
+      45% {
+        transform: scale(1.12);
+      }
+      60% {
+        transform: scale(1);
+      }
+      100% {
+        transform: scale(1);
+      }
+    }
+
+    @keyframes pulseRing {
+      0% {
+        box-shadow:
+          0 0 0 0 rgba(239, 68, 68, 0.55),
+          inset 0 0 0 1px rgba(239, 68, 68, 0.15);
+      }
+      70% {
+        box-shadow:
+          0 0 0 34px rgba(239, 68, 68, 0),
+          inset 0 0 0 1px rgba(239, 68, 68, 0.15);
+      }
+      100% {
+        box-shadow:
+          0 0 0 0 rgba(239, 68, 68, 0),
+          inset 0 0 0 1px rgba(239, 68, 68, 0.15);
+      }
+    }
+
+    @keyframes fadeText {
+      0% {
+        opacity: 0.45;
+      }
+      50% {
+        opacity: 1;
+      }
+      100% {
+        opacity: 0.45;
+      }
+    }
+
+    @keyframes slowRotate {
+      to {
+        transform: rotate(360deg);
+      }
+    }
+  </style>
+</head>
+
+<body>
+  <!-- ================= PRELOADER ================= -->
+  <div id="preloader">
+    <div class="logo-wrapper">
+      <img src="/jeevandaan.png" alt="Jeevandaan Logo" class="loader-logo" />
+    </div>
+
+    <div class="spinner"></div>
+
+    <div class="loading-text">Saving Lives</div>
+    <div class="loading-sub">Connecting donors & patients…</div>
+  </div>
+
+  <!-- React Root -->
+  <div id="root"></div>
+
+  <!-- Vite Entry -->
+  <script type="module" src="/src/main.jsx"></script>
+
+  <!-- Loader Control -->
+  <script>
+    window.addEventListener("load", () => {
+      const preloader = document.getElementById("preloader");
+      if (preloader) {
+        setTimeout(() => {
+          preloader.style.opacity = "0";
+          preloader.style.transition = "opacity 0.8s ease";
+          setTimeout(() => preloader.remove(), 800);
+        }, 2000);
+      }
+    });
+  </script>
+</body>
+
 </html>

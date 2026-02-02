@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
+
 import { useNavigate, useLocation } from 'react-router-dom';
 import {
   Home, Heart, Bell, User,
@@ -16,6 +17,7 @@ import {
   Info, Target, BookOpen,
   Users, Globe, Phone, Mail
 } from 'lucide-react';
+import jeevandaans from "../../public/jeevandaan.png";
 
 const Navbar = () => {
   const navigate = useNavigate();
@@ -28,6 +30,8 @@ const Navbar = () => {
   const [activeTab, setActiveTab] = useState('home');
   const [isScrolled, setIsScrolled] = useState(false);
   const [showNotifications, setShowNotifications] = useState(false);
+  const [notificationCount, setNotificationCount] = useState(0);
+  // const [showNotifications, setShowNotifications] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [isSearchOpen, setIsSearchOpen] = useState(false);
   const [isProfileOpen, setIsProfileOpen] = useState(false);
@@ -919,18 +923,29 @@ const Navbar = () => {
               className="flex items-center space-x-3 group cursor-pointer flex-shrink-0"
             >
               <div className="relative">
+                {/* glow */}
                 <div className="absolute inset-0 bg-gradient-to-r from-blue-500 to-blue-600 rounded-full blur-md opacity-70 group-hover:opacity-100 transition-opacity duration-300"></div>
-                <div className="relative bg-gradient-to-r from-blue-600 to-blue-500 w-10 h-10 rounded-full flex items-center justify-center shadow-lg shadow-blue-200/50">
-                  <Heart className="h-5 w-5 text-white" fill="white" />
+
+                {/* logo circle */}
+                <div className="relative bg-white w-10 h-10 rounded-full flex items-center justify-center shadow-lg shadow-blue-200/50">
+                  <img
+                    src={jeevandaans}
+                    alt="JeevanDaan Logo"
+                    className="w-6 h-6 object-contain"
+                  />
                 </div>
               </div>
+
               <div className="text-left">
                 <h1 className="text-xl font-bold bg-gradient-to-r from-blue-600 to-blue-500 bg-clip-text text-transparent">
                   JeevanDaan
                 </h1>
-                <p className="text-xs text-gray-600 font-medium">Saving Lives Together</p>
+                <p className="text-xs text-gray-600 font-medium">
+                  Saving Lives Together
+                </p>
               </div>
             </button>
+
 
             {/* Primary Navigation */}
             <div className="flex items-center space-x-1 px-2">
@@ -1208,7 +1223,7 @@ const Navbar = () => {
                     <LogIn className="h-4 w-4" />
                     <span className="text-sm font-medium">Login</span>
                   </button>
-                  <button
+                  {/* <button
                     onClick={handleRegisterClick}
                     className="px-3 py-2 bg-gradient-to-r from-blue-600 to-blue-500 text-white 
                              rounded-lg font-semibold hover:shadow-md hover:scale-105 transition-all duration-200 
@@ -1216,7 +1231,7 @@ const Navbar = () => {
                   >
                     <UserPlus className="h-4 w-4" />
                     <span className="text-sm">Register</span>
-                  </button>
+                  </button> */}
                 </div>
               )}
             </div>
@@ -1234,18 +1249,22 @@ const Navbar = () => {
 
             {/* Logo */}
             <button
-              onClick={() => navigate('/')}
-              className="flex items-center space-x-2"
+              onClick={() => navigate("/")}
+              className="flex items-center space-x-2 group"
             >
-              <div className="bg-gradient-to-r from-blue-600 to-blue-500 w-9 h-9 rounded-full flex items-center justify-center shadow">
-                <Heart className="h-4 w-4 text-white" fill="white" />
+              <div className="bg-gradient-to-r from-blue-600 to-blue-500 w-9 h-9 rounded-full flex items-center justify-center shadow overflow-hidden group-hover:scale-105 transition">
+                <img
+                  src={jeevandaans}
+                  alt="JeevanDaan Logo"
+                  className="w-5 h-5 object-contain animate-pulse"
+                />
               </div>
-              <div>
-                <h1 className="font-bold text-lg bg-gradient-to-r from-blue-600 to-blue-500 bg-clip-text text-transparent">
-                  JeevanDaan
-                </h1>
-              </div>
+
+              <h1 className="font-bold text-lg bg-gradient-to-r from-blue-600 to-blue-500 bg-clip-text text-transparent">
+                JeevanDaan
+              </h1>
             </button>
+
 
             {/* Compact Navigation */}
             <div className="flex items-center space-x-1">
@@ -1325,15 +1344,21 @@ const Navbar = () => {
               onClick={() => navigate('/')}
               className="flex items-center space-x-2"
             >
-              <div className="bg-gradient-to-r from-blue-600 to-blue-500 w-10 h-10 rounded-full flex items-center justify-center shadow">
-                <Heart className="h-5 w-5 text-white" fill="white" />
+              <div className="bg-white w-10 h-10 rounded-full flex items-center justify-center shadow">
+                <img
+                  src={jeevandaans}
+                  alt="JeevanDaan Logo"
+                  className="w-6 h-6 object-contain"
+                />
               </div>
+
               <div>
                 <h1 className="font-bold text-lg bg-gradient-to-r from-blue-600 to-blue-500 bg-clip-text text-transparent">
                   JeevanDaan
                 </h1>
               </div>
             </button>
+
 
             {/* Right Actions */}
             <div className="flex items-center space-x-2">
@@ -1450,9 +1475,19 @@ const Navbar = () => {
             {/* Header */}
             <div className="flex items-center justify-between mb-6">
               <div className="flex items-center space-x-3">
-                <div className="bg-gradient-to-r from-blue-600 to-blue-500 w-12 h-12 rounded-full flex items-center justify-center shadow">
-                  <Heart className="h-6 w-6 text-white" fill="white" />
+                <div className="relative">
+                  <div className="absolute inset-0 rounded-full blur-md opacity-60 animate-pulse"></div>
+
+                  <div className="relative bg-gradient-to-r  w-15 h-15 rounded-full flex items-center justify-center shadow-lg">
+                    <img
+                      src={jeevandaans}
+                      alt="JeevanDaan Logo"
+                      className="w-7 h-7 object-contain"
+                    />
+                  </div>
                 </div>
+
+
                 <div>
                   <h1 className="font-bold text-xl bg-gradient-to-r from-blue-600 to-blue-500 bg-clip-text text-transparent">
                     JeevanDaan
