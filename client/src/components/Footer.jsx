@@ -78,12 +78,12 @@ const Footer = () => {
     { label: '150+ Hospitals', icon: Heart, color: 'text-rose-600' }
   ];
 
-  const stats = [
-    { value: '10K+', label: 'Lives Saved', color: 'text-rose-600' },
-    { value: '50K+', label: 'Donors Registered', color: 'text-blue-600' },
-    { value: '500+', label: 'Hospitals Network', color: 'text-emerald-600' },
-    { value: '24/7', label: 'Emergency Support', color: 'text-amber-600' }
-  ];
+  // const stats = [
+  //   { value: '10K+', label: 'Lives Saved', color: 'text-rose-600' },
+  //   { value: '50K+', label: 'Donors Registered', color: 'text-blue-600' },
+  //   { value: '500+', label: 'Hospitals Network', color: 'text-emerald-600' },
+  //   { value: '24/7', label: 'Emergency Support', color: 'text-amber-600' }
+  // ];
 
   const mobileApps = [
     { platform: 'Android', icon: '📱', href: '#' },
@@ -91,7 +91,7 @@ const Footer = () => {
   ];
 
   return (
-    <footer className="relative overflow-hidden bg-gradient-to-b from-gray-50 via-white to-gray-50 pt-16 pb-12">
+    <footer className="relative overflow-hidden bg-gradient-to-b from-gray-50 via-white to-gray-50 pt-10 pb-12">
       {/* Background Pattern */}
       <div className="absolute inset-0 opacity-5">
         <div className="absolute top-0 left-1/4 w-64 h-64 bg-rose-300 rounded-full mix-blend-multiply filter blur-3xl animate-pulse"></div>
@@ -102,14 +102,14 @@ const Footer = () => {
       <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
 
         {/* Stats Banner */}
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-12">
+        {/* <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-12">
           {stats.map((stat, index) => (
             <div key={index} className="bg-white/80 backdrop-blur-sm rounded-2xl p-6 text-center border border-gray-100 shadow-sm hover:shadow-md transition-all duration-300 hover:-translate-y-1">
               <div className={`text-3xl font-bold ${stat.color} mb-2`}>{stat.value}</div>
               <div className="text-gray-600 font-medium">{stat.label}</div>
             </div>
           ))}
-        </div>
+        </div> */}
 
         {/* Main Content */}
         <div className="grid lg:grid-cols-5 gap-8 mb-12">

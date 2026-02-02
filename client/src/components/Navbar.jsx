@@ -1659,7 +1659,7 @@ const Navbar = () => {
                   Logout
                 </button>
               )}
-              <p className="text-sm text-gray-500">© 2024 JeevanDaan. All rights reserved.</p>
+              <p className="text-sm text-gray-500">© 2026 JeevanDaan. All rights reserved.</p>
             </div>
           </div>
         </div>
