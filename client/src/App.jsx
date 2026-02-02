@@ -18,7 +18,7 @@ import EmergencyRequestPage from "./pages/emergency-request/EmergencyRequestPage
 import ProfilePage from "./pages/profile/ProfilePage";
 import SettingsPage from "./pages/setting/SettingsPage";
 import ForgetPassword from "./pages/forget-password/ForgetPassword";
-// import Notifications from "./notifications/Notifications";
+import Notifications from "./notifications/NotificationsModal";
 import PatientMatches from "./pages/PatientMatches/PatientMatches";
 import Chat from "./pages/chat/chat";
 
@@ -44,7 +44,7 @@ function App() {
         <Route path="/about" element={<AboutPage />} />
         <Route path="/urgent-requests" element={<UrgentRequestsPage />} />
         <Route path="/forgot-password" element={<ForgetPassword />} />
-        {/* <Route path="/notifications" element={<Notifications />} /> */}
+        <Route path="/notifications" element={<Notifications />} />
         <Route path="/chat" element={<Chat />} />
 
         {/* Protected Routes - Require Login */}

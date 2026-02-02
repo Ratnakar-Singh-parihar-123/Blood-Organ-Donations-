@@ -6,6 +6,7 @@ const OrganDonor = require("../models/OrganDonor");
 
 let io;
 
+// Initialize Socket.IO
 exports.setSocketIO = (socketIO) => {
   io = socketIO;
 
@@ -113,6 +114,67 @@ exports.markAsRead = async (req, res) => {
     });
   }
 };
+
+// DELETE single notification
+exports.deleteNotification = async (req, res) => {
+  try {
+    const notification = await Notification.findByIdAndDelete(req.params.id);
+
+    if (!notification) {
+      return res.status(404).json({
+        success: false,
+        message: "Notification not found",
+      });
+    }
+
+    res.json({
+      success: true,
+      message: "Notification deleted successfully",
+    });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: error.message,
+    });
+  }
+};
+
+// DELETE all notifications
+exports.deleteAllNotifications = async (req, res) => {
+  try {
+    await Notification.deleteMany({});
+    res.json({
+      success: true,
+      message: "All notifications deleted successfully",
+    });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: error.message,
+    });
+  }
+};
+
+// MARK ALL Notifications as Read
+exports.markAllAsRead = async (req, res) => {
+  try {
+    const result = await Notification.updateMany(
+      { isRead: false }, 
+      { $set: { isRead: true } }
+    );
+
+    res.json({
+      success: true,
+      message: `${result.modifiedCount} notifications marked as read`,
+    });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: error.message,
+    });
+  }
+};
+
 
 // EMIT New Donor / User Registration Notification
 exports.emitNewUserNotification = async (newUser) => {
