@@ -21,6 +21,7 @@ import ForgetPassword from "./pages/forget-password/ForgetPassword";
 import Notifications from "./notifications/NotificationsModal";
 import PatientMatches from "./pages/PatientMatches/PatientMatches";
 import Chat from "./pages/chat/chat";
+import Hospital from "./pages/hospital";
 
 // Authentication Modals (for modals on UserTypeSelectionPage)
 // import BloodDonorAuthModal from "./components/auth/BloodDonorAuthModal";
@@ -46,6 +47,7 @@ function App() {
         <Route path="/forgot-password" element={<ForgetPassword />} />
         <Route path="/notifications" element={<Notifications />} />
         <Route path="/chat" element={<Chat />} />
+        <Route path="/hospitals" element={<Hospital />} />
 
         {/* Protected Routes - Require Login */}
         <Route
@@ -67,7 +69,12 @@ function App() {
         />
         <Route
           path="/patient-matches/:patientId"
-          element={<PatientMatches />}
+          element={
+            <ProtectedRoute>
+              <PatientMatches />
+            </ProtectedRoute>
+
+          }
         />
         <Route
           path="/settings"

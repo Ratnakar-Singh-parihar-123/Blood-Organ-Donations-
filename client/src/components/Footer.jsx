@@ -123,11 +123,11 @@ const Footer = () => {
                 <div className="absolute inset-0 bg-gradient-to-r from-rose-500 to-pink-500 rounded-2xl blur-xl opacity-70"></div>
 
                 {/* Logo Container */}
-                <div className="relative bg-white w-16 h-16 rounded-2xl flex items-center justify-center shadow-xl ring-1 ring-rose-200">
+                <div className="relative bg-white w-20 h-20 rounded-full flex items-center justify-center shadow-xl ring-1 ring-rose-200">
                   <img
                     src={jeevandaans}
                     alt="JeevanDaan Logo"
-                    className="w-10 h-10 object-contain animate-pulse"
+                    className="w-20 h-20 object-contain animate-pulse rounded-full"
                   />
                 </div>
               </div>
