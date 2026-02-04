@@ -14,6 +14,7 @@ const alluserdonorCountRoutes = require("./routes/alluserdonorcountRoutes");
 const notificationRoutes = require("./routes/notificationRoutes");
 const chatRoutes = require("./routes/chatRoutes");
 const matchRoutes = require("./routes/matchRoutes");
+const hospotalRoutes = require("./routes/hospitalRoutes");
 
 // ================= DB =================
 const connectDB = require("./config/database");
@@ -77,6 +78,7 @@ app.use("/api/dashboard", alluserdonorCountRoutes);
 app.use("/api/notifications", notificationRoutes);
 app.use("/api/chats", chatRoutes);
 app.use("/api", matchRoutes);
+app.use("/api/hospital", hospotalRoutes);
 // ================= 404 HANDLER =================
 app.use((req, res) => {
   res.status(404).json({

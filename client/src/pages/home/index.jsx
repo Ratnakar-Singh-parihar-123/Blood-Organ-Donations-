@@ -8,6 +8,7 @@ import HowItWorks from "./components/HowItWorks";
 // import Testimonials from "./components/Testimonials";
 // import CTASection from "./components/CTASection";
 import Dashboard from "./components/Dashboard";
+import HeroDashboard from "./components/HeroDashboard";
 
 function HomePage() {
   useEffect(() => {
@@ -18,6 +19,7 @@ function HomePage() {
     <>
       <HeroSection />
       <Dashboard />
+      <HeroDashboard />
       {/* <StatsSection /> */}
       <HowItWorks />
       {/* <DonationTypes /> */}
