@@ -1,630 +1,518 @@
-import React, { useState } from 'react';
+import { useState } from "react";
+import { Link } from "react-router-dom"; // Added import for Link
+import { registerHospital, loginHospital } from "../../../api/hospitalApi";
+import { saveToken } from "../../../api/auth";
 import { 
   X, 
-  Hospital, 
-  Users, 
-  Shield, 
-  FileText, 
-  Bell, 
-  MapPin,
-  Phone,
-  Mail,
-  Building,
-  BadgeCheck,
-  CheckCircle,
-  Eye,
-  EyeOff,
-  ArrowRight,
-  Loader2
-} from 'lucide-react';
-// import { hospitalApi } from "../../../api"
+  Eye, 
+  EyeOff, 
+  Building2, 
+  Mail, 
+  Phone, 
+  MapPin, 
+  Lock, 
+  ClipboardList,
+  Stethoscope,
+  AlertCircle,
+  CheckCircle2,
+  KeyRound,
+  Shield,
+  HeartPulse,
+  Users
+} from "lucide-react";
 
-const HospitalAuthModal = ({ isOpen, onClose }) => {
-  const [showLogin, setShowLogin] = useState(false);
+export default function HospitalAuthModal({ isOpen, onClose }) {
+  const [isLogin, setIsLogin] = useState(true);
+  const [loading, setLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState('');
-  const [success, setSuccess] = useState('');
-  
-  const [formData, setFormData] = useState({
-    name: '',
-    registrationNumber: '',
-    email: '',
-    phone: '',
-    city: '',
-    password: '',
-    confirmPassword: ''
+  const [form, setForm] = useState({
+    hospitalName: "",
+    registrationNumber: "",
+    email: "",
+    phone: "",
+    city: "",
+    password: "",
+    confirmPassword: ""
   });
-  
-  const [loginData, setLoginData] = useState({
-    emailOrId: '',
-    password: ''
-  });
+  const [errors, setErrors] = useState({});
+  const [success, setSuccess] = useState(false);
+  const [successMessage, setSuccessMessage] = useState("");
 
-  const handleInputChange = (e, isLogin = false) => {
+  const handleChange = (e) => {
     const { name, value } = e.target;
-    if (isLogin) {
-      setLoginData(prev => ({
-        ...prev,
-        [name]: value
-      }));
-    } else {
-      setFormData(prev => ({
-        ...prev,
-        [name]: value
-      }));
+    setForm({ ...form, [name]: value });
+    // Clear error when user starts typing
+    if (errors[name]) {
+      setErrors({ ...errors, [name]: "" });
     }
-    // Clear errors when user starts typing
-    setError('');
   };
 
-  const handleRegister = async (e) => {
+  const validateForm = () => {
+    const newErrors = {};
+
+    if (!isLogin) {
+      if (!form.hospitalName.trim()) {
+        newErrors.hospitalName = "Hospital name is required";
+      }
+      if (!form.registrationNumber.trim()) {
+        newErrors.registrationNumber = "Registration number is required";
+      }
+      if (!form.phone.trim()) {
+        newErrors.phone = "Phone number is required";
+      } else if (!/^\d{10}$/.test(form.phone)) {
+        newErrors.phone = "Please enter a valid 10-digit phone number";
+      }
+      if (!form.city.trim()) {
+        newErrors.city = "City is required";
+      }
+      if (form.password !== form.confirmPassword) {
+        newErrors.confirmPassword = "Passwords do not match";
+      }
+    }
+
+    if (!form.email.trim()) {
+      newErrors.email = "Email is required";
+    } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.email)) {
+      newErrors.email = "Please enter a valid email address";
+    }
+
+    if (!form.password.trim()) {
+      newErrors.password = "Password is required";
+    } else if (form.password.length < 6) {
+      newErrors.password = "Password must be at least 6 characters";
+    }
+
+    setErrors(newErrors);
+    return Object.keys(newErrors).length === 0;
+  };
+
+  const handleSubmit = async (e) => {
     e.preventDefault();
+    
+    if (!validateForm()) {
+      return;
+    }
+
     setLoading(true);
-    setError('');
-    setSuccess('');
-
-    // Basic validation
-    if (formData.password !== formData.confirmPassword) {
-      setError('Passwords do not match');
-      setLoading(false);
-      return;
-    }
-
-    if (formData.password.length < 8) {
-      setError('Password must be at least 8 characters long');
-      setLoading(false);
-      return;
-    }
+    setErrors({});
 
     try {
-      const result = await hospitalApi.register({
-        name: formData.name,
-        registrationNumber: formData.registrationNumber,
-        email: formData.email,
-        phone: formData.phone,
-        city: formData.city,
-        password: formData.password,
-        confirmPassword: formData.confirmPassword
-      });
+      let res;
 
-      if (result.success) {
-        setSuccess('Registration successful! Please check your email for verification.');
-        
-        // Reset form
-        setFormData({
-          name: '',
-          registrationNumber: '',
-          email: '',
-          phone: '',
-          city: '',
-          password: '',
-          confirmPassword: ''
+      if (isLogin) {
+        res = await loginHospital({
+          email: form.email,
+          registrationNumber: form.registrationNumber,
+          password: form.password,
         });
-
-        // Auto close after 3 seconds
-        setTimeout(() => {
-          onClose();
-        }, 3000);
       } else {
-        setError(result.message);
+        res = await registerHospital(form);
       }
-    } catch (err) {
-      setError('An error occurred. Please try again.');
-    } finally {
-      setLoading(false);
-    }
-  };
 
-  const handleLogin = async (e) => {
-    e.preventDefault();
-    setLoading(true);
-    setError('');
-    setSuccess('');
-
-    try {
-      const result = await hospitalApi.login(loginData);
-
-      if (result.success) {
-        setSuccess('Login successful! Redirecting to dashboard...');
-        
-        // Redirect after 2 seconds
-        setTimeout(() => {
-          window.location.href = '/hospital-dashboard';
-        }, 2000);
-      } else {
-        setError(result.message);
-      }
-    } catch (err) {
-      setError('An error occurred. Please try again.');
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const handleForgotPassword = async () => {
-    const email = prompt('Please enter your registered email address:');
-    if (!email) return;
-
-    setLoading(true);
-    try {
-      const result = await hospitalApi.forgotPassword(email);
+      saveToken(res.data.token);
       
-      if (result.success) {
-        alert(result.message);
-      } else {
-        alert(result.message);
-      }
+      // Show success message
+      setSuccessMessage(res.data.message || 
+        (isLogin ? "Login successful!" : "Registration successful!")
+      );
+      setSuccess(true);
+
+      // Auto close after success
+      setTimeout(() => {
+        onClose();
+        window.location.reload(); // Or navigate to dashboard
+      }, 2000);
+
     } catch (err) {
-      alert('Failed to send reset email. Please try again.');
+      const errorMessage = err.response?.data?.message || "Something went wrong";
+      setErrors({ submit: errorMessage });
     } finally {
       setLoading(false);
     }
+  };
+
+  const resetForm = () => {
+    setForm({
+      hospitalName: "",
+      registrationNumber: "",
+      email: "",
+      phone: "",
+      city: "",
+      password: "",
+      confirmPassword: ""
+    });
+    setErrors({});
+    setSuccess(false);
+  };
+
+  const handleToggleMode = () => {
+    setIsLogin(!isLogin);
+    resetForm();
   };
 
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-2 sm:p-4 bg-black/40 backdrop-blur-sm animate-fadeIn">
-      <div className="relative w-full max-w-4xl bg-white rounded-xl sm:rounded-2xl md:rounded-3xl shadow-2xl overflow-hidden max-h-[95vh] sm:max-h-[90vh] overflow-y-auto animate-slideUp">
-        
-        {/* Header */}
-        <div className="sticky top-0 bg-gradient-to-r from-blue-600 to-indigo-600 p-3 sm:p-4 md:p-6 z-10">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-2 sm:gap-3">
-              <div className="p-1.5 sm:p-2 bg-white/20 rounded-lg backdrop-blur-sm">
-                <Hospital className="h-5 w-5 sm:h-6 sm:w-6 md:h-8 md:w-8 text-white" />
-              </div>
-              <div>
-                <h2 className="text-lg sm:text-xl md:text-2xl font-bold text-white">
-                  {showLogin ? 'Hospital Login' : 'Hospital Registration'}
-                </h2>
-                <p className="text-blue-100 text-xs sm:text-sm">Join our trusted healthcare network</p>
-              </div>
-            </div>
-            <button
-              onClick={onClose}
-              className="p-1 sm:p-1.5 md:p-2 hover:bg-white/20 rounded-full transition-colors"
-              aria-label="Close modal"
-            >
-              <X className="h-4 w-4 sm:h-5 sm:w-5 md:h-6 md:w-6 text-white" />
-            </button>
-          </div>
-        </div>
+    <div className="fixed inset-0 z-50 overflow-y-auto">
+      {/* Backdrop with animation */}
+      <div 
+        className="fixed inset-0 bg-black/50 backdrop-blur-sm transition-opacity duration-300 animate-in fade-in"
+        onClick={onClose}
+      ></div>
 
-        <div className="p-3 sm:p-4 md:p-6 lg:p-8">
-          {/* Error and Success Messages */}
-          {error && (
-            <div className="mb-4 p-3 bg-red-50 border border-red-200 text-red-700 rounded-lg text-sm">
-              {error}
-            </div>
-          )}
+      {/* Modal Container */}
+      <div className="flex min-h-full items-center justify-center p-3 sm:p-4">
+        <div className="relative w-full max-w-md transform overflow-hidden rounded-2xl bg-white shadow-2xl transition-all duration-300 animate-in slide-in-from-bottom-10 sm:slide-in-from-bottom-0">
           
-          {success && (
-            <div className="mb-4 p-3 bg-green-50 border border-green-200 text-green-700 rounded-lg text-sm">
-              {success}
-            </div>
-          )}
+          {/* Close Button */}
+          <button
+            onClick={onClose}
+            className="absolute right-3 top-3 sm:right-4 sm:top-4 z-10 rounded-full p-2 bg-white/80 backdrop-blur-sm hover:bg-gray-100 transition-colors shadow-sm"
+          >
+            <X className="h-4 w-4 sm:h-5 sm:w-5 text-gray-600" />
+          </button>
 
-          <div className="flex flex-col lg:flex-row gap-4 sm:gap-6 md:gap-8">
+          {/* Decorative Header */}
+          <div className="relative overflow-hidden bg-gradient-to-r from-blue-600 via-blue-700 to-cyan-600 py-6 px-6 sm:py-8 sm:px-8">
+            <div className="absolute inset-0 bg-gradient-to-br from-white/10 to-transparent"></div>
+            <div className="absolute -top-6 -right-6 w-32 h-32 bg-white/10 rounded-full"></div>
+            <div className="absolute -bottom-6 -left-6 w-32 h-32 bg-white/10 rounded-full"></div>
             
-            {/* Left Column - Form */}
-            <div className="flex-1">
-              {/* Toggle Switch */}
-              <div className="flex items-center justify-center gap-2 sm:gap-4 mb-4 sm:mb-6">
-                <button
-                  onClick={() => {
-                    setShowLogin(false);
-                    setError('');
-                    setSuccess('');
-                  }}
-                  className={`px-3 sm:px-4 py-1.5 sm:py-2 rounded-lg font-medium text-sm sm:text-base transition-all ${!showLogin ? 'bg-blue-100 text-blue-600' : 'text-gray-600 hover:bg-gray-100'}`}
-                >
-                  Register
-                </button>
-                <div className="w-px h-4 sm:h-6 bg-gray-200"></div>
-                <button
-                  onClick={() => {
-                    setShowLogin(true);
-                    setError('');
-                    setSuccess('');
-                  }}
-                  className={`px-3 sm:px-4 py-1.5 sm:py-2 rounded-lg font-medium text-sm sm:text-base transition-all ${showLogin ? 'bg-blue-100 text-blue-600' : 'text-gray-600 hover:bg-gray-100'}`}
-                >
-                  Login
-                </button>
+            <div className="relative z-10 flex flex-col sm:flex-row sm:items-center justify-center gap-3 sm:gap-4">
+              <div className="bg-white/20 p-2.5 sm:p-3 rounded-xl backdrop-blur-sm self-center">
+                <Building2 className="h-6 w-6 sm:h-8 sm:w-8 text-white" />
               </div>
+              <div className="text-center sm:text-left">
+                <h2 className="text-xl sm:text-2xl font-bold text-white">
+                  {isLogin ? "Hospital Login" : "Hospital Registration"}
+                </h2>
+                <p className="text-white/90 text-xs sm:text-sm mt-1">
+                  {isLogin 
+                    ? "Welcome back! Please login to continue" 
+                    : "Join our healthcare network"
+                  }
+                </p>
+              </div>
+            </div>
+          </div>
 
-              {!showLogin ? (
-                // Registration Form
-                <form onSubmit={handleRegister} className="space-y-3 sm:space-y-4">
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
-                    <div>
-                      <label className="block text-xs sm:text-sm font-medium text-gray-700 mb-1">
-                        Hospital Name *
-                      </label>
-                      <div className="relative">
-                        <Building className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 sm:h-5 sm:w-5 text-gray-400" />
-                        <input
-                          type="text"
-                          name="name"
-                          value={formData.name}
-                          onChange={handleInputChange}
-                          required
-                          className="w-full pl-9 sm:pl-10 pr-3 sm:pr-4 py-2 sm:py-3 rounded-lg border border-gray-300 focus:border-blue-500 focus:ring-2 focus:ring-blue-100 outline-none transition text-sm sm:text-base"
-                          placeholder="Enter hospital name"
-                        />
-                      </div>
-                    </div>
-
-                    <div>
-                      <label className="block text-xs sm:text-sm font-medium text-gray-700 mb-1">
-                        Registration No. *
-                      </label>
-                      <div className="relative">
-                        <BadgeCheck className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 sm:h-5 sm:w-5 text-gray-400" />
-                        <input
-                          type="text"
-                          name="registrationNumber"
-                          value={formData.registrationNumber}
-                          onChange={handleInputChange}
-                          required
-                          className="w-full pl-9 sm:pl-10 pr-3 sm:pr-4 py-2 sm:py-3 rounded-lg border border-gray-300 focus:border-blue-500 focus:ring-2 focus:ring-blue-100 outline-none transition text-sm sm:text-base"
-                          placeholder="Medical council ID"
-                        />
-                      </div>
+          {/* Form Content */}
+          <div className="px-5 py-4 sm:px-8 sm:py-6">
+            {success ? (
+              <div className="text-center py-6 sm:py-8">
+                <div className="mx-auto mb-4 flex h-14 w-14 sm:h-16 sm:w-16 items-center justify-center rounded-full bg-green-100">
+                  <CheckCircle2 className="h-8 w-8 sm:h-10 sm:w-10 text-green-600" />
+                </div>
+                <h3 className="mb-2 text-lg font-semibold text-gray-900">
+                  Success!
+                </h3>
+                <p className="text-gray-600 mb-6 text-sm sm:text-base">{successMessage}</p>
+                <div className="h-1 w-full bg-gradient-to-r from-green-500 to-emerald-500 rounded-full"></div>
+              </div>
+            ) : (
+              <form onSubmit={handleSubmit} className="space-y-4 sm:space-y-5">
+                
+                {errors.submit && (
+                  <div className="rounded-xl bg-red-50 p-3 sm:p-4 border border-red-200">
+                    <div className="flex items-start gap-2">
+                      <AlertCircle className="h-4 w-4 sm:h-5 sm:w-5 text-red-500 mt-0.5 flex-shrink-0" />
+                      <p className="text-sm font-medium text-red-800">{errors.submit}</p>
                     </div>
                   </div>
+                )}
 
+                {!isLogin && (
+                  <>
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-2">
+                        Hospital Information
+                      </label>
+                      <div className="space-y-3 sm:space-y-4">
+                        <div>
+                          <div className="relative">
+                            <Building2 className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 sm:h-5 sm:w-5 text-gray-400" />
+                            <input
+                              name="hospitalName"
+                              placeholder="Hospital Name"
+                              value={form.hospitalName}
+                              onChange={handleChange}
+                              className={`w-full pl-10 sm:pl-11 pr-4 py-2.5 sm:py-3 text-sm sm:text-base border ${errors.hospitalName ? 'border-red-300' : 'border-gray-300'} rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all`}
+                            />
+                          </div>
+                          {errors.hospitalName && (
+                            <p className="mt-1 text-xs sm:text-sm text-red-600">{errors.hospitalName}</p>
+                          )}
+                        </div>
+
+                        <div>
+                          <div className="relative">
+                            <ClipboardList className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 sm:h-5 sm:w-5 text-gray-400" />
+                            <input
+                              name="registrationNumber"
+                              placeholder="Registration Number"
+                              value={form.registrationNumber}
+                              onChange={handleChange}
+                              className={`w-full pl-10 sm:pl-11 pr-4 py-2.5 sm:py-3 text-sm sm:text-base border ${errors.registrationNumber ? 'border-red-300' : 'border-gray-300'} rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all`}
+                            />
+                          </div>
+                          {errors.registrationNumber && (
+                            <p className="mt-1 text-xs sm:text-sm text-red-600">{errors.registrationNumber}</p>
+                          )}
+                        </div>
+
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
+                          <div>
+                            <div className="relative">
+                              <Phone className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 sm:h-5 sm:w-5 text-gray-400" />
+                              <input
+                                name="phone"
+                                placeholder="Phone Number"
+                                value={form.phone}
+                                onChange={handleChange}
+                                className={`w-full pl-10 sm:pl-11 pr-4 py-2.5 sm:py-3 text-sm sm:text-base border ${errors.phone ? 'border-red-300' : 'border-gray-300'} rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all`}
+                              />
+                            </div>
+                            {errors.phone && (
+                              <p className="mt-1 text-xs sm:text-sm text-red-600">{errors.phone}</p>
+                            )}
+                          </div>
+
+                          <div>
+                            <div className="relative">
+                              <MapPin className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 sm:h-5 sm:w-5 text-gray-400" />
+                              <input
+                                name="city"
+                                placeholder="City"
+                                value={form.city}
+                                onChange={handleChange}
+                                className={`w-full pl-10 sm:pl-11 pr-4 py-2.5 sm:py-3 text-sm sm:text-base border ${errors.city ? 'border-red-300' : 'border-gray-300'} rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all`}
+                              />
+                            </div>
+                            {errors.city && (
+                              <p className="mt-1 text-xs sm:text-sm text-red-600">{errors.city}</p>
+                            )}
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+
+                    <div className="h-px bg-gradient-to-r from-transparent via-gray-300 to-transparent"></div>
+                  </>
+                )}
+
+                {/* Email Field */}
+                <div>
+                  <div className="relative">
+                    <Mail className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 sm:h-5 sm:w-5 text-gray-400" />
+                    <input
+                      name="email"
+                      type="email"
+                      placeholder="Email Address"
+                      value={form.email}
+                      onChange={handleChange}
+                      className={`w-full pl-10 sm:pl-11 pr-4 py-2.5 sm:py-3 text-sm sm:text-base border ${errors.email ? 'border-red-300' : 'border-gray-300'} rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all`}
+                    />
+                  </div>
+                  {errors.email && (
+                    <p className="mt-1 text-xs sm:text-sm text-red-600">{errors.email}</p>
+                  )}
+                </div>
+
+                {isLogin && (
                   <div>
-                    <label className="block text-xs sm:text-sm font-medium text-gray-700 mb-1">
-                      Official Email *
-                    </label>
                     <div className="relative">
-                      <Mail className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 sm:h-5 sm:w-5 text-gray-400" />
+                      <ClipboardList className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 sm:h-5 sm:w-5 text-gray-400" />
                       <input
-                        type="email"
-                        name="email"
-                        value={formData.email}
-                        onChange={handleInputChange}
-                        required
-                        className="w-full pl-9 sm:pl-10 pr-3 sm:pr-4 py-2 sm:py-3 rounded-lg border border-gray-300 focus:border-blue-500 focus:ring-2 focus:ring-blue-100 outline-none transition text-sm sm:text-base"
-                        placeholder="hospital@email.com"
+                        name="registrationNumber"
+                        placeholder="Registration Number (Optional)"
+                        value={form.registrationNumber}
+                        onChange={handleChange}
+                        className="w-full pl-10 sm:pl-11 pr-4 py-2.5 sm:py-3 text-sm sm:text-base border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
                       />
                     </div>
                   </div>
+                )}
 
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
-                    <div>
-                      <label className="block text-xs sm:text-sm font-medium text-gray-700 mb-1">
-                        Phone Number *
-                      </label>
-                      <div className="relative">
-                        <Phone className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 sm:h-5 sm:w-5 text-gray-400" />
-                        <input
-                          type="tel"
-                          name="phone"
-                          value={formData.phone}
-                          onChange={handleInputChange}
-                          required
-                          className="w-full pl-9 sm:pl-10 pr-3 sm:pr-4 py-2 sm:py-3 rounded-lg border border-gray-300 focus:border-blue-500 focus:ring-2 focus:ring-blue-100 outline-none transition text-sm sm:text-base"
-                          placeholder="+91 XXXX XXX XXX"
-                        />
-                      </div>
-                    </div>
-
-                    <div>
-                      <label className="block text-xs sm:text-sm font-medium text-gray-700 mb-1">
-                        City *
-                      </label>
-                      <div className="relative">
-                        <MapPin className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 sm:h-5 sm:w-5 text-gray-400" />
-                        <input
-                          type="text"
-                          name="city"
-                          value={formData.city}
-                          onChange={handleInputChange}
-                          required
-                          className="w-full pl-9 sm:pl-10 pr-3 sm:pr-4 py-2 sm:py-3 rounded-lg border border-gray-300 focus:border-blue-500 focus:ring-2 focus:ring-blue-100 outline-none transition text-sm sm:text-base"
-                          placeholder="Enter city"
-                        />
-                      </div>
-                    </div>
+                {/* Password Field */}
+                <div>
+                  <div className="relative">
+                    <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 sm:h-5 sm:w-5 text-gray-400" />
+                    <input
+                      name="password"
+                      type={showPassword ? "text" : "password"}
+                      placeholder="Password"
+                      value={form.password}
+                      onChange={handleChange}
+                      className={`w-full pl-10 sm:pl-11 pr-10 sm:pr-12 py-2.5 sm:py-3 text-sm sm:text-base border ${errors.password ? 'border-red-300' : 'border-gray-300'} rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all`}
+                    />
+                    <button
+                      type="button"
+                      onClick={() => setShowPassword(!showPassword)}
+                      className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600"
+                    >
+                      {showPassword ? <EyeOff className="h-4 w-4 sm:h-5 sm:w-5" /> : <Eye className="h-4 w-4 sm:h-5 sm:w-5" />}
+                    </button>
                   </div>
+                  {errors.password && (
+                    <p className="mt-1 text-xs sm:text-sm text-red-600">{errors.password}</p>
+                  )}
+                </div>
 
+                {/* Forgot Password Link (Login only) */}
+                {isLogin && (
+                  <div className="flex justify-end -mt-2">
+                    <Link 
+                      to="/forgot-password"
+                      className="text-xs sm:text-sm text-blue-600 hover:text-blue-700 font-medium flex items-center gap-1"
+                      onClick={onClose}
+                    >
+                      <KeyRound className="h-3 w-3 sm:h-4 sm:w-4" />
+                      Forgot Password?
+                    </Link>
+                  </div>
+                )}
+
+                {/* Confirm Password (Register only) */}
+                {!isLogin && (
                   <div>
-                    <label className="block text-xs sm:text-sm font-medium text-gray-700 mb-1">
-                      Create Password *
-                    </label>
                     <div className="relative">
-                      <button
-                        type="button"
-                        onClick={() => setShowPassword(!showPassword)}
-                        className="absolute right-3 top-1/2 transform -translate-y-1/2"
-                        aria-label={showPassword ? "Hide password" : "Show password"}
-                      >
-                        {showPassword ? (
-                          <EyeOff className="h-4 w-4 sm:h-5 sm:w-5 text-gray-400" />
-                        ) : (
-                          <Eye className="h-4 w-4 sm:h-5 sm:w-5 text-gray-400" />
-                        )}
-                      </button>
+                      <Shield className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 sm:h-5 sm:w-5 text-gray-400" />
                       <input
-                        type={showPassword ? "text" : "password"}
-                        name="password"
-                        value={formData.password}
-                        onChange={handleInputChange}
-                        required
-                        className="w-full pl-3 sm:pl-4 pr-9 sm:pr-10 py-2 sm:py-3 rounded-lg border border-gray-300 focus:border-blue-500 focus:ring-2 focus:ring-blue-100 outline-none transition text-sm sm:text-base"
-                        placeholder="Enter password"
+                        name="confirmPassword"
+                        type={showConfirmPassword ? "text" : "password"}
+                        placeholder="Confirm Password"
+                        value={form.confirmPassword}
+                        onChange={handleChange}
+                        className={`w-full pl-10 sm:pl-11 pr-10 sm:pr-12 py-2.5 sm:py-3 text-sm sm:text-base border ${errors.confirmPassword ? 'border-red-300' : 'border-gray-300'} rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all`}
                       />
-                    </div>
-                  </div>
-
-                  <div>
-                    <label className="block text-xs sm:text-sm font-medium text-gray-700 mb-1">
-                      Confirm Password *
-                    </label>
-                    <div className="relative">
                       <button
                         type="button"
                         onClick={() => setShowConfirmPassword(!showConfirmPassword)}
-                        className="absolute right-3 top-1/2 transform -translate-y-1/2"
-                        aria-label={showConfirmPassword ? "Hide password" : "Show password"}
+                        className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600"
                       >
-                        {showConfirmPassword ? (
-                          <EyeOff className="h-4 w-4 sm:h-5 sm:w-5 text-gray-400" />
-                        ) : (
-                          <Eye className="h-4 w-4 sm:h-5 sm:w-5 text-gray-400" />
-                        )}
+                        {showConfirmPassword ? <EyeOff className="h-4 w-4 sm:h-5 sm:w-5" /> : <Eye className="h-4 w-4 sm:h-5 sm:w-5" />}
                       </button>
-                      <input
-                        type={showConfirmPassword ? "text" : "password"}
-                        name="confirmPassword"
-                        value={formData.confirmPassword}
-                        onChange={handleInputChange}
-                        required
-                        className="w-full pl-3 sm:pl-4 pr-9 sm:pr-10 py-2 sm:py-3 rounded-lg border border-gray-300 focus:border-blue-500 focus:ring-2 focus:ring-blue-100 outline-none transition text-sm sm:text-base"
-                        placeholder="Confirm password"
-                      />
                     </div>
-                  </div>
-
-                  <div className="flex items-start gap-2">
-                    <input
-                      type="checkbox"
-                      id="terms"
-                      required
-                      className="mt-0.5 sm:mt-1 h-4 w-4 sm:h-5 sm:w-5"
-                    />
-                    <label htmlFor="terms" className="text-xs sm:text-sm text-gray-600">
-                      I agree to the Terms & Conditions and Privacy Policy
-                    </label>
-                  </div>
-
-                  <button
-                    type="submit"
-                    disabled={loading}
-                    className="w-full bg-gradient-to-r from-blue-600 to-indigo-600 text-white py-2.5 sm:py-3 rounded-lg font-semibold hover:shadow-lg hover:shadow-blue-500/25 transition-all duration-300 flex items-center justify-center gap-2 disabled:opacity-70 disabled:cursor-not-allowed text-sm sm:text-base"
-                  >
-                    {loading ? (
-                      <>
-                        <Loader2 className="h-4 w-4 sm:h-5 sm:w-5 animate-spin" />
-                        Processing...
-                      </>
-                    ) : (
-                      <>
-                        <CheckCircle className="h-4 w-4 sm:h-5 sm:w-5" />
-                        Complete Registration
-                      </>
+                    {errors.confirmPassword && (
+                      <p className="mt-1 text-xs sm:text-sm text-red-600">{errors.confirmPassword}</p>
                     )}
-                  </button>
-                </form>
-              ) : (
-                // Login Form
-                <form onSubmit={handleLogin} className="space-y-3 sm:space-y-4">
-                  <div>
-                    <label className="block text-xs sm:text-sm font-medium text-gray-700 mb-1">
-                      Hospital ID / Email
-                    </label>
-                    <div className="relative">
-                      <Building className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 sm:h-5 sm:w-5 text-gray-400" />
-                      <input
-                        type="text"
-                        name="emailOrId"
-                        value={loginData.emailOrId}
-                        onChange={(e) => handleInputChange(e, true)}
-                        required
-                        className="w-full pl-9 sm:pl-10 pr-3 sm:pr-4 py-2 sm:py-3 rounded-lg border border-gray-300 focus:border-blue-500 focus:ring-2 focus:ring-blue-100 outline-none transition text-sm sm:text-base"
-                        placeholder="Enter Hospital ID or email"
-                      />
-                    </div>
                   </div>
+                )}
 
-                  <div>
-                    <label className="block text-xs sm:text-sm font-medium text-gray-700 mb-1">
-                      Password
-                    </label>
-                    <div className="relative">
-                      <button
-                        type="button"
-                        onClick={() => setShowPassword(!showPassword)}
-                        className="absolute right-3 top-1/2 transform -translate-y-1/2"
-                        aria-label={showPassword ? "Hide password" : "Show password"}
-                      >
-                        {showPassword ? (
-                          <EyeOff className="h-4 w-4 sm:h-5 sm:w-5 text-gray-400" />
-                        ) : (
-                          <Eye className="h-4 w-4 sm:h-5 sm:w-5 text-gray-400" />
-                        )}
-                      </button>
-                      <input
-                        type={showPassword ? "text" : "password"}
-                        name="password"
-                        value={loginData.password}
-                        onChange={(e) => handleInputChange(e, true)}
-                        required
-                        className="w-full pl-3 sm:pl-4 pr-9 sm:pr-10 py-2 sm:py-3 rounded-lg border border-gray-300 focus:border-blue-500 focus:ring-2 focus:ring-blue-100 outline-none transition text-sm sm:text-base"
-                        placeholder="Enter password"
-                      />
+                {/* Submit Button */}
+                <button
+                  type="submit"
+                  disabled={loading}
+                  className={`w-full py-3 sm:py-3.5 rounded-xl font-semibold text-sm sm:text-base transition-all duration-300 ${loading 
+                    ? 'bg-gray-300 cursor-not-allowed' 
+                    : 'bg-gradient-to-r from-blue-600 to-cyan-600 hover:from-blue-700 hover:to-cyan-700 hover:shadow-lg hover:shadow-blue-500/30 active:scale-[0.98]'
+                  } text-white`}
+                >
+                  {loading ? (
+                    <div className="flex items-center justify-center gap-2">
+                      <div className="h-4 w-4 sm:h-5 sm:w-5 animate-spin rounded-full border-2 border-white border-t-transparent"></div>
+                      {isLogin ? "Logging in..." : "Registering..."}
                     </div>
-                  </div>
+                  ) : (
+                    isLogin ? "Login to Dashboard" : "Create Hospital Account"
+                  )}
+                </button>
 
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-2">
-                      <input
-                        type="checkbox"
-                        id="remember"
-                        className="rounded h-4 w-4 sm:h-5 sm:w-5"
-                      />
-                      <label htmlFor="remember" className="text-xs sm:text-sm text-gray-600">
-                        Remember me
-                      </label>
-                    </div>
-                    <button
-                      type="button"
-                      onClick={handleForgotPassword}
-                      className="text-xs sm:text-sm text-blue-600 hover:text-blue-700 font-medium"
-                    >
-                      Forgot Password?
-                    </button>
-                  </div>
-
-                  <button
-                    type="submit"
-                    disabled={loading}
-                    className="w-full bg-gradient-to-r from-blue-600 to-indigo-600 text-white py-2.5 sm:py-3 rounded-lg font-semibold hover:shadow-lg hover:shadow-blue-500/25 transition-all duration-300 flex items-center justify-center gap-2 disabled:opacity-70 disabled:cursor-not-allowed text-sm sm:text-base"
-                  >
-                    {loading ? (
-                      <>
-                        <Loader2 className="h-4 w-4 sm:h-5 sm:w-5 animate-spin" />
-                        Logging in...
-                      </>
-                    ) : (
-                      <>
-                        <ArrowRight className="h-4 w-4 sm:h-5 sm:w-5" />
-                        Login to Hospital Portal
-                      </>
-                    )}
-                  </button>
-
-                  <div className="text-center pt-3 sm:pt-4">
-                    <p className="text-gray-600 text-xs sm:text-sm">
-                      Don't have an account?{' '}
-                      <button
-                        type="button"
-                        onClick={() => setShowLogin(false)}
-                        className="text-blue-600 hover:text-blue-700 font-medium"
-                      >
-                        Register here
-                      </button>
+                {/* Terms and Conditions (Register only) */}
+                {!isLogin && (
+                  <div className="text-center pt-2">
+                    <p className="text-xs text-gray-500">
+                      By registering, you agree to our{" "}
+                      <a href="#" className="text-blue-600 hover:text-blue-700 font-medium">
+                        Terms of Service
+                      </a>{" "}
+                      and{" "}
+                      <a href="#" className="text-blue-600 hover:text-blue-700 font-medium">
+                        Privacy Policy
+                      </a>
                     </p>
                   </div>
-                </form>
-              )}
+                )}
+              </form>
+            )}
+
+            {/* Toggle between Login/Register */}
+            <div className="mt-5 sm:mt-6 text-center">
+              <p className="text-sm text-gray-600">
+                {isLogin ? "Don't have a hospital account?" : "Already have an account?"}
+                <button
+                  onClick={handleToggleMode}
+                  className="ml-2 font-semibold text-blue-600 hover:text-blue-700 transition-colors"
+                >
+                  {isLogin ? "Register Here" : "Login Here"}
+                </button>
+              </p>
             </div>
 
-            {/* Right Column - Benefits */}
-            <div className="hidden lg:block lg:w-96">
-              <div className="bg-gradient-to-b from-blue-50 to-indigo-50 rounded-xl p-5 md:p-6 border border-blue-100 h-full">
-                <h3 className="text-lg font-bold text-gray-900 mb-4 flex items-center gap-2">
-                  <Shield className="h-5 w-5 text-blue-600" />
-                  Hospital Benefits
-                </h3>
-                
-                <div className="space-y-3">
-                  {[
-                    {
-                      icon: Users,
-                      title: 'Donor Network',
-                      desc: 'Access 50,000+ verified donors'
-                    },
-                    {
-                      icon: Bell,
-                      title: 'Emergency Alerts',
-                      desc: 'Real-time critical case notifications'
-                    },
-                    {
-                      icon: FileText,
-                      title: 'Digital Records',
-                      desc: 'Secure patient and donor management'
-                    },
-                    {
-                      icon: MapPin,
-                      title: 'Verified Status',
-                      desc: 'Get certified partner badge'
-                    },
-                  ].map((benefit, idx) => (
-                    <div key={idx} className="flex items-start gap-3 p-3 bg-white/70 rounded-lg">
-                      <div className="p-2 bg-blue-100 rounded-lg">
-                        <benefit.icon className="h-4 w-4 text-blue-600" />
-                      </div>
-                      <div>
-                        <h4 className="font-semibold text-gray-900 text-sm">{benefit.title}</h4>
-                        <p className="text-xs text-gray-600">{benefit.desc}</p>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-
-                {/* Quick Stats */}
-                <div className="mt-6 pt-6 border-t border-blue-100">
-                  <h4 className="font-semibold text-gray-900 mb-3 text-sm">Quick Stats</h4>
-                  <div className="grid grid-cols-2 gap-3">
-                    <div className="bg-white p-3 rounded-lg text-center">
-                      <div className="text-lg font-bold text-blue-600">500+</div>
-                      <div className="text-xs text-gray-600">Hospitals</div>
-                    </div>
-                    <div className="bg-white p-3 rounded-lg text-center">
-                      <div className="text-lg font-bold text-blue-600">24/7</div>
-                      <div className="text-xs text-gray-600">Support</div>
-                    </div>
-                    <div className="bg-white p-3 rounded-lg text-center">
-                      <div className="text-lg font-bold text-blue-600">100+</div>
-                      <div className="text-xs text-gray-600">Cities</div>
-                    </div>
-                    <div className="bg-white p-3 rounded-lg text-center">
-                      <div className="text-lg font-bold text-blue-600">98%</div>
-                      <div className="text-xs text-gray-600">Success</div>
-                    </div>
-                  </div>
-                </div>
-
-                <div className="mt-6 p-4 bg-white rounded-lg border border-blue-200">
-                  <div className="flex items-center gap-2 mb-2">
-                    <Phone className="h-4 w-4 text-blue-600" />
-                    <span className="text-sm font-semibold text-gray-700">Need Help?</span>
-                  </div>
-                  <p className="text-xs text-gray-600 mb-3">
-                    Contact our hospital support team
-                  </p>
-                  <button className="w-full text-sm text-blue-600 font-medium py-2 rounded-lg hover:bg-blue-50 transition-colors border border-blue-200">
-                    Contact Support
-                  </button>
-                </div>
+            {/* Hospital Benefits (Register only) */}
+            {!isLogin && (
+              <div className="mt-5 sm:mt-6 rounded-xl bg-gradient-to-r from-blue-50 to-cyan-50 p-3 sm:p-4 border border-blue-200">
+                <h4 className="font-semibold text-gray-800 mb-2 text-sm sm:text-base flex items-center gap-2">
+                  <HeartPulse className="h-4 w-4 sm:h-5 sm:w-5 text-blue-600" />
+                  Benefits of Registering:
+                </h4>
+                <ul className="space-y-1.5 text-xs sm:text-sm text-gray-600">
+                  <li className="flex items-center gap-2">
+                    <div className="h-1.5 w-1.5 rounded-full bg-blue-500 flex-shrink-0"></div>
+                    <span>Access to donor database</span>
+                  </li>
+                  <li className="flex items-center gap-2">
+                    <div className="h-1.5 w-1.5 rounded-full bg-blue-500 flex-shrink-0"></div>
+                    <span>Manage patient records</span>
+                  </li>
+                  <li className="flex items-center gap-2">
+                    <div className="h-1.5 w-1.5 rounded-full bg-blue-500 flex-shrink-0"></div>
+                    <span>Request blood/organ donations</span>
+                  </li>
+                  <li className="flex items-center gap-2">
+                    <div className="h-1.5 w-1.5 rounded-full bg-blue-500 flex-shrink-0"></div>
+                    <span>24/7 emergency support</span>
+                  </li>
+                </ul>
               </div>
-            </div>
-          </div>
-        </div>
+            )}
 
-        {/* Footer */}
-        <div className="bg-gray-50 p-3 sm:p-4 border-t border-gray-200">
-          <div className="flex flex-col sm:flex-row items-center justify-between gap-2 sm:gap-3 text-center sm:text-left">
-            <p className="text-xs sm:text-sm text-gray-600">
-              By registering, you agree to our Terms & Privacy Policy
-            </p>
-            <div className="flex items-center gap-2">
-              <div className="w-6 h-6 sm:w-8 sm:h-8 bg-blue-100 rounded-lg flex items-center justify-center">
-                <Hospital className="h-3 w-3 sm:h-4 sm:w-4 text-blue-600" />
-              </div>
-              <span className="text-xs sm:text-sm font-medium text-gray-700">JeevanDaan Hospital Network</span>
+            {/* Testimonial */}
+            <div className="mt-4 sm:mt-5 text-center">
+              <p className="text-xs text-gray-500 italic">
+                "Trusted by over 500+ hospitals nationwide"
+              </p>
             </div>
           </div>
         </div>
       </div>
     </div>
   );
-};
+}
 
-export default HospitalAuthModal;
+// Parent component usage example:
+/*
+import { useState } from "react";
+import HospitalAuthModal from "./HospitalAuthModal";
+
+function AppHeader() {
+  const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
+
+  return (
+    <header className="p-4">
+      <button 
+        onClick={() => setIsAuthModalOpen(true)}
+        className="px-4 py-2 bg-gradient-to-r from-blue-600 to-cyan-600 text-white rounded-lg hover:shadow-lg transition-all"
+      >
+        Hospital Portal
+      </button>
+      
+      <HospitalAuthModal 
+        isOpen={isAuthModalOpen}
+        onClose={() => setIsAuthModalOpen(false)}
+      />
+    </header>
+  );
+}
+*/

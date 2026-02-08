@@ -78,7 +78,7 @@ app.use("/api/dashboard", alluserdonorCountRoutes);
 app.use("/api/notifications", notificationRoutes);
 app.use("/api/chats", chatRoutes);
 app.use("/api", matchRoutes);
-app.use("/api/hospital", hospotalRoutes);
+app.use("/api/hospitals", hospotalRoutes);
 // ================= 404 HANDLER =================
 app.use((req, res) => {
   res.status(404).json({

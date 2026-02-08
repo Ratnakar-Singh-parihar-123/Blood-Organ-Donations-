@@ -10,14 +10,25 @@ import {
   Gift, LifeBuoy,
   Bookmark, LogIn, UserPlus,
   Activity as ActivityIcon,
-  Hospital, Ambulance,
+  Hospital as HospitalIcon,
+  Ambulance,
   CheckCircle, ChevronRight,
   Sparkles, Zap, MoreVertical,
   Info, Target, BookOpen,
   Users, Globe, Phone, Mail,
   ChevronLeft,
   ExternalLink,
-  MessageCircle
+  MessageCircle,
+  Building2,
+  Stethoscope,
+  ClipboardCheck,
+  Activity,
+  ShieldCheck,
+  Bed,
+  UserCheck,
+  BriefcaseMedical,
+  Syringe,
+  HeartPulse
 } from 'lucide-react';
 import jeevandaans from "../../public/jeevandaan.png";
 import NotificationsModal from "../notifications/NotificationsModal"
@@ -46,7 +57,12 @@ const Navbar = () => {
   const [userType, setUserType] = useState('');
   const [userTypeConfig, setUserTypeConfig] = useState(null);
   const [windowWidth, setWindowWidth] = useState(window.innerWidth);
+  
+  // सभी user types के लिए अलग-अलग IDs
   const [patientId, setPatientId] = useState('');
+  const [donorId, setDonorId] = useState('');
+  const [hospitalId, setHospitalId] = useState('');
+  const [userId, setUserId] = useState('');
 
   // Track window width
   useEffect(() => {
@@ -62,44 +78,6 @@ const Navbar = () => {
     window.addEventListener('resize', handleResize);
     return () => window.removeEventListener('resize', handleResize);
   }, [isSearchOpen]);
-
-  // Check login status
-  useEffect(() => {
-    checkUserAuth();
-    const handleStorageChange = () => {
-      checkUserAuth();
-    };
-    window.addEventListener('storage', handleStorageChange);
-    return () => window.removeEventListener('storage', handleStorageChange);
-  }, [location]);
-
-  // Get patient ID
-  useEffect(() => {
-    let finalPatientId = null;
-
-    if (isLoggedIn && userData) {
-      finalPatientId =
-        userData.patientId ||
-        userData.patient?._id ||
-        userData._id ||
-        null;
-    }
-
-    if (!finalPatientId) {
-      finalPatientId =
-        localStorage.getItem("patientId") ||
-        localStorage.getItem("guestPatientId");
-    }
-
-    if (!finalPatientId) {
-      const guestPatientId = 'guest-' + Date.now().toString(36) + Math.random().toString(36).substr(2);
-      localStorage.setItem('guestPatientId', guestPatientId);
-      finalPatientId = guestPatientId;
-    }
-
-    setPatientId(finalPatientId);
-    localStorage.setItem("patientId", finalPatientId);
-  }, [isLoggedIn, userData]);
 
   // User type configurations
   const userTypesConfig = [
@@ -138,74 +116,204 @@ const Navbar = () => {
       textColor: 'text-indigo-600',
       bgColor: 'bg-indigo-50',
       borderColor: 'border-indigo-200'
+    },
+    {
+      key: 'hospital',
+      label: 'Hospital',
+      icon: Building2,
+      gradient: 'bg-gradient-to-r from-purple-600 to-purple-500',
+      textColor: 'text-purple-600',
+      bgColor: 'bg-purple-50',
+      borderColor: 'border-purple-200'
     }
   ];
 
   // Check user authentication
   const checkUserAuth = () => {
+    console.log('Checking authentication...');
+    
     let foundUser = false;
+    let currentUserType = '';
+    let currentUserData = null;
 
-    for (const type of userTypesConfig) {
-      const token = localStorage.getItem(`${type.key}Token`);
-      const data = localStorage.getItem(`${type.key}Data`) || localStorage.getItem(type.key);
+    // पहले hospital check करें (यह special case है)
+    const hospitalToken = localStorage.getItem('hospitalToken');
+    const hospitalData = localStorage.getItem('hospitalData');
+    
+    if (hospitalToken && hospitalData) {
+      try {
+        currentUserData = JSON.parse(hospitalData);
+        currentUserType = 'hospital';
+        foundUser = true;
+        console.log('Hospital user found');
+      } catch (error) {
+        console.error('Error parsing hospital data:', error);
+      }
+    }
 
-      if (token && data) {
-        try {
-          const parsedData = JSON.parse(data);
-          setIsLoggedIn(true);
-          setUserData(parsedData);
-          setUserType(type.key);
-          setUserTypeConfig(type);
-          foundUser = true;
+    // फिर regular users check करें
+    if (!foundUser) {
+      for (const type of userTypesConfig) {
+        if (type.key === 'hospital') continue; // Hospital को पहले ही check कर चुके हैं
+        
+        const token = localStorage.getItem(`${type.key}Token`);
+        const data = localStorage.getItem(`${type.key}Data`) || localStorage.getItem(type.key);
 
-          localStorage.setItem('currentUserType', type.key);
-          localStorage.setItem('currentUserData', data);
-
-          if (parsedData.patientId) {
-            setPatientId(parsedData.patientId);
-            localStorage.setItem('patientId', parsedData.patientId);
+        if (token && data) {
+          try {
+            currentUserData = JSON.parse(data);
+            currentUserType = type.key;
+            foundUser = true;
+            console.log(`${type.key} user found`);
+            break;
+          } catch (error) {
+            console.error(`Error parsing ${type.key} data:`, error);
           }
-
-          break;
-        } catch (error) {
-          console.error('Error parsing user data:', error);
         }
       }
     }
 
+    // अगर कुछ नहीं मिला तो current user check करें
     if (!foundUser) {
-      const currentUserData = localStorage.getItem('currentUserData');
-      const currentUserType = localStorage.getItem('currentUserType');
+      const storedUserData = localStorage.getItem('currentUserData');
+      const storedUserType = localStorage.getItem('currentUserType');
 
-      if (currentUserData && currentUserType) {
+      if (storedUserData && storedUserType) {
         try {
-          const parsedData = JSON.parse(currentUserData);
-          const type = userTypesConfig.find(t => t.key === currentUserType);
-
-          if (type) {
-            setIsLoggedIn(true);
-            setUserData(parsedData);
-            setUserType(currentUserType);
-            setUserTypeConfig(type);
-            foundUser = true;
-
-            if (parsedData.patientId) {
-              setPatientId(parsedData.patientId);
-            }
-          }
+          currentUserData = JSON.parse(storedUserData);
+          currentUserType = storedUserType;
+          foundUser = true;
+          console.log(`Current user found: ${storedUserType}`);
         } catch (error) {
           console.error('Error parsing current user data:', error);
         }
       }
     }
 
-    if (!foundUser) {
+    // User data set करें
+    if (foundUser && currentUserData && currentUserType) {
+      const typeConfig = userTypesConfig.find(t => t.key === currentUserType);
+      
+      console.log(`Setting user: ${currentUserType}`, currentUserData);
+      
+      setIsLoggedIn(true);
+      setUserData(currentUserData);
+      setUserType(currentUserType);
+      setUserTypeConfig(typeConfig || userTypesConfig[0]);
+
+      localStorage.setItem('currentUserType', currentUserType);
+      localStorage.setItem('currentUserData', JSON.stringify(currentUserData));
+
+      // User type के according ID set करें
+      switch (currentUserType) {
+        case 'bloodDonor':
+        case 'organDonor':
+          const donorIdValue = currentUserData.donorId || currentUserData._id || localStorage.getItem('currentDonorId');
+          setDonorId(donorIdValue || '');
+          localStorage.setItem('currentDonorId', donorIdValue || '');
+          break;
+        case 'patient':
+          const patientIdValue = currentUserData.patientId || currentUserData._id || localStorage.getItem('currentPatientId');
+          setPatientId(patientIdValue || '');
+          localStorage.setItem('currentPatientId', patientIdValue || '');
+          break;
+        case 'hospital':
+          const hospitalIdValue = currentUserData.hospitalId || currentUserData._id || localStorage.getItem('currentHospitalId');
+          setHospitalId(hospitalIdValue || '');
+          localStorage.setItem('currentHospitalId', hospitalIdValue || '');
+          break;
+        case 'user':
+          const userIdValue = currentUserData.userId || currentUserData._id || localStorage.getItem('currentUserId');
+          setUserId(userIdValue || '');
+          localStorage.setItem('currentUserId', userIdValue || '');
+          break;
+      }
+    } else {
+      console.log('No user found, setting to logged out');
       setIsLoggedIn(false);
       setUserData(null);
       setUserType('');
       setUserTypeConfig(null);
     }
   };
+
+  // IDs get/set करने का useEffect
+  useEffect(() => {
+    if (!isLoggedIn || !userType) {
+      // Guest users के लिए temporary IDs
+      const guestId = 'guest-' + Date.now().toString(36) + Math.random().toString(36).substr(2);
+      
+      if (!localStorage.getItem('guestPatientId')) {
+        localStorage.setItem('guestPatientId', guestId);
+      }
+      if (!localStorage.getItem('guestDonorId')) {
+        localStorage.setItem('guestDonorId', guestId);
+      }
+      if (!localStorage.getItem('guestHospitalId')) {
+        localStorage.setItem('guestHospitalId', guestId);
+      }
+      if (!localStorage.getItem('guestUserId')) {
+        localStorage.setItem('guestUserId', guestId);
+      }
+      
+      // Guest IDs set करें
+      setPatientId(localStorage.getItem('guestPatientId') || guestId);
+      setDonorId(localStorage.getItem('guestDonorId') || guestId);
+      setHospitalId(localStorage.getItem('guestHospitalId') || guestId);
+      setUserId(localStorage.getItem('guestUserId') || guestId);
+      return;
+    }
+
+    // Logged in users के लिए
+    if (userData) {
+      switch (userType) {
+        case 'bloodDonor':
+        case 'organDonor':
+          const donorIdValue = userData.donorId || userData._id || localStorage.getItem('currentDonorId');
+          setDonorId(donorIdValue || '');
+          localStorage.setItem('currentDonorId', donorIdValue || '');
+          break;
+        case 'patient':
+          const patientIdValue = userData.patientId || userData._id || localStorage.getItem('currentPatientId');
+          setPatientId(patientIdValue || '');
+          localStorage.setItem('currentPatientId', patientIdValue || '');
+          break;
+        case 'hospital':
+          const hospitalIdValue = userData.hospitalId || userData._id || localStorage.getItem('currentHospitalId');
+          setHospitalId(hospitalIdValue || '');
+          localStorage.setItem('currentHospitalId', hospitalIdValue || '');
+          break;
+        case 'user':
+          const userIdValue = userData.userId || userData._id || localStorage.getItem('currentUserId');
+          setUserId(userIdValue || '');
+          localStorage.setItem('currentUserId', userIdValue || '');
+          break;
+      }
+    }
+  }, [isLoggedIn, userData, userType]);
+
+  // Effect to check auth
+  useEffect(() => {
+    checkUserAuth();
+    
+    const handleStorageChange = () => {
+      console.log('Storage changed, checking auth...');
+      checkUserAuth();
+    };
+    
+    const handleAuthChange = () => {
+      console.log('Auth change event received');
+      checkUserAuth();
+    };
+    
+    window.addEventListener('storage', handleStorageChange);
+    window.addEventListener('authChange', handleAuthChange);
+    
+    return () => {
+      window.removeEventListener('storage', handleStorageChange);
+      window.removeEventListener('authChange', handleAuthChange);
+    };
+  }, [location]);
 
   // Update active tab based on route
   useEffect(() => {
@@ -218,6 +326,8 @@ const Navbar = () => {
     else if (path.includes('/about')) setActiveTab('about');
     else if (path.includes('/auth')) setActiveTab('auth');
     else if (path.includes('/settings')) setActiveTab('settings');
+    else if (path.includes('/hospital-dashboard')) setActiveTab('hospital');
+    else if (path.includes('/donor-dashboard')) setActiveTab('donor');
   }, [location]);
 
   // Scroll effect
@@ -264,38 +374,55 @@ const Navbar = () => {
       id: 'blood',
       label: 'Blood Donation',
       icon: Droplets,
-      path: '/blood',
       description: 'Find blood donors',
       bgColor: 'bg-red-50',
-      textColor: 'text-red-600'
+      textColor: 'text-red-600',
+      getPath: () => {
+        if (userType === 'bloodDonor') return `/donor/${donorId}/dashboard`;
+        if (userType === 'hospital') return `/hospital/${hospitalId}/blood-bank`;
+        return '/blood';
+      }
     },
     {
       id: 'organ',
       label: 'Organ Donation',
       icon: ActivityIcon,
-      path: '/organ',
       description: 'Organ donation info',
       bgColor: 'bg-green-50',
-      textColor: 'text-green-600'
+      textColor: 'text-green-600',
+      getPath: () => {
+        if (userType === 'organDonor') return `/donor/${donorId}/dashboard`;
+        if (userType === 'hospital') return `/hospital/${hospitalId}/organ-bank`;
+        return '/organ';
+      }
     },
     {
       id: 'urgent',
-      label: 'Find Matches',
+      label: userType === 'patient' ? 'My Matches' : 
+             userType === 'bloodDonor' || userType === 'organDonor' ? 'Donation Requests' :
+             userType === 'hospital' ? 'Hospital Requests' : 'Find Matches',
       icon: AlertCircle,
-      path: '/patient-matches',
-      description: 'Patient donor matches',
+      description: userType === 'patient' ? 'View your matches' : 
+                  userType === 'bloodDonor' || userType === 'organDonor' ? 'View donation requests' :
+                  userType === 'hospital' ? 'Manage hospital requests' : 'Patient donor matches',
       bgColor: 'bg-amber-50',
       textColor: 'text-amber-600',
-      badge: 3
+      badge: 3,
+      getPath: () => {
+        if (userType === 'patient') return `/patient/${patientId}/matches`;
+        if (userType === 'bloodDonor' || userType === 'organDonor') return `/donor/${donorId}/requests`;
+        if (userType === 'hospital') return `/hospital/${hospitalId}/requests`;
+        return '/patient-matches';
+      }
     },
     {
       id: 'hospitals',
-      label: 'Hospitals',
-      icon: Hospital,
-      path: '/hospitals',
-      description: 'Find hospitals',
-      bgColor: 'bg-blue-50',
-      textColor: 'text-blue-600'
+      label: userType === 'hospital' ? 'Dashboard' : 'Hospitals',
+      icon: userType === 'hospital' ? Building2 : HospitalIcon,
+      description: userType === 'hospital' ? 'Hospital dashboard' : 'Find hospitals',
+      bgColor: userType === 'hospital' ? 'bg-purple-50' : 'bg-blue-50',
+      textColor: userType === 'hospital' ? 'text-purple-600' : 'text-blue-600',
+      getPath: () => userType === 'hospital' ? `/hospital/${hospitalId}/dashboard` : '/hospitals'
     }
   ];
 
@@ -343,104 +470,167 @@ const Navbar = () => {
       id: 'home',
       label: 'Home',
       icon: Home,
-      path: '/',
       color: 'text-blue-600',
-      bgColor: 'bg-blue-50'
+      bgColor: 'bg-blue-50',
+      getPath: () => '/'
     },
     {
       id: 'blood',
       label: 'Blood',
       icon: Droplets,
-      path: '/blood',
       color: 'text-red-600',
-      bgColor: 'bg-red-50'
+      bgColor: 'bg-red-50',
+      getPath: () => {
+        if (userType === 'bloodDonor') return `/donor/${donorId}/dashboard`;
+        return '/blood';
+      }
     },
     {
       id: 'organ',
       label: 'Organ',
       icon: ActivityIcon,
-      path: '/organ',
       color: 'text-green-600',
-      bgColor: 'bg-green-50'
+      bgColor: 'bg-green-50',
+      getPath: () => {
+        if (userType === 'organDonor') return `/donor/${donorId}/dashboard`;
+        return '/organ';
+      }
     },
     {
       id: 'urgent',
-      label: 'Matches',
+      label: userType === 'patient' ? 'Matches' : 
+             userType === 'bloodDonor' || userType === 'organDonor' ? 'Requests' :
+             userType === 'hospital' ? 'Hospital' : 'Matches',
       icon: AlertCircle,
-      path: '/patient-matches',
       color: 'text-amber-600',
-      bgColor: 'bg-amber-50'
+      bgColor: 'bg-amber-50',
+      getPath: () => {
+        if (userType === 'patient') return `/patient/${patientId}/matches`;
+        if (userType === 'bloodDonor' || userType === 'organDonor') return `/donor/${donorId}/requests`;
+        if (userType === 'hospital') return `/hospital/${hospitalId}/requests`;
+        return '/patient-matches';
+      }
     },
     {
       id: 'profile',
       label: 'Profile',
       icon: User,
-      path: '/profile',
       color: 'text-blue-600',
-      bgColor: 'bg-blue-50'
+      bgColor: 'bg-blue-50',
+      getPath: () => {
+        switch (userType) {
+          case 'bloodDonor':
+          case 'organDonor':
+            return `/donor/${donorId}/profile`;
+          case 'patient':
+            return `/patient/${patientId}/profile`;
+          case 'hospital':
+            return `/hospital/${hospitalId}/profile`;
+          case 'user':
+            return `/user/${userId}/profile`;
+          default:
+            return '/auth';
+        }
+      }
     }
   ];
 
   // Profile dropdown items
   const getProfileItems = () => {
+    // Common base items
     const baseItems = [
       {
         label: 'My Profile',
         icon: User,
-        path: '/profile',
         bgColor: 'bg-blue-50',
         textColor: 'text-blue-600',
-        description: 'View your profile'
+        description: 'View your profile',
+        getPath: () => {
+          switch (userType) {
+            case 'bloodDonor':
+            case 'organDonor':
+              return `/donor/${donorId}/profile`;
+            case 'patient':
+              return `/patient/${patientId}/profile`;
+            case 'hospital':
+              return `/hospital/${hospitalId}/profile`;
+            case 'user':
+              return `/user/${userId}/profile`;
+            default:
+              return '/profile';
+          }
+        }
       },
       {
         label: 'Settings',
         icon: Settings,
-        path: '/settings',
         bgColor: 'bg-blue-50',
         textColor: 'text-blue-600',
-        description: 'Account settings'
+        description: 'Account settings',
+        getPath: () => {
+          switch (userType) {
+            case 'bloodDonor':
+            case 'organDonor':
+              return `/donor/${donorId}/settings`;
+            case 'patient':
+              return `/patient/${patientId}/settings`;
+            case 'hospital':
+              return `/hospital/${hospitalId}/settings`;
+            case 'user':
+              return `/user/${userId}/settings`;
+            default:
+              return '/settings';
+          }
+        }
       },
       {
         label: 'Help Center',
         icon: LifeBuoy,
-        path: '/help',
         bgColor: 'bg-green-50',
         textColor: 'text-green-600',
-        description: 'Get help & support'
+        description: 'Get help & support',
+        getPath: () => '/help'
       }
     ];
 
     if (!userTypeConfig) return baseItems;
 
-    const patientMatchesItem = {
-      label: 'Patient Matches',
-      icon: AlertCircle,
-      path: `/patient-matches/${patientId}`,
-      bgColor: 'bg-amber-50',
-      textColor: 'text-amber-600',
-      description: 'View patient matches'
-    };
-
-    switch (userTypeConfig.key) {
+    // User type specific items
+    switch (userType) {
       case 'bloodDonor':
         return [
           ...baseItems,
           {
             label: 'My Donations',
             icon: History,
-            path: '/donations',
             bgColor: 'bg-red-50',
             textColor: 'text-red-600',
-            description: 'Donation history'
+            description: 'Blood donation history',
+            getPath: () => `/donor/${donorId}/donations`
           },
-          patientMatchesItem,
+          {
+            label: 'Donation Schedule',
+            icon: Calendar,
+            bgColor: 'bg-red-50',
+            textColor: 'text-red-600',
+            description: 'Upcoming donations',
+            getPath: () => `/donor/${donorId}/schedule`
+          },
+          {
+            label: 'Blood Requests',
+            icon: AlertCircle,
+            bgColor: 'bg-amber-50',
+            textColor: 'text-amber-600',
+            description: 'View blood requests',
+            getPath: () => `/donor/${donorId}/requests`
+          },
           {
             label: 'Achievements',
             icon: Award,
-            path: '/achievements',
             bgColor: 'bg-green-50',
             textColor: 'text-green-600',
-            description: 'Your achievements'
+            description: 'Your achievements',
+            getPath: () => `/donor/${donorId}/achievements`
           }
         ];
       case 'organDonor':
@@ -449,42 +639,161 @@ const Navbar = () => {
           {
             label: 'My Pledge',
             icon: Shield,
-            path: '/pledge',
             bgColor: 'bg-green-50',
             textColor: 'text-green-600',
-            description: 'Organ donation pledge'
+            description: 'Organ donation pledge',
+            getPath: () => `/donor/${donorId}/pledge`
           },
-          patientMatchesItem,
+          {
+            label: 'Organ Requests',
+            icon: AlertCircle,
+            bgColor: 'bg-amber-50',
+            textColor: 'text-amber-600',
+            description: 'View organ requests',
+            getPath: () => `/donor/${donorId}/organ-requests`
+          },
           {
             label: 'Medical Records',
             icon: BookOpen,
-            path: '/medical-records',
             bgColor: 'bg-blue-50',
             textColor: 'text-blue-600',
-            description: 'Health information'
+            description: 'Health information',
+            getPath: () => `/donor/${donorId}/medical-records`
+          },
+          {
+            label: 'Legal Documents',
+            icon: ClipboardCheck,
+            bgColor: 'bg-purple-50',
+            textColor: 'text-purple-600',
+            description: 'Legal documents',
+            getPath: () => `/donor/${donorId}/documents`
           }
         ];
       case 'patient':
         return [
           ...baseItems,
-          patientMatchesItem,
+          {
+            label: 'My Matches',
+            icon: AlertCircle,
+            bgColor: 'bg-amber-50',
+            textColor: 'text-amber-600',
+            description: 'View patient matches',
+            getPath: () => `/patient/${patientId}/matches`
+          },
           {
             label: 'My Requests',
-            icon: AlertCircle,
-            path: '/requests',
+            icon: Heart,
             bgColor: 'bg-red-50',
             textColor: 'text-red-600',
-            description: 'Blood/organ requests'
+            description: 'Blood/organ requests',
+            getPath: () => `/patient/${patientId}/requests`
+          },
+          {
+            label: 'Medical History',
+            icon: BookOpen,
+            bgColor: 'bg-blue-50',
+            textColor: 'text-blue-600',
+            description: 'Medical records',
+            getPath: () => `/patient/${patientId}/medical-history`
+          },
+          {
+            label: 'Family Members',
+            icon: Users,
+            bgColor: 'bg-indigo-50',
+            textColor: 'text-indigo-600',
+            description: 'Manage family',
+            getPath: () => `/patient/${patientId}/family`
+          }
+        ];
+      case 'hospital':
+        return [
+          ...baseItems,
+          {
+            label: 'Hospital Dashboard',
+            icon: Building2,
+            bgColor: 'bg-purple-50',
+            textColor: 'text-purple-600',
+            description: 'Manage hospital',
+            getPath: () => `/hospital/${hospitalId}/dashboard`
+          },
+          {
+            label: 'Patient Records',
+            icon: ClipboardCheck,
+            bgColor: 'bg-blue-50',
+            textColor: 'text-blue-600',
+            description: 'View patient records',
+            getPath: () => `/hospital/${hospitalId}/patients`
+          },
+          {
+            label: 'Blood Bank',
+            icon: Droplets,
+            bgColor: 'bg-red-50',
+            textColor: 'text-red-600',
+            description: 'Blood inventory',
+            getPath: () => `/hospital/${hospitalId}/blood-bank`
+          },
+          {
+            label: 'Organ Bank',
+            icon: ActivityIcon,
+            bgColor: 'bg-green-50',
+            textColor: 'text-green-600',
+            description: 'Organ inventory',
+            getPath: () => `/hospital/${hospitalId}/organ-bank`
+          },
+          {
+            label: 'Donation Requests',
+            icon: AlertCircle,
+            bgColor: 'bg-amber-50',
+            textColor: 'text-amber-600',
+            description: 'Manage requests',
+            getPath: () => `/hospital/${hospitalId}/requests`
+          },
+          {
+            label: 'Staff Management',
+            icon: Users,
+            bgColor: 'bg-indigo-50',
+            textColor: 'text-indigo-600',
+            description: 'Manage staff',
+            getPath: () => `/hospital/${hospitalId}/staff`
+          }
+        ];
+      case 'user':
+        return [
+          ...baseItems,
+          {
+            label: 'My Activities',
+            icon: History,
+            bgColor: 'bg-indigo-50',
+            textColor: 'text-indigo-600',
+            description: 'View activities',
+            getPath: () => `/user/${userId}/activities`
+          },
+          {
+            label: 'Saved Items',
+            icon: Bookmark,
+            bgColor: 'bg-yellow-50',
+            textColor: 'text-yellow-600',
+            description: 'Saved items',
+            getPath: () => `/user/${userId}/saved`
+          },
+          {
+            label: 'Community Posts',
+            icon: MessageCircle,
+            bgColor: 'bg-blue-50',
+            textColor: 'text-blue-600',
+            description: 'Your posts',
+            getPath: () => `/user/${userId}/posts`
           }
         ];
       default:
-        return [...baseItems, patientMatchesItem];
+        return baseItems;
     }
   };
 
   // Helper functions
-  const handleTabClick = (path, tabId) => {
-    setActiveTab(tabId);
+  const handleTabClick = (item) => {
+    setActiveTab(item.id);
+    const path = item.getPath ? item.getPath() : item.path;
     navigate(path);
     if (window.innerWidth < 1024) {
       setIsMobileMenuOpen(false);
@@ -492,25 +801,16 @@ const Navbar = () => {
     setIsMoreOpen(false);
   };
 
+  const handleNavigation = (itemId) => {
+    const item = mainNavItems.find(i => i.id === itemId);
+    if (!item) return;
+    handleTabClick(item);
+  };
+
   const handlePatientMatchesClick = () => {
-    if (!patientId) {
-      if (!isLoggedIn) {
-        navigate('/auth?redirect=/patient-matches');
-        return;
-      }
-      const storedPatientId = localStorage.getItem('patientId');
-      if (storedPatientId) {
-        navigate(`/patient-matches/${storedPatientId}`);
-      } else {
-        console.error('Patient ID not found');
-        return;
-      }
-    } else {
-      navigate(`/patient-matches/${patientId}`);
-    }
-    setActiveTab('urgent');
-    if (window.innerWidth < 1024) {
-      setIsMobileMenuOpen(false);
+    const item = mainNavItems.find(i => i.id === 'urgent');
+    if (item) {
+      handleTabClick(item);
     }
   };
 
@@ -523,27 +823,62 @@ const Navbar = () => {
     }
   };
 
+  // Logout function
   const handleLogout = () => {
-    const types = ['bloodDonor', 'organDonor', 'patient', 'user'];
-    types.forEach(type => {
-      localStorage.removeItem(`${type}Token`);
-      localStorage.removeItem(type);
-      localStorage.removeItem(`${type}Data`);
+    console.log('Logging out all users...');
+    
+    // सभी user types के tokens और data remove करें
+    userTypesConfig.forEach(type => {
+      localStorage.removeItem(`${type.key}Token`);
+      localStorage.removeItem(type.key);
+      localStorage.removeItem(`${type.key}Data`);
     });
 
+    // Hospital specific (special case)
+    localStorage.removeItem('hospitalToken');
+    localStorage.removeItem('hospitalData');
+
+    // Current user data remove करें
     localStorage.removeItem('currentUserData');
     localStorage.removeItem('currentUserType');
-    localStorage.removeItem('patientId');
+    
+    // Current IDs remove करें
+    localStorage.removeItem('currentPatientId');
+    localStorage.removeItem('currentDonorId');
+    localStorage.removeItem('currentHospitalId');
+    localStorage.removeItem('currentUserId');
 
+    // State reset करें
     setIsLoggedIn(false);
     setUserData(null);
     setUserType('');
     setUserTypeConfig(null);
     setIsProfileOpen(false);
 
-    const guestPatientId = 'guest-' + Date.now().toString(36) + Math.random().toString(36).substr(2);
-    localStorage.setItem('guestPatientId', guestPatientId);
-    setPatientId(guestPatientId);
+    // Guest IDs generate करें (existing नहीं हटाएं)
+    const guestId = 'guest-' + Date.now().toString(36) + Math.random().toString(36).substr(2);
+    
+    if (!localStorage.getItem('guestPatientId')) {
+      localStorage.setItem('guestPatientId', guestId);
+    }
+    if (!localStorage.getItem('guestDonorId')) {
+      localStorage.setItem('guestDonorId', guestId);
+    }
+    if (!localStorage.getItem('guestHospitalId')) {
+      localStorage.setItem('guestHospitalId', guestId);
+    }
+    if (!localStorage.getItem('guestUserId')) {
+      localStorage.setItem('guestUserId', guestId);
+    }
+
+    // Guest IDs set करें
+    setPatientId(localStorage.getItem('guestPatientId') || guestId);
+    setDonorId(localStorage.getItem('guestDonorId') || guestId);
+    setHospitalId(localStorage.getItem('guestHospitalId') || guestId);
+    setUserId(localStorage.getItem('guestUserId') || guestId);
+
+    // Auth change event trigger करें
+    window.dispatchEvent(new Event('authChange'));
 
     navigate('/');
   };
@@ -557,12 +892,36 @@ const Navbar = () => {
     setIsLocationOpen(false);
   };
 
+  // User information functions
   const getUserInitials = () => {
-    if (!userData?.name) return 'U';
-    return userData.name.charAt(0).toUpperCase();
+    if (userType === 'hospital') {
+      return userData?.hospitalName?.charAt(0).toUpperCase() || 'H';
+    }
+    if (userType === 'bloodDonor') {
+      return userData?.name?.charAt(0).toUpperCase() || 'B';
+    }
+    if (userType === 'organDonor') {
+      return userData?.name?.charAt(0).toUpperCase() || 'O';
+    }
+    if (userType === 'patient') {
+      return userData?.name?.charAt(0).toUpperCase() || 'P';
+    }
+    return userData?.name?.charAt(0).toUpperCase() || 'U';
   };
 
   const getUserDisplayName = () => {
+    if (userType === 'hospital') {
+      return userData?.hospitalName || 'Hospital';
+    }
+    if (userType === 'bloodDonor') {
+      return userData?.name || 'Blood Donor';
+    }
+    if (userType === 'organDonor') {
+      return userData?.name || 'Organ Donor';
+    }
+    if (userType === 'patient') {
+      return userData?.name || 'Patient';
+    }
     return userData?.name || 'User';
   };
 
@@ -575,13 +934,66 @@ const Navbar = () => {
       if (itemId === 'blood') return 'bg-gradient-to-r from-red-600 to-red-500 text-white shadow-lg shadow-red-500/30';
       if (itemId === 'organ') return 'bg-gradient-to-r from-green-600 to-green-500 text-white shadow-lg shadow-green-500/30';
       if (itemId === 'urgent') return 'bg-gradient-to-r from-amber-600 to-amber-500 text-white shadow-lg shadow-amber-500/30';
+      if (itemId === 'hospitals' && userType === 'hospital') return 'bg-gradient-to-r from-purple-600 to-purple-500 text-white shadow-lg shadow-purple-500/30';
       return 'bg-gradient-to-r from-blue-600 to-blue-500 text-white shadow-lg shadow-blue-500/30';
     }
 
     if (itemId === 'blood') return 'text-gray-700 hover:text-red-600 hover:bg-red-50';
     if (itemId === 'organ') return 'text-gray-700 hover:text-green-600 hover:bg-green-50';
     if (itemId === 'urgent') return 'text-gray-700 hover:text-amber-600 hover:bg-amber-50';
+    if (itemId === 'hospitals' && userType === 'hospital') return 'text-gray-700 hover:text-purple-600 hover:bg-purple-50';
     return 'text-gray-700 hover:text-blue-600 hover:bg-blue-50';
+  };
+
+  // Get current ID based on user type
+  const getCurrentId = () => {
+    switch (userType) {
+      case 'bloodDonor':
+      case 'organDonor':
+        return donorId;
+      case 'patient':
+        return patientId;
+      case 'hospital':
+        return hospitalId;
+      case 'user':
+        return userId;
+      default:
+        return '';
+    }
+  };
+
+  // Get ID label
+  const getIdLabel = () => {
+    switch (userType) {
+      case 'bloodDonor':
+      case 'organDonor':
+        return 'Donor ID';
+      case 'patient':
+        return 'Patient ID';
+      case 'hospital':
+        return 'Hospital ID';
+      case 'user':
+        return 'User ID';
+      default:
+        return 'ID';
+    }
+  };
+
+  // Get ID value for display
+  const getIdValue = () => {
+    const id = getCurrentId();
+    if (!id) return 'Not Available';
+    if (id.startsWith('guest-')) {
+      return 'Guest User';
+    }
+    // Shorten ID for display
+    return id.length > 10 ? `${id.substring(0, 8)}...` : id;
+  };
+
+  // Hospital login modal trigger function
+  const handleHospitalLogin = () => {
+    window.dispatchEvent(new CustomEvent('openHospitalAuthModal'));
+    setIsMobileMenuOpen(false);
   };
 
   return (
@@ -625,7 +1037,7 @@ const Navbar = () => {
               {mainNavItems.map((item) => (
                 <button
                   key={item.id}
-                  onClick={() => item.id === 'urgent' ? handlePatientMatchesClick() : handleTabClick(item.path, item.id)}
+                  onClick={() => handleNavigation(item.id)}
                   className={`px-4 py-2.5 rounded-xl font-medium transition-all duration-200 flex items-center gap-2 relative ${getTabStyle(item.id, activeTab === item.id)}`}
                 >
                   <item.icon className="h-4 w-4" />
@@ -658,7 +1070,7 @@ const Navbar = () => {
                     {secondaryNavItems.map((item) => (
                       <button
                         key={item.id}
-                        onClick={() => handleTabClick(item.path, item.id)}
+                        onClick={() => handleTabClick(item)}
                         className="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg hover:bg-gray-50 transition-colors"
                       >
                         <div className={`p-2 rounded-lg ${item.bgColor}`}>
@@ -670,6 +1082,21 @@ const Navbar = () => {
                         </div>
                       </button>
                     ))}
+                    {/* Hospital Login Option */}
+                    {!isLoggedIn && (
+                      <button
+                        onClick={handleHospitalLogin}
+                        className="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg hover:bg-purple-50 transition-colors border-t border-gray-100 mt-2 pt-2"
+                      >
+                        <div className="p-2 rounded-lg bg-purple-50">
+                          <Building2 className="h-4 w-4 text-purple-600" />
+                        </div>
+                        <div className="text-left">
+                          <div className="font-medium text-gray-900 text-sm">Hospital Login</div>
+                          <div className="text-xs text-gray-500">For hospitals & clinics</div>
+                        </div>
+                      </button>
+                    )}
                   </div>
                 )}
               </div>
@@ -765,6 +1192,10 @@ const Navbar = () => {
                               {getUserTypeLabel()}
                             </span>
                           </div>
+                          {userType === 'hospital' && userData?.registrationNumber && (
+                            <p className="text-xs text-gray-500 mt-1">Reg: {userData.registrationNumber}</p>
+                          )}
+                          <p className="text-xs text-gray-500 mt-1">{getIdLabel()}: {getIdValue()}</p>
                         </div>
                       </div>
                       
@@ -774,7 +1205,7 @@ const Navbar = () => {
                           <button
                             key={idx}
                             onClick={() => {
-                              navigate(item.path);
+                              navigate(item.getPath ? item.getPath() : item.path);
                               setIsProfileOpen(false);
                             }}
                             className="w-full flex items-center justify-between px-2 py-2.5 rounded-lg hover:bg-gray-50 transition-colors"
@@ -856,7 +1287,7 @@ const Navbar = () => {
               {mainNavItems.slice(0, 3).map((item) => (
                 <button
                   key={item.id}
-                  onClick={() => item.id === 'urgent' ? handlePatientMatchesClick() : handleTabClick(item.path, item.id)}
+                  onClick={() => handleNavigation(item.id)}
                   className={`p-2 rounded-lg transition-colors ${
                     activeTab === item.id 
                       ? 'text-white bg-gradient-to-r from-blue-500 to-cyan-500' 
@@ -887,12 +1318,23 @@ const Navbar = () => {
                 </span>
               </button>
               
-              <button
-                onClick={() => setIsMobileMenuOpen(true)}
-                className="p-2 hover:bg-gray-100 rounded-lg"
-              >
-                <Menu className="h-4 w-4 text-gray-600" />
-              </button>
+              {isLoggedIn ? (
+                <button
+                  onClick={() => setIsProfileOpen(!isProfileOpen)}
+                  className="p-1 hover:bg-gray-100 rounded-lg"
+                >
+                  <div className={`w-8 h-8 rounded-full ${userTypeConfig?.gradient || 'bg-gradient-to-r from-blue-500 to-cyan-500'} flex items-center justify-center text-white font-semibold text-sm`}>
+                    {getUserInitials()}
+                  </div>
+                </button>
+              ) : (
+                <button
+                  onClick={() => setIsMobileMenuOpen(true)}
+                  className="p-2 hover:bg-gray-100 rounded-lg"
+                >
+                  <Menu className="h-4 w-4 text-gray-600" />
+                </button>
+              )}
             </div>
           </div>
         </div>
@@ -953,12 +1395,23 @@ const Navbar = () => {
                 </span>
               </button>
               
-              <button
-                onClick={() => setIsMobileMenuOpen(true)}
-                className="mobile-menu-trigger p-2 hover:bg-gray-100 rounded-lg"
-              >
-                <Menu className="h-4 w-4 text-gray-600" />
-              </button>
+              {isLoggedIn ? (
+                <button
+                  onClick={() => setIsProfileOpen(!isProfileOpen)}
+                  className="p-1 hover:bg-gray-100 rounded-lg"
+                >
+                  <div className={`w-8 h-8 rounded-full ${userTypeConfig?.gradient || 'bg-gradient-to-r from-blue-500 to-cyan-500'} flex items-center justify-center text-white font-semibold text-sm`}>
+                    {getUserInitials()}
+                  </div>
+                </button>
+              ) : (
+                <button
+                  onClick={() => setIsMobileMenuOpen(true)}
+                  className="mobile-menu-trigger p-2 hover:bg-gray-100 rounded-lg"
+                >
+                  <Menu className="h-4 w-4 text-gray-600" />
+                </button>
+              )}
             </div>
           </div>
         </div>
@@ -974,7 +1427,7 @@ const Navbar = () => {
             return (
               <button
                 key={item.id}
-                onClick={() => item.id === 'urgent' ? handlePatientMatchesClick() : handleTabClick(item.path, item.id)}
+                onClick={() => handleTabClick(item)}
                 className={`flex flex-col items-center justify-center p-2 relative transition-all duration-200 ${
                   isActive ? 'transform -translate-y-1' : ''
                 }`}
@@ -1047,6 +1500,10 @@ const Navbar = () => {
                     <div>
                       <h3 className="font-bold text-gray-900">{getUserDisplayName()}</h3>
                       <p className="text-xs text-gray-600">{getUserTypeLabel()}</p>
+                      {userType === 'hospital' && userData?.registrationNumber && (
+                        <p className="text-xs text-gray-500">Reg: {userData.registrationNumber}</p>
+                      )}
+                      <p className="text-xs text-gray-500">{getIdLabel()}: {getIdValue()}</p>
                     </div>
                   </div>
                 </div>
@@ -1084,7 +1541,7 @@ const Navbar = () => {
                     <button
                       key={item.id}
                       onClick={() => {
-                        item.id === 'urgent' ? handlePatientMatchesClick() : handleTabClick(item.path, item.id);
+                        handleTabClick(item);
                         setIsMobileMenuOpen(false);
                       }}
                       className="w-full flex items-center justify-between px-3 py-3 rounded-lg hover:bg-gray-50 transition-colors"
@@ -1104,6 +1561,27 @@ const Navbar = () => {
                 </div>
               </div>
               
+              {/* Hospital Login Option for non-logged in users */}
+              {!isLoggedIn && (
+                <div className="mb-4">
+                  <button
+                    onClick={handleHospitalLogin}
+                    className="w-full flex items-center justify-between px-3 py-3 rounded-lg hover:bg-purple-50 transition-colors border border-purple-200"
+                  >
+                    <div className="flex items-center gap-3">
+                      <div className="p-2 rounded-lg bg-purple-50">
+                        <Building2 className="h-4 w-4 text-purple-600" />
+                      </div>
+                      <div className="text-left">
+                        <div className="font-medium text-gray-900 text-sm">Hospital Login</div>
+                        <div className="text-xs text-gray-500">For hospitals & clinics</div>
+                      </div>
+                    </div>
+                    <ChevronRight className="h-4 w-4 text-gray-400" />
+                  </button>
+                </div>
+              )}
+              
               {/* Secondary Navigation */}
               <div className="mb-6">
                 <h3 className="font-semibold text-gray-900 mb-3">More</h3>
@@ -1112,7 +1590,7 @@ const Navbar = () => {
                     <button
                       key={item.id}
                       onClick={() => {
-                        handleTabClick(item.path, item.id);
+                        handleTabClick(item);
                         setIsMobileMenuOpen(false);
                       }}
                       className="w-full flex items-center justify-between px-3 py-3 rounded-lg hover:bg-gray-50 transition-colors"
@@ -1221,7 +1699,7 @@ const Navbar = () => {
                   {[
                     { label: 'Blood Donation', icon: Droplets, color: 'red' },
                     { label: 'Organ Donation', icon: ActivityIcon, color: 'green' },
-                    { label: 'Find Hospitals', icon: Hospital, color: 'blue' },
+                    { label: 'Find Hospitals', icon: HospitalIcon, color: 'blue' },
                     { label: 'Eligibility', icon: Shield, color: 'indigo' }
                   ].map((link, idx) => (
                     <button
