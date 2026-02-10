@@ -1,1424 +1,3 @@
-// import React, { useState, useEffect } from 'react';
-// import { useNavigate, Link } from 'react-router-dom';
-// import {
-//   User, Mail, Phone, MapPin, Edit2, Save, X,
-//   CheckCircle, AlertCircle, Loader2, Home, LogOut,
-//   Shield, Download, Bell, Settings, Heart,
-//   Droplets, Activity, Award, History, Star, Gift, Clock,
-//   Activity as ActivityIcon, FileText,
-//   Ambulance, Hospital, Users as UsersIcon, AlertTriangle,
-//   Users, Globe, TrendingUp, BookOpen,
-//   Calendar, ChevronRight, Eye, EyeOff, Key,
-//   Upload, ShieldCheck, Award as AwardIcon, Trophy,
-//   TrendingUp as TrendingUpIcon, Target, Zap,
-//   BarChart3, Percent, Medal, CheckSquare,
-//   PhoneCall, MessageSquare, LifeBuoy, HelpCircle
-// } from 'lucide-react';
-
-// const ProfilePage = () => {
-//   const navigate = useNavigate();
-//   const [loading, setLoading] = useState(true);
-//   const [isEditing, setIsEditing] = useState(false);
-//   const [saving, setSaving] = useState(false);
-//   const [message, setMessage] = useState({ type: '', text: '' });
-//   const [activeTab, setActiveTab] = useState('overview');
-//   const [showPassword, setShowPassword] = useState(false);
-  
-//   const [userType, setUserType] = useState(null);
-//   const [userData, setUserData] = useState(null);
-//   const [formData, setFormData] = useState({});
-
-//   useEffect(() => {
-//     loadUserData();
-//   }, []);
-
-//   const loadUserData = () => {
-//     setLoading(true);
-    
-//     const userTypes = [
-//       { 
-//         key: 'bloodDonor', 
-//         label: 'Blood Donor', 
-//         color: 'from-rose-500 to-pink-500',
-//         lightColor: 'bg-rose-50 text-rose-700 border-rose-200',
-//         icon: Droplets,
-//         badgeColor: 'bg-rose-500'
-//       },
-//       { 
-//         key: 'organDonor', 
-//         label: 'Organ Donor', 
-//         color: 'from-emerald-500 to-green-500',
-//         lightColor: 'bg-emerald-50 text-emerald-700 border-emerald-200',
-//         icon: ActivityIcon,
-//         badgeColor: 'bg-emerald-500'
-//       },
-//       { 
-//         key: 'patient', 
-//         label: 'Patient/Family', 
-//         color: 'from-amber-500 to-orange-500',
-//         lightColor: 'bg-amber-50 text-amber-700 border-amber-200',
-//         icon: Ambulance,
-//         badgeColor: 'bg-amber-500'
-//       },
-//       { 
-//         key: 'user', 
-//         label: 'Community Member', 
-//         color: 'from-blue-500 to-cyan-500',
-//         lightColor: 'bg-blue-50 text-blue-700 border-blue-200',
-//         icon: Users,
-//         badgeColor: 'bg-blue-500'
-//       }
-//     ];
-
-//     for (const type of userTypes) {
-//       const token = localStorage.getItem(`${type.key}Token`);
-//       const dataKey = localStorage.getItem('currentUserType') === type.key ? 
-//         'currentUserData' : `${type.key}Data`;
-      
-//       const data = localStorage.getItem(dataKey);
-      
-//       if (token && data) {
-//         try {
-//           const parsedData = JSON.parse(data);
-//           setUserType(type);
-//           setUserData(parsedData);
-//           setFormData(parsedData);
-          
-//           localStorage.setItem('currentUserType', type.key);
-//           localStorage.setItem('currentUserData', JSON.stringify(parsedData));
-          
-//           setLoading(false);
-//           return;
-//         } catch (error) {
-//           console.error('Error parsing user data:', error);
-//         }
-//       }
-//     }
-
-//     const currentUserData = localStorage.getItem('currentUserData');
-//     const currentUserType = localStorage.getItem('currentUserType');
-    
-//     if (currentUserData && currentUserType) {
-//       try {
-//         const parsedData = JSON.parse(currentUserData);
-//         const type = userTypes.find(t => t.key === currentUserType);
-        
-//         if (type) {
-//           setUserType(type);
-//           setUserData(parsedData);
-//           setFormData(parsedData);
-//           setLoading(false);
-//           return;
-//         }
-//       } catch (error) {
-//         console.error('Error parsing current user data:', error);
-//       }
-//     }
-    
-//     navigate('/select-role');
-//     setLoading(false);
-//   };
-
-//   const handleInputChange = (e) => {
-//     const { name, value, type, checked } = e.target;
-    
-//     if (type === 'checkbox') {
-//       if (name === 'organsToDonate' || name === 'interests') {
-//         const currentArray = formData[name] || [];
-//         const updatedArray = currentArray.includes(value)
-//           ? currentArray.filter(item => item !== value)
-//           : [...currentArray, value];
-//         setFormData(prev => ({ ...prev, [name]: updatedArray }));
-//       } else {
-//         setFormData(prev => ({ ...prev, [name]: checked }));
-//       }
-//     } else if (type === 'radio') {
-//       setFormData(prev => ({ ...prev, [name]: value }));
-//     } else {
-//       setFormData(prev => ({ ...prev, [name]: value }));
-//     }
-    
-//     setMessage({ type: '', text: '' });
-//   };
-
-//   const handleSave = async () => {
-//     setSaving(true);
-//     setMessage({ type: '', text: '' });
-
-//     try {
-//       const errors = validateForm();
-//       if (errors.length > 0) {
-//         setMessage({ type: 'error', text: errors[0] });
-//         setSaving(false);
-//         return;
-//       }
-
-//       await new Promise(resolve => setTimeout(resolve, 1000));
-
-//       const updatedData = { 
-//         ...formData, 
-//         updatedAt: new Date().toISOString(),
-//         lastUpdated: new Date().toLocaleString(),
-//         userType: userType.key
-//       };
-      
-//       localStorage.setItem(`${userType.key}Data`, JSON.stringify(updatedData));
-//       localStorage.setItem('currentUserData', JSON.stringify(updatedData));
-//       localStorage.setItem('currentUserType', userType.key);
-//       localStorage.setItem(userType.key, JSON.stringify(updatedData));
-      
-//       setUserData(updatedData);
-//       setIsEditing(false);
-//       setMessage({ 
-//         type: 'success', 
-//         text: 'Profile updated successfully!' 
-//       });
-
-//       setTimeout(() => setMessage({ type: '', text: '' }), 3000);
-//     } catch (error) {
-//       setMessage({ 
-//         type: 'error', 
-//         text: error.message || 'Failed to update profile. Please try again.' 
-//       });
-//     } finally {
-//       setSaving(false);
-//     }
-//   };
-
-//   const validateForm = () => {
-//     const errors = [];
-    
-//     if (!formData.name?.trim()) errors.push('Name is required');
-//     if (!formData.email?.trim()) errors.push('Email is required');
-    
-//     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-//     if (formData.email && !emailRegex.test(formData.email)) {
-//       errors.push('Please enter a valid email address');
-//     }
-    
-//     if (userType?.key === 'bloodDonor') {
-//       if (!formData.bloodGroup) errors.push('Blood group is required');
-//     }
-    
-//     return errors;
-//   };
-
-//   const handleLogout = () => {
-//     const types = ['bloodDonor', 'organDonor', 'patient', 'user'];
-//     types.forEach(type => {
-//       localStorage.removeItem(`${type}Token`);
-//       localStorage.removeItem(type);
-//       localStorage.removeItem(`${type}Data`);
-//     });
-    
-//     localStorage.removeItem('currentUserData');
-//     localStorage.removeItem('currentUserType');
-    
-//     navigate('/auth');
-//   };
-
-//   const getUserStats = () => {
-//     if (!userData) return [];
-    
-//     const baseStats = [
-//       { 
-//         label: 'Account Status', 
-//         value: userData.status === 'active' ? 'Active' : 'Pending', 
-//         icon: CheckCircle, 
-//         color: 'text-emerald-500', 
-//         bg: 'bg-emerald-50',
-//         border: 'border-emerald-200'
-//       },
-//       { 
-//         label: 'Member Since', 
-//         value: new Date(userData.registrationDate || userData.joinDate || Date.now()).toLocaleDateString(), 
-//         icon: Calendar, 
-//         color: 'text-blue-500', 
-//         bg: 'bg-blue-50',
-//         border: 'border-blue-200'
-//       }
-//     ];
-
-//     switch (userType?.key) {
-//       case 'bloodDonor':
-//         return [
-//           { 
-//             label: 'Total Donations', 
-//             value: userData.donationCount || 0, 
-//             icon: Droplets, 
-//             color: 'text-rose-500', 
-//             bg: 'bg-rose-50',
-//             border: 'border-rose-200'
-//           },
-//           { 
-//             label: 'Lives Saved', 
-//             value: (userData.donationCount || 0) * 3, 
-//             icon: Heart, 
-//             color: 'text-pink-500', 
-//             bg: 'bg-pink-50',
-//             border: 'border-pink-200'
-//           },
-//           { 
-//             label: 'Donor Points', 
-//             value: userData.points || 0, 
-//             icon: Award, 
-//             color: 'text-amber-500', 
-//             bg: 'bg-amber-50',
-//             border: 'border-amber-200'
-//           },
-//           { 
-//             label: 'Donor Level', 
-//             value: userData.level || 'Beginner', 
-//             icon: Star, 
-//             color: 'text-purple-500', 
-//             bg: 'bg-purple-50',
-//             border: 'border-purple-200'
-//           }
-//         ];
-      
-//       case 'organDonor':
-//         return [
-//           { 
-//             label: 'Organs Pledged', 
-//             value: (userData.organsToDonate || []).length, 
-//             icon: ActivityIcon, 
-//             color: 'text-emerald-500', 
-//             bg: 'bg-emerald-50',
-//             border: 'border-emerald-200'
-//           },
-//           { 
-//             label: 'Donor Status', 
-//             value: userData.status === 'approved' ? 'Approved' : 'Pending Review', 
-//             icon: ShieldCheck, 
-//             color: 'text-blue-500', 
-//             bg: 'bg-blue-50',
-//             border: 'border-blue-200'
-//           },
-//           ...baseStats
-//         ];
-      
-//       case 'patient':
-//         return [
-//           { 
-//             label: 'Urgency Level', 
-//             value: (userData.urgencyLevel || 'Normal').charAt(0).toUpperCase() + (userData.urgencyLevel || 'Normal').slice(1), 
-//             icon: AlertTriangle, 
-//             color: userData.urgencyLevel === 'emergency' ? 'text-red-500' : userData.urgencyLevel === 'urgent' ? 'text-amber-500' : 'text-blue-500', 
-//             bg: userData.urgencyLevel === 'emergency' ? 'bg-red-50' : userData.urgencyLevel === 'urgent' ? 'bg-amber-50' : 'bg-blue-50',
-//             border: userData.urgencyLevel === 'emergency' ? 'border-red-200' : userData.urgencyLevel === 'urgent' ? 'border-amber-200' : 'border-blue-200'
-//           },
-//           { 
-//             label: 'Hospital', 
-//             value: userData.hospitalName || 'Not specified', 
-//             icon: Hospital, 
-//             color: 'text-blue-500', 
-//             bg: 'bg-blue-50',
-//             border: 'border-blue-200'
-//           },
-//           ...baseStats
-//         ];
-      
-//       case 'user':
-//         return [
-//           { 
-//             label: 'User Type', 
-//             value: userData.userType ? userData.userType.charAt(0).toUpperCase() + userData.userType.slice(1) : 'Supporter', 
-//             icon: Users, 
-//             color: 'text-blue-500', 
-//             bg: 'bg-blue-50',
-//             border: 'border-blue-200'
-//           },
-//           { 
-//             label: 'Interests', 
-//             value: (userData.interests || []).length, 
-//             icon: BookOpen, 
-//             color: 'text-purple-500', 
-//             bg: 'bg-purple-50',
-//             border: 'border-purple-200'
-//           },
-//           ...baseStats
-//         ];
-      
-//       default:
-//         return baseStats;
-//     }
-//   };
-
-//   const getQuickActions = () => {
-//     const baseActions = [
-//       { 
-//         label: 'Notification Settings', 
-//         icon: Bell, 
-//         onClick: () => setActiveTab('settings'), 
-//         color: 'text-gray-600',
-//         bg: 'bg-gray-50'
-//       },
-//       { 
-//         label: 'Privacy & Security', 
-//         icon: Shield, 
-//         onClick: () => setActiveTab('security'), 
-//         color: 'text-blue-600',
-//         bg: 'bg-blue-50'
-//       },
-//       { 
-//         label: 'Download Data', 
-//         icon: Download, 
-//         onClick: () => {}, 
-//         color: 'text-emerald-600',
-//         bg: 'bg-emerald-50'
-//       }
-//     ];
-
-//     switch (userType?.key) {
-//       case 'bloodDonor':
-//         return [
-//           { 
-//             label: 'Schedule Donation', 
-//             icon: Calendar, 
-//             onClick: () => navigate('/schedule-donation'), 
-//             color: 'text-rose-600',
-//             bg: 'bg-rose-50'
-//           },
-//           { 
-//             label: 'View History', 
-//             icon: History, 
-//             onClick: () => navigate('/donation-history'), 
-//             color: 'text-purple-600',
-//             bg: 'bg-purple-50'
-//           },
-//           { 
-//             label: 'My Rewards', 
-//             icon: Gift, 
-//             onClick: () => navigate('/rewards'), 
-//             color: 'text-amber-600',
-//             bg: 'bg-amber-50'
-//           },
-//           ...baseActions
-//         ];
-      
-//       case 'organDonor':
-//         return [
-//           { 
-//             label: 'Medical Info', 
-//             icon: FileText, 
-//             onClick: () => navigate('/medical-info'), 
-//             color: 'text-emerald-600',
-//             bg: 'bg-emerald-50'
-//           },
-//           { 
-//             label: 'Pledge Certificate', 
-//             icon: Award, 
-//             onClick: () => {}, 
-//             color: 'text-green-600',
-//             bg: 'bg-green-50'
-//           },
-//           ...baseActions
-//         ];
-      
-//       case 'patient':
-//         return [
-//           { 
-//             label: 'Request Help', 
-//             icon: AlertTriangle, 
-//             onClick: () => navigate('/request-help'), 
-//             color: 'text-red-600',
-//             bg: 'bg-red-50'
-//           },
-//           { 
-//             label: 'Find Donors', 
-//             icon: UsersIcon, 
-//             onClick: () => navigate('/find-donors'), 
-//             color: 'text-blue-600',
-//             bg: 'bg-blue-50'
-//           },
-//           { 
-//             label: 'Hospital Info', 
-//             icon: Hospital, 
-//             onClick: () => navigate('/hospitals'), 
-//             color: 'text-amber-600',
-//             bg: 'bg-amber-50'
-//           },
-//           ...baseActions
-//         ];
-      
-//       case 'user':
-//         return [
-//           { 
-//             label: 'Explore Events', 
-//             icon: Calendar, 
-//             onClick: () => navigate('/events'), 
-//             color: 'text-blue-600',
-//             bg: 'bg-blue-50'
-//           },
-//           { 
-//             label: 'Volunteer', 
-//             icon: Users, 
-//             onClick: () => navigate('/volunteer'), 
-//             color: 'text-cyan-600',
-//             bg: 'bg-cyan-50'
-//           },
-//           { 
-//             label: 'Community', 
-//             icon: Globe, 
-//             onClick: () => navigate('/forum'), 
-//             color: 'text-purple-600',
-//             bg: 'bg-purple-50'
-//           },
-//           ...baseActions
-//         ];
-      
-//       default:
-//         return baseActions;
-//     }
-//   };
-
-//   const renderUserTypeFields = () => {
-//     if (!userType) return null;
-
-//     switch (userType.key) {
-//       case 'bloodDonor':
-//         return (
-//           <div className="space-y-6">
-//             <h3 className="text-lg font-semibold text-gray-800 flex items-center gap-2">
-//               <Droplets className="h-5 w-5 text-rose-500" />
-//               Blood Donor Information
-//             </h3>
-            
-//             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-//               <div className="space-y-2">
-//                 <label className="block text-sm font-medium text-gray-700">
-//                   Blood Group *
-//                 </label>
-//                 <select
-//                   name="bloodGroup"
-//                   value={formData.bloodGroup || ''}
-//                   onChange={handleInputChange}
-//                   className="w-full px-4 py-3 bg-white border border-gray-200 rounded-xl focus:ring-2 focus:ring-rose-500/20 focus:border-rose-400 transition-all duration-200 disabled:bg-gray-50 disabled:cursor-not-allowed"
-//                   disabled={!isEditing}
-//                 >
-//                   <option value="">Select Blood Group</option>
-//                   {['A+', 'A-', 'B+', 'B-', 'O+', 'O-', 'AB+', 'AB-'].map(group => (
-//                     <option key={group} value={group}>{group}</option>
-//                   ))}
-//                 </select>
-//               </div>
-
-//               <div className="space-y-2">
-//                 <label className="block text-sm font-medium text-gray-700">
-//                   Age
-//                 </label>
-//                 <input
-//                   type="number"
-//                   name="age"
-//                   value={formData.age || ''}
-//                   onChange={handleInputChange}
-//                   className="w-full px-4 py-3 bg-white border border-gray-200 rounded-xl focus:ring-2 focus:ring-rose-500/20 focus:border-rose-400 transition-all duration-200 disabled:bg-gray-50 disabled:cursor-not-allowed"
-//                   disabled={!isEditing}
-//                   min="18"
-//                   max="65"
-//                   placeholder="18-65"
-//                 />
-//               </div>
-
-//               <div className="space-y-2">
-//                 <label className="block text-sm font-medium text-gray-700">
-//                   Weight (kg)
-//                 </label>
-//                 <input
-//                   type="number"
-//                   name="weight"
-//                   value={formData.weight || ''}
-//                   onChange={handleInputChange}
-//                   className="w-full px-4 py-3 bg-white border border-gray-200 rounded-xl focus:ring-2 focus:ring-rose-500/20 focus:border-rose-400 transition-all duration-200 disabled:bg-gray-50 disabled:cursor-not-allowed"
-//                   disabled={!isEditing}
-//                   min="45"
-//                   placeholder="Min. 45kg"
-//                 />
-//               </div>
-
-//               <div className="space-y-2">
-//                 <label className="block text-sm font-medium text-gray-700">
-//                   Last Donation Date
-//                 </label>
-//                 <input
-//                   type="date"
-//                   name="lastDonationDate"
-//                   value={formData.lastDonationDate || ''}
-//                   onChange={handleInputChange}
-//                   className="w-full px-4 py-3 bg-white border border-gray-200 rounded-xl focus:ring-2 focus:ring-rose-500/20 focus:border-rose-400 transition-all duration-200 disabled:bg-gray-50 disabled:cursor-not-allowed"
-//                   disabled={!isEditing}
-//                 />
-//               </div>
-//             </div>
-//           </div>
-//         );
-
-//       case 'organDonor':
-//         const organs = ['Kidney', 'Liver', 'Heart', 'Lungs', 'Pancreas', 'Eyes', 'Bone Marrow'];
-//         return (
-//           <div className="space-y-6">
-//             <h3 className="text-lg font-semibold text-gray-800 flex items-center gap-2">
-//               <ActivityIcon className="h-5 w-5 text-emerald-500" />
-//               Organ Donor Information
-//             </h3>
-            
-//             <div className="space-y-4">
-//               <label className="block text-sm font-medium text-gray-700">
-//                 Organs to Donate
-//               </label>
-//               <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
-//                 {organs.map(organ => (
-//                   <label key={organ} className={`flex items-center gap-3 p-3 rounded-lg border ${isEditing ? 'cursor-pointer hover:bg-emerald-50 hover:border-emerald-300' : 'cursor-default'} ${(formData.organsToDonate || []).includes(organ) ? 'bg-emerald-50 border-emerald-300 text-emerald-700' : 'bg-white border-gray-200'}`}>
-//                     <input
-//                       type="checkbox"
-//                       name="organsToDonate"
-//                       value={organ}
-//                       checked={(formData.organsToDonate || []).includes(organ)}
-//                       onChange={handleInputChange}
-//                       className="h-4 w-4 text-emerald-500 rounded focus:ring-2 focus:ring-emerald-500/20 disabled:opacity-50 disabled:cursor-not-allowed"
-//                       disabled={!isEditing}
-//                     />
-//                     <span className="text-sm font-medium">{organ}</span>
-//                   </label>
-//                 ))}
-//               </div>
-//             </div>
-
-//             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-//               <div className="space-y-2">
-//                 <label className="block text-sm font-medium text-gray-700">
-//                   Age *
-//                 </label>
-//                 <input
-//                   type="number"
-//                   name="age"
-//                   value={formData.age || ''}
-//                   onChange={handleInputChange}
-//                   className="w-full px-4 py-3 bg-white border border-gray-200 rounded-xl focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-400 transition-all duration-200 disabled:bg-gray-50 disabled:cursor-not-allowed"
-//                   disabled={!isEditing}
-//                   min="18"
-//                   placeholder="Min. 18 years"
-//                 />
-//               </div>
-
-//               <div className="space-y-2 md:col-span-2">
-//                 <label className="block text-sm font-medium text-gray-700">
-//                   Medical History
-//                 </label>
-//                 <textarea
-//                   name="medicalHistory"
-//                   value={formData.medicalHistory || ''}
-//                   onChange={handleInputChange}
-//                   className="w-full px-4 py-3 bg-white border border-gray-200 rounded-xl focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-400 transition-all duration-200 resize-none disabled:bg-gray-50 disabled:cursor-not-allowed"
-//                   disabled={!isEditing}
-//                   rows="3"
-//                   placeholder="Any medical conditions or history..."
-//                 />
-//               </div>
-//             </div>
-
-//             <div className="space-y-4 p-4 bg-emerald-50 rounded-xl border border-emerald-200">
-//               <label className={`flex items-start gap-3 ${isEditing ? 'cursor-pointer' : 'cursor-default'}`}>
-//                 <input
-//                   type="checkbox"
-//                   name="familyConsent"
-//                   checked={formData.familyConsent || false}
-//                   onChange={handleInputChange}
-//                   className={`h-5 w-5 text-emerald-500 rounded mt-0.5 focus:ring-2 focus:ring-emerald-500/20 ${isEditing ? '' : 'cursor-not-allowed'}`}
-//                   disabled={!isEditing}
-//                 />
-//                 <span className={`text-sm ${formData.familyConsent ? 'text-emerald-800 font-medium' : 'text-gray-700'}`}>
-//                   I have discussed organ donation with my family and have their consent
-//                 </span>
-//               </label>
-
-//               <label className={`flex items-start gap-3 ${isEditing ? 'cursor-pointer' : 'cursor-default'}`}>
-//                 <input
-//                   type="checkbox"
-//                   name="legalDocument"
-//                   checked={formData.legalDocument || false}
-//                   onChange={handleInputChange}
-//                   className={`h-5 w-5 text-emerald-500 rounded mt-0.5 focus:ring-2 focus:ring-emerald-500/20 ${isEditing ? '' : 'cursor-not-allowed'}`}
-//                   disabled={!isEditing}
-//                 />
-//                 <span className={`text-sm ${formData.legalDocument ? 'text-emerald-800 font-medium' : 'text-gray-700'}`}>
-//                   I agree to complete the required legal documentation for organ donation
-//                 </span>
-//               </label>
-//             </div>
-//           </div>
-//         );
-
-//       case 'patient':
-//         const urgencyLevels = [
-//           { value: 'normal', label: 'Normal', color: 'bg-blue-100 text-blue-800 border-blue-300' },
-//           { value: 'urgent', label: 'Urgent', color: 'bg-amber-100 text-amber-800 border-amber-300' },
-//           { value: 'emergency', label: 'Emergency', color: 'bg-red-100 text-red-800 border-red-300' }
-//         ];
-
-//         const patientTypes = [
-//           { value: 'self', label: 'Self' },
-//           { value: 'family', label: 'Family Member' },
-//           { value: 'friend', label: 'Friend' }
-//         ];
-
-//         return (
-//           <div className="space-y-6">
-//             <h3 className="text-lg font-semibold text-gray-800 flex items-center gap-2">
-//               <Ambulance className="h-5 w-5 text-amber-500" />
-//               Patient Information
-//             </h3>
-            
-//             <div className="space-y-4">
-//               <label className="block text-sm font-medium text-gray-700">
-//                 Patient Type
-//               </label>
-//               <div className="grid grid-cols-3 gap-2">
-//                 {patientTypes.map(type => (
-//                   <label key={type.value} className={`flex items-center justify-center p-3 rounded-lg border ${isEditing ? 'cursor-pointer hover:bg-amber-50' : 'cursor-default'} ${formData.patientType === type.value ? 'bg-amber-50 border-amber-300 text-amber-700' : 'bg-white border-gray-200'}`}>
-//                     <input
-//                       type="radio"
-//                       name="patientType"
-//                       value={type.value}
-//                       checked={formData.patientType === type.value}
-//                       onChange={handleInputChange}
-//                       className="sr-only"
-//                       disabled={!isEditing}
-//                     />
-//                     <span className="font-medium">{type.label}</span>
-//                   </label>
-//                 ))}
-//               </div>
-//             </div>
-
-//             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-//               <div className="space-y-2">
-//                 <label className="block text-sm font-medium text-gray-700">
-//                   Blood Group
-//                 </label>
-//                 <select
-//                   name="bloodGroup"
-//                   value={formData.bloodGroup || ''}
-//                   onChange={handleInputChange}
-//                   className="w-full px-4 py-3 bg-white border border-gray-200 rounded-xl focus:ring-2 focus:ring-amber-500/20 focus:border-amber-400 transition-all duration-200 disabled:bg-gray-50 disabled:cursor-not-allowed"
-//                   disabled={!isEditing}
-//                 >
-//                   <option value="">Select Blood Group</option>
-//                   {['A+', 'A-', 'B+', 'B-', 'O+', 'O-', 'AB+', 'AB-'].map(group => (
-//                     <option key={group} value={group}>{group}</option>
-//                   ))}
-//                 </select>
-//               </div>
-
-//               <div className="space-y-2 md:col-span-2">
-//                 <label className="block text-sm font-medium text-gray-700">
-//                   Medical Condition
-//                 </label>
-//                 <input
-//                   type="text"
-//                   name="medicalCondition"
-//                   value={formData.medicalCondition || ''}
-//                   onChange={handleInputChange}
-//                   className="w-full px-4 py-3 bg-white border border-gray-200 rounded-xl focus:ring-2 focus:ring-amber-500/20 focus:border-amber-400 transition-all duration-200 disabled:bg-gray-50 disabled:cursor-not-allowed"
-//                   disabled={!isEditing}
-//                   placeholder="e.g., Blood Cancer, Surgery, Accident"
-//                 />
-//               </div>
-
-//               <div className="space-y-2">
-//                 <label className="block text-sm font-medium text-gray-700">
-//                   Urgency Level
-//                 </label>
-//                 <div className="grid grid-cols-3 gap-2">
-//                   {urgencyLevels.map(level => (
-//                     <label key={level.value} className={`flex items-center justify-center p-3 rounded-lg border ${isEditing ? 'cursor-pointer hover:bg-amber-50' : 'cursor-default'} ${formData.urgencyLevel === level.value ? level.color : 'bg-white border-gray-200'}`}>
-//                       <input
-//                         type="radio"
-//                         name="urgencyLevel"
-//                         value={level.value}
-//                         checked={formData.urgencyLevel === level.value}
-//                         onChange={handleInputChange}
-//                         className="sr-only"
-//                         disabled={!isEditing}
-//                       />
-//                       <span className="font-medium">{level.label}</span>
-//                     </label>
-//                   ))}
-//                 </div>
-//               </div>
-
-//               <div className="space-y-2">
-//                 <label className="block text-sm font-medium text-gray-700">
-//                   Hospital Name
-//                 </label>
-//                 <input
-//                   type="text"
-//                   name="hospitalName"
-//                   value={formData.hospitalName || ''}
-//                   onChange={handleInputChange}
-//                   className="w-full px-4 py-3 bg-white border border-gray-200 rounded-xl focus:ring-2 focus:ring-amber-500/20 focus:border-amber-400 transition-all duration-200 disabled:bg-gray-50 disabled:cursor-not-allowed"
-//                   disabled={!isEditing}
-//                   placeholder="e.g., City General Hospital"
-//                 />
-//               </div>
-
-//               <div className="space-y-2">
-//                 <label className="block text-sm font-medium text-gray-700">
-//                   Emergency Contact
-//                 </label>
-//                 <input
-//                   type="text"
-//                   name="emergencyContact"
-//                   value={formData.emergencyContact || ''}
-//                   onChange={handleInputChange}
-//                   className="w-full px-4 py-3 bg-white border border-gray-200 rounded-xl focus:ring-2 focus:ring-amber-500/20 focus:border-amber-400 transition-all duration-200 disabled:bg-gray-50 disabled:cursor-not-allowed"
-//                   disabled={!isEditing}
-//                   placeholder="Name and phone number"
-//                 />
-//               </div>
-//             </div>
-//           </div>
-//         );
-
-//       case 'user':
-//         const interestsList = [
-//           'Blood Donation', 'Organ Donation', 'Awareness Programs', 'Fundraising',
-//           'Volunteering', 'Event Management', 'Medical Support', 'Community Outreach'
-//         ];
-
-//         const userTypes = [
-//           { value: 'supporter', label: 'Supporter', icon: Heart },
-//           { value: 'volunteer', label: 'Volunteer', icon: Users },
-//           { value: 'organization', label: 'Organization', icon: Globe },
-//           { value: 'healthcare', label: 'Healthcare Worker', icon: TrendingUp }
-//         ];
-
-//         return (
-//           <div className="space-y-6">
-//             <h3 className="text-lg font-semibold text-gray-800 flex items-center gap-2">
-//               <Users className="h-5 w-5 text-blue-500" />
-//               Community Information
-//             </h3>
-            
-//             <div className="space-y-4">
-//               <label className="block text-sm font-medium text-gray-700">
-//                 User Type
-//               </label>
-//               <div className="grid grid-cols-2 md:grid-cols-4 gap-2">
-//                 {userTypes.map(type => {
-//                   const IconComponent = type.icon;
-//                   return (
-//                     <label key={type.value} className={`flex flex-col items-center justify-center p-3 rounded-lg border ${isEditing ? 'cursor-pointer hover:bg-blue-50' : 'cursor-default'} ${formData.userType === type.value ? 'bg-blue-50 border-blue-300 text-blue-700' : 'bg-white border-gray-200'}`}>
-//                       <input
-//                         type="radio"
-//                         name="userType"
-//                         value={type.value}
-//                         checked={formData.userType === type.value}
-//                         onChange={handleInputChange}
-//                         className="sr-only"
-//                         disabled={!isEditing}
-//                       />
-//                       <IconComponent className={`h-5 w-5 mb-2 ${formData.userType === type.value ? 'text-blue-500' : 'text-gray-400'}`} />
-//                       <span className="text-xs font-medium">{type.label}</span>
-//                     </label>
-//                   );
-//                 })}
-//               </div>
-//             </div>
-
-//             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-//               <div className="space-y-2">
-//                 <label className="block text-sm font-medium text-gray-700">
-//                   Location
-//                 </label>
-//                 <input
-//                   type="text"
-//                   name="location"
-//                   value={formData.location || ''}
-//                   onChange={handleInputChange}
-//                   className="w-full px-4 py-3 bg-white border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500/20 focus:border-blue-400 transition-all duration-200 disabled:bg-gray-50 disabled:cursor-not-allowed"
-//                   disabled={!isEditing}
-//                   placeholder="City, State"
-//                 />
-//               </div>
-
-//               <div className="space-y-2">
-//                 <label className="block text-sm font-medium text-gray-700">
-//                   Occupation
-//                 </label>
-//                 <input
-//                   type="text"
-//                   name="occupation"
-//                   value={formData.occupation || ''}
-//                   onChange={handleInputChange}
-//                   className="w-full px-4 py-3 bg-white border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500/20 focus:border-blue-400 transition-all duration-200 disabled:bg-gray-50 disabled:cursor-not-allowed"
-//                   disabled={!isEditing}
-//                   placeholder="e.g., Student, Teacher, Doctor"
-//                 />
-//               </div>
-
-//               <div className="space-y-2 md:col-span-2">
-//                 <label className="block text-sm font-medium text-gray-700">
-//                   Organization
-//                 </label>
-//                 <input
-//                   type="text"
-//                   name="organization"
-//                   value={formData.organization || ''}
-//                   onChange={handleInputChange}
-//                   className="w-full px-4 py-3 bg-white border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500/20 focus:border-blue-400 transition-all duration-200 disabled:bg-gray-50 disabled:cursor-not-allowed"
-//                   disabled={!isEditing}
-//                   placeholder="e.g., ABC Hospital, XYZ NGO"
-//                 />
-//               </div>
-//             </div>
-
-//             <div className="space-y-4">
-//               <label className="block text-sm font-medium text-gray-700">
-//                 Areas of Interest
-//               </label>
-//               <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-//                 {interestsList.map(interest => (
-//                   <label key={interest} className={`flex items-center gap-3 p-3 rounded-lg border ${isEditing ? 'cursor-pointer hover:bg-blue-50 hover:border-blue-300' : 'cursor-default'} ${(formData.interests || []).includes(interest) ? 'bg-blue-50 border-blue-300 text-blue-700' : 'bg-white border-gray-200'}`}>
-//                     <input
-//                       type="checkbox"
-//                       name="interests"
-//                       value={interest}
-//                       checked={(formData.interests || []).includes(interest)}
-//                       onChange={handleInputChange}
-//                       className="h-4 w-4 text-blue-500 rounded focus:ring-2 focus:ring-blue-500/20 disabled:opacity-50 disabled:cursor-not-allowed"
-//                       disabled={!isEditing}
-//                     />
-//                     <span className="text-sm">{interest}</span>
-//                   </label>
-//                 ))}
-//               </div>
-//             </div>
-
-//             <div className="p-4 bg-blue-50 rounded-xl border border-blue-200">
-//               <label className={`flex items-center gap-3 ${isEditing ? 'cursor-pointer' : 'cursor-default'}`}>
-//                 <input
-//                   type="checkbox"
-//                   name="notifications"
-//                   checked={formData.notifications || false}
-//                   onChange={handleInputChange}
-//                   className="h-5 w-5 text-blue-500 rounded focus:ring-2 focus:ring-blue-500/20 disabled:opacity-50 disabled:cursor-not-allowed"
-//                   disabled={!isEditing}
-//                 />
-//                 <span className={`text-sm ${formData.notifications ? 'text-blue-800 font-medium' : 'text-gray-700'}`}>
-//                   Receive notifications about donation drives and community activities
-//                 </span>
-//               </label>
-//             </div>
-//           </div>
-//         );
-
-//       default:
-//         return null;
-//     }
-//   };
-
-//   const renderTabContent = () => {
-//     switch (activeTab) {
-//       case 'overview':
-//         return (
-//           <div className="space-y-8">
-//             <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6">
-//               <h2 className="text-xl font-bold text-gray-900 mb-6">Profile Information</h2>
-              
-//               <div className="space-y-6">
-//                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-//                   <div className="space-y-2">
-//                     <label className="flex items-center gap-2 text-sm font-medium text-gray-700">
-//                       <User className="h-4 w-4" />
-//                       Full Name *
-//                     </label>
-//                     {isEditing ? (
-//                       <input
-//                         type="text"
-//                         name="name"
-//                         value={formData.name || ''}
-//                         onChange={handleInputChange}
-//                         className="w-full px-4 py-3 bg-white border border-gray-200 rounded-xl focus:ring-2 focus:ring-rose-500/20 focus:border-rose-400 transition-all duration-200"
-//                         required
-//                       />
-//                     ) : (
-//                       <div className="px-4 py-3 bg-gray-50 rounded-xl text-gray-900">{userData.name || 'Not provided'}</div>
-//                     )}
-//                   </div>
-
-//                   <div className="space-y-2">
-//                     <label className="flex items-center gap-2 text-sm font-medium text-gray-700">
-//                       <Mail className="h-4 w-4" />
-//                       Email Address *
-//                     </label>
-//                     {isEditing ? (
-//                       <input
-//                         type="email"
-//                         name="email"
-//                         value={formData.email || ''}
-//                         onChange={handleInputChange}
-//                         className="w-full px-4 py-3 bg-white border border-gray-200 rounded-xl focus:ring-2 focus:ring-rose-500/20 focus:border-rose-400 transition-all duration-200"
-//                         required
-//                       />
-//                     ) : (
-//                       <div className="px-4 py-3 bg-gray-50 rounded-xl text-gray-900">{userData.email || 'Not provided'}</div>
-//                     )}
-//                   </div>
-
-//                   <div className="space-y-2">
-//                     <label className="flex items-center gap-2 text-sm font-medium text-gray-700">
-//                       <Phone className="h-4 w-4" />
-//                       Phone Number *
-//                     </label>
-//                     {isEditing ? (
-//                       <input
-//                         type="tel"
-//                         name="phone"
-//                         value={formData.phone || ''}
-//                         onChange={handleInputChange}
-//                         className="w-full px-4 py-3 bg-white border border-gray-200 rounded-xl focus:ring-2 focus:ring-rose-500/20 focus:border-rose-400 transition-all duration-200"
-//                         required
-//                       />
-//                     ) : (
-//                       <div className="px-4 py-3 bg-gray-50 rounded-xl text-gray-900">{userData.phone || 'Not provided'}</div>
-//                     )}
-//                   </div>
-
-//                   <div className="space-y-2">
-//                     <label className="flex items-center gap-2 text-sm font-medium text-gray-700">
-//                       <MapPin className="h-4 w-4" />
-//                       Address
-//                     </label>
-//                     {isEditing ? (
-//                       <input
-//                         type="text"
-//                         name="address"
-//                         value={formData.address || ''}
-//                         onChange={handleInputChange}
-//                         className="w-full px-4 py-3 bg-white border border-gray-200 rounded-xl focus:ring-2 focus:ring-rose-500/20 focus:border-rose-400 transition-all duration-200"
-//                       />
-//                     ) : (
-//                       <div className="px-4 py-3 bg-gray-50 rounded-xl text-gray-900">{userData.address || 'Not provided'}</div>
-//                     )}
-//                   </div>
-//                 </div>
-
-//                 {renderUserTypeFields()}
-//               </div>
-//             </div>
-
-//             <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6">
-//               <h2 className="text-xl font-bold text-gray-900 mb-6">Recent Activity</h2>
-//               <div className="space-y-4">
-//                 <div className="flex items-center gap-4 p-4 border border-gray-100 rounded-xl hover:bg-gray-50 transition-colors">
-//                   <div className="p-3 rounded-lg bg-emerald-100 text-emerald-600">
-//                     <CheckCircle className="h-6 w-6" />
-//                   </div>
-//                   <div className="flex-1">
-//                     <div className="font-semibold text-gray-900">Profile Updated</div>
-//                     <div className="text-sm text-gray-500">You updated your profile information</div>
-//                   </div>
-//                   <div className="text-sm text-gray-500">
-//                     {userData.lastUpdated ? new Date(userData.lastUpdated).toLocaleDateString() : 'Never'}
-//                   </div>
-//                 </div>
-//                 <div className="flex items-center gap-4 p-4 border border-gray-100 rounded-xl hover:bg-gray-50 transition-colors">
-//                   <div className="p-3 rounded-lg bg-blue-100 text-blue-600">
-//                     <Calendar className="h-6 w-6" />
-//                   </div>
-//                   <div className="flex-1">
-//                     <div className="font-semibold text-gray-900">Account Created</div>
-//                     <div className="text-sm text-gray-500">You joined JeevanDaan community</div>
-//                   </div>
-//                   <div className="text-sm text-gray-500">
-//                     {new Date(userData.registrationDate || userData.joinDate || Date.now()).toLocaleDateString()}
-//                   </div>
-//                 </div>
-//               </div>
-//             </div>
-//           </div>
-//         );
-
-//       case 'settings':
-//         return (
-//           <div className="space-y-8">
-//             <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6">
-//               <h2 className="text-xl font-bold text-gray-900 mb-6">Notification Settings</h2>
-//               <div className="space-y-4">
-//                 <div className="flex items-center justify-between p-4 border border-gray-100 rounded-xl">
-//                   <div>
-//                     <div className="font-medium text-gray-900">Email Notifications</div>
-//                     <div className="text-sm text-gray-500">Receive updates via email</div>
-//                   </div>
-//                   <label className="relative inline-flex items-center cursor-pointer">
-//                     <input type="checkbox" className="sr-only peer" defaultChecked />
-//                     <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-600"></div>
-//                   </label>
-//                 </div>
-//                 <div className="flex items-center justify-between p-4 border border-gray-100 rounded-xl">
-//                   <div>
-//                     <div className="font-medium text-gray-900">Push Notifications</div>
-//                     <div className="text-sm text-gray-500">Get instant alerts</div>
-//                   </div>
-//                   <label className="relative inline-flex items-center cursor-pointer">
-//                     <input type="checkbox" className="sr-only peer" defaultChecked />
-//                     <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-600"></div>
-//                   </label>
-//                 </div>
-//               </div>
-//             </div>
-//           </div>
-//         );
-
-//       case 'security':
-//         return (
-//           <div className="space-y-8">
-//             <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6">
-//               <h2 className="text-xl font-bold text-gray-900 mb-6">Security Settings</h2>
-//               <div className="space-y-4">
-//                 <div className="space-y-2">
-//                   <label className="block text-sm font-medium text-gray-700">Change Password</label>
-//                   <div className="relative">
-//                     <input
-//                       type={showPassword ? "text" : "password"}
-//                       className="w-full px-4 py-3 bg-white border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500/20 focus:border-blue-400"
-//                       placeholder="Enter new password"
-//                     />
-//                     <button
-//                       type="button"
-//                       onClick={() => setShowPassword(!showPassword)}
-//                       className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-500"
-//                     >
-//                       {showPassword ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
-//                     </button>
-//                   </div>
-//                 </div>
-//               </div>
-//             </div>
-//           </div>
-//         );
-
-//       default:
-//         return null;
-//     }
-//   };
-
-//   if (loading) {
-//     return (
-//       <div className="min-h-screen flex flex-col items-center justify-center bg-gradient-to-br from-gray-50 to-gray-100">
-//         <div className="relative">
-//           <div className="w-16 h-16 border-4 border-rose-200 rounded-full animate-spin"></div>
-//           <div className="absolute inset-0 flex items-center justify-center">
-//             <Loader2 className="h-8 w-8 text-rose-500 animate-spin" />
-//           </div>
-//         </div>
-//         <p className="mt-4 text-gray-600 font-medium">Loading your profile...</p>
-//       </div>
-//     );
-//   }
-
-//   if (!userType || !userData) {
-//     return null;
-//   }
-
-//   const IconComponent = userType.icon;
-//   const stats = getUserStats();
-//   const quickActions = getQuickActions();
-
-//   return (
-//     <div className="min-h-screen bg-gradient-to-br from-gray-50 via-white to-gray-100">
-//       {/* Top Navigation */}
-//       <nav className="bg-white shadow-sm border-b sticky top-0 z-50">
-//         <div className="max-w-7xl mx-auto px-4">
-//           <div className="flex items-center justify-between h-16">
-//             <Link to="/" className="flex items-center gap-3 group">
-//               <div className={`bg-gradient-to-r ${userType.color} p-2 rounded-xl shadow-sm group-hover:scale-105 transition-transform duration-200`}>
-//                 <IconComponent className="h-6 w-6 text-white" />
-//               </div>
-//               <div>
-//                 <h1 className="text-xl font-bold bg-gradient-to-r from-gray-900 to-gray-700 bg-clip-text text-transparent">
-//                   JeevanDaan
-//                 </h1>
-//                 <p className="text-xs text-gray-500 font-medium">Profile</p>
-//               </div>
-//             </Link>
-            
-//             <div className="flex items-center gap-3">
-//               <Link 
-//                 to="/" 
-//                 className="flex items-center gap-2 px-4 py-2 text-gray-600 hover:text-rose-600 hover:bg-rose-50 rounded-xl transition-all duration-200 font-medium"
-//               >
-//                 <Home className="h-4 w-4" />
-//                 <span className="hidden sm:inline">Home</span>
-//               </Link>
-//               <button
-//                 onClick={handleLogout}
-//                 className="flex items-center gap-2 px-4 py-2 bg-gray-50 text-gray-700 hover:bg-gray-100 rounded-xl transition-all duration-200 font-medium hover:scale-105"
-//               >
-//                 <LogOut className="h-4 w-4" />
-//                 <span>Logout</span>
-//               </button>
-//             </div>
-//           </div>
-//         </div>
-//       </nav>
-
-//       <div className="max-w-7xl mx-auto px-4 py-8">
-//         {/* Profile Header */}
-//         <div className={`relative overflow-hidden rounded-2xl shadow-xl mb-8`}>
-//           <div className={`absolute inset-0 bg-gradient-to-r ${userType.color} opacity-90`}></div>
-//           <div className="relative p-6 md:p-8">
-//             <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-6">
-//               <div className="flex items-center gap-4">
-//                 <div className="relative">
-//                   <div className="w-20 h-20 md:w-24 md:h-24 bg-white/20 backdrop-blur-sm rounded-2xl flex items-center justify-center">
-//                     <User className="h-10 w-10 md:h-12 md:w-12 text-white" />
-//                   </div>
-//                   <div className="absolute -bottom-2 -right-2 w-10 h-10 bg-white rounded-full border-4 border-white flex items-center justify-center">
-//                     <IconComponent className={`h-5 w-5 ${userType.color.replace('from-', 'text-').split(' ')[0]}`} />
-//                   </div>
-//                 </div>
-//                 <div>
-//                   <h1 className="text-2xl md:text-3xl font-bold text-white">{userData.name || 'User'}</h1>
-//                   <div className="flex items-center gap-3 mt-2">
-//                     <span className="px-3 py-1 bg-white/20 backdrop-blur-sm text-white rounded-full text-sm font-medium">
-//                       {userType.label}
-//                     </span>
-//                     <span className="flex items-center gap-1 text-white/80 text-sm">
-//                       <CheckCircle className="h-4 w-4" />
-//                       Verified
-//                     </span>
-//                   </div>
-//                 </div>
-//               </div>
-              
-//               <div className="flex items-center gap-3">
-//                 {!isEditing ? (
-//                   <button
-//                     onClick={() => setIsEditing(true)}
-//                     className="flex items-center gap-2 px-4 py-2.5 bg-white text-gray-700 rounded-xl font-medium hover:bg-gray-50 transition-all duration-200 hover:scale-105 shadow-lg"
-//                   >
-//                     <Edit2 className="h-4 w-4" />
-//                     <span>Edit Profile</span>
-//                   </button>
-//                 ) : (
-//                   <div className="flex items-center gap-2">
-//                     <button
-//                       onClick={handleSave}
-//                       disabled={saving}
-//                       className="flex items-center gap-2 px-4 py-2.5 bg-white text-emerald-600 rounded-xl font-medium hover:bg-emerald-50 transition-all duration-200 hover:scale-105 disabled:opacity-50 shadow-lg"
-//                     >
-//                       {saving ? <Loader2 className="h-4 w-4 animate-spin" /> : <Save className="h-4 w-4" />}
-//                       <span>{saving ? 'Saving...' : 'Save'}</span>
-//                     </button>
-//                     <button
-//                       onClick={() => {
-//                         setIsEditing(false);
-//                         setFormData({ ...userData });
-//                         setMessage({ type: '', text: '' });
-//                       }}
-//                       className="flex items-center gap-2 px-4 py-2.5 bg-white text-gray-600 rounded-xl font-medium hover:bg-gray-100 transition-all duration-200 hover:scale-105 shadow-lg"
-//                     >
-//                       <X className="h-4 w-4" />
-//                       <span>Cancel</span>
-//                     </button>
-//                   </div>
-//                 )}
-//               </div>
-//             </div>
-//           </div>
-//         </div>
-
-//         {/* Message Alert */}
-//         {message.text && (
-//           <div className={`mb-6 p-4 rounded-xl flex items-center gap-3 animate-fadeIn shadow-sm ${
-//             message.type === 'success' 
-//               ? 'bg-emerald-50 text-emerald-700 border border-emerald-200'
-//               : 'bg-red-50 text-red-700 border border-red-200'
-//           }`}>
-//             {message.type === 'success' ? 
-//               <CheckCircle className="h-5 w-5 flex-shrink-0" /> : 
-//               <AlertCircle className="h-5 w-5 flex-shrink-0" />
-//             }
-//             <span className="font-medium">{message.text}</span>
-//           </div>
-//         )}
-
-//         <div className="grid grid-cols-1 lg:grid-cols-4 gap-8">
-//           {/* Left Sidebar */}
-//           <div className="lg:col-span-1 space-y-6">
-//             {/* Stats Cards */}
-//             <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6">
-//               <h2 className="text-lg font-bold text-gray-900 mb-6 flex items-center gap-2">
-//                 <BarChart3 className="h-5 w-5 text-gray-500" />
-//                 Your Stats
-//               </h2>
-//               <div className="space-y-4">
-//                 {stats.map((stat, index) => (
-//                   <div key={index} className={`p-4 rounded-xl border ${stat.border} ${stat.bg} hover:scale-[1.02] transition-transform duration-200`}>
-//                     <div className="flex items-center gap-3">
-//                       <div className={`p-2 rounded-lg ${stat.bg} ${stat.color}`}>
-//                         <stat.icon className="h-5 w-5" />
-//                       </div>
-//                       <div>
-//                         <div className="text-2xl font-bold text-gray-900">{stat.value}</div>
-//                         <div className="text-sm text-gray-600">{stat.label}</div>
-//                       </div>
-//                     </div>
-//                   </div>
-//                 ))}
-//               </div>
-//             </div>
-
-//             {/* Quick Actions */}
-//             <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6">
-//               <h2 className="text-lg font-bold text-gray-900 mb-6 flex items-center gap-2">
-//                 <Zap className="h-5 w-5 text-amber-500" />
-//                 Quick Actions
-//               </h2>
-//               <div className="space-y-3">
-//                 {quickActions.map((action, index) => (
-//                   <button
-//                     key={index}
-//                     onClick={action.onClick}
-//                     className="w-full flex items-center justify-between p-3 border border-gray-200 rounded-xl hover:bg-gray-50 transition-all duration-200 hover:scale-[1.02] group"
-//                   >
-//                     <div className="flex items-center gap-3">
-//                       <div className={`p-2 rounded-lg ${action.bg}`}>
-//                         <action.icon className={`h-4 w-4 ${action.color}`} />
-//                       </div>
-//                       <span className="font-medium text-gray-700 group-hover:text-gray-900">{action.label}</span>
-//                     </div>
-//                     <ChevronRight className="h-4 w-4 text-gray-400 group-hover:text-gray-600" />
-//                   </button>
-//                 ))}
-//               </div>
-//             </div>
-
-//             {/* Account Status */}
-//             <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6">
-//               <h2 className="text-lg font-bold text-gray-900 mb-4 flex items-center gap-2">
-//                 <Shield className="h-5 w-5 text-gray-500" />
-//                 Account Status
-//               </h2>
-//               <div className="space-y-4">
-//                 <div className="flex items-center justify-between">
-//                   <span className="text-gray-600">Verification</span>
-//                   <span className="flex items-center gap-1 text-emerald-600 font-medium">
-//                     <CheckCircle className="h-4 w-4" />
-//                     Verified
-//                   </span>
-//                 </div>
-//                 <div className="flex items-center justify-between">
-//                   <span className="text-gray-600">Account Type</span>
-//                   <span className={`px-2 py-1 rounded-full text-xs font-medium ${userType.lightColor}`}>
-//                     {userType.label}
-//                   </span>
-//                 </div>
-//                 <div className="flex items-center justify-between">
-//                   <span className="text-gray-600">Member Since</span>
-//                   <span className="font-medium text-gray-900">
-//                     {new Date(userData.registrationDate || userData.joinDate || Date.now()).toLocaleDateString()}
-//                   </span>
-//                 </div>
-//               </div>
-//             </div>
-//           </div>
-
-//           {/* Main Content */}
-//           <div className="lg:col-span-3">
-//             {/* Tabs */}
-//             <div className="flex items-center gap-2 mb-6 p-1 bg-gray-100 rounded-2xl">
-//               {['overview', 'settings', 'security'].map(tab => (
-//                 <button
-//                   key={tab}
-//                   onClick={() => setActiveTab(tab)}
-//                   className={`flex-1 px-4 py-2.5 rounded-xl text-sm font-medium transition-all duration-200 ${
-//                     activeTab === tab
-//                       ? `bg-white text-gray-900 shadow-sm ${userType.color.replace('from-', 'border-l-4 border-').split(' ')[0]}`
-//                       : 'text-gray-600 hover:text-gray-900'
-//                   }`}
-//                 >
-//                   {tab.charAt(0).toUpperCase() + tab.slice(1)}
-//                 </button>
-//               ))}
-//             </div>
-
-//             {renderTabContent()}
-
-//             {/* Danger Zone */}
-//             <div className="mt-8 bg-white rounded-2xl shadow-sm border border-red-100 p-6">
-//               <div className="flex items-center justify-between mb-4">
-//                 <h2 className="text-lg font-bold text-gray-900 flex items-center gap-2">
-//                   <AlertCircle className="h-5 w-5 text-red-500" />
-//                   Account Management
-//                 </h2>
-//                 <span className="text-xs text-red-600 bg-red-50 px-2 py-1 rounded-full">Danger Zone</span>
-//               </div>
-//               <div className="space-y-3">
-//                 <button
-//                   onClick={handleLogout}
-//                   className="w-full text-left p-3 text-gray-600 hover:bg-gray-50 rounded-xl transition-colors flex items-center gap-3"
-//                 >
-//                   <LogOut className="h-4 w-4" />
-//                   <span>Logout from all devices</span>
-//                 </button>
-//                 <button
-//                   onClick={() => {
-//                     if (window.confirm('Are you sure you want to delete your account? This action cannot be undone.')) {
-//                       handleLogout();
-//                     }
-//                   }}
-//                   className="w-full text-left p-3 text-red-600 hover:bg-red-50 rounded-xl transition-colors flex items-center gap-3"
-//                 >
-//                   <AlertCircle className="h-4 w-4" />
-//                   <span>Delete Account</span>
-//                 </button>
-//               </div>
-//             </div>
-//           </div>
-//         </div>
-//       </div>
-
-//       {/* Footer */}
-//       <footer className="mt-12 py-8 border-t border-gray-100 bg-white">
-//         <div className="max-w-7xl mx-auto px-4">
-//           <div className="flex flex-col md:flex-row items-center justify-between gap-4">
-//             <div className="flex items-center gap-3">
-//               <div className={`bg-gradient-to-r ${userType.color} p-2 rounded-lg`}>
-//                 <IconComponent className="h-5 w-5 text-white" />
-//               </div>
-//               <div>
-//                 <p className="text-gray-900 font-medium">JeevanDaan Profile</p>
-//                 <p className="text-sm text-gray-500">
-//                   Last updated: {userData.lastUpdated ? new Date(userData.lastUpdated).toLocaleString() : 'Never'}
-//                 </p>
-//               </div>
-//             </div>
-            
-//             <div className="flex items-center gap-6">
-//               <button className="text-sm text-gray-600 hover:text-gray-900 transition-colors">
-//                 <HelpCircle className="h-5 w-5" />
-//               </button>
-//               <button className="text-sm text-gray-600 hover:text-gray-900 transition-colors">
-//                 <MessageSquare className="h-5 w-5" />
-//               </button>
-//               <button className="text-sm text-gray-600 hover:text-gray-900 transition-colors">
-//                 <LifeBuoy className="h-5 w-5" />
-//               </button>
-//             </div>
-//           </div>
-//         </div>
-//       </footer>
-//     </div>
-//   );
-// };
-
-// export default ProfilePage;
-
-
-
 import React, { useState, useEffect } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import {
@@ -1438,7 +17,44 @@ import {
   BriefcaseMedical, Syringe, HeartPulse,
   Shield as ShieldIcon, Users as CommunityUsers,
   MessageCircle, Target as TargetIcon, Activity as ActivityIcon2,
-  Shield as ShieldIcon2, Hospital as HospitalIcon
+  Shield as ShieldIcon2, Hospital as HospitalIcon,
+  Bell as BellIcon, Lock, Book, Globe as GlobeIcon,
+  Truck, Package, Heart as HeartIcon,
+  ActivitySquare, TrendingDown, Cpu, Server,
+  RadioTower, Satellite, Navigation, Compass,
+  Layers, Grid, List, Filter, BarChart2,
+  PieChart, LineChart, ArrowUpRight, ArrowDownRight,
+  Award as AwardIcon2, Target as TargetIcon2, Zap as ZapIcon,
+  RefreshCw, RotateCw, Repeat, Shuffle,
+  Volume2, VolumeX, Mic, Video, Camera,
+  Music, Headphones, Tv, Monitor, Smartphone,
+  Tablet, Watch, Printer, HardDrive, Database,
+  MemoryStick, Keyboard, Mouse, MonitorSpeaker,
+  Speaker, Volume1, Battery, BatteryCharging,
+  BatteryFull, Cloud, Wifi, Signal, Radio,
+  ChevronLeft, ExternalLink, ChevronUp, ChevronDown,
+  MoreVertical, Menu, Search, MapPin as MapPinIcon2,
+  Info, Target as TargetIcon3, BookOpen as BookOpenIcon,
+  Users as UsersIcon2, Phone as PhoneIcon, Mail as MailIcon,
+  Clock as ClockIcon, Calendar as CalendarIcon,
+  Settings as SettingsIcon, Star as StarIcon,
+  Crown, Shield as ShieldIcon3, Target as TargetIcon4,
+  Zap as ZapIcon2, Users as UsersIcon3, Package as PackageIcon,
+  Truck as TruckIcon, ActivitySquare as ActivitySquareIcon,
+  FileText as FileTextIcon, Download as DownloadIcon,
+  Upload as UploadIcon, Link as LinkIcon, Share2,
+  MessageSquare as MessageSquareIcon, Coffee,
+  CheckSquare as CheckSquareIcon, XCircle, AlertTriangle as AlertTriangleIcon,
+  ThumbsUp, MessageSquare as MessageSquareIcon2,
+  Battery as BatteryIcon, BatteryCharging as BatteryChargingIcon,
+  BatteryFull as BatteryFullIcon, Cloud as CloudIcon,
+  Wifi as WifiIcon, WifiOff, Signal as SignalIcon,
+  SignalZero, SignalLow, SignalMedium, SignalHigh,
+  Radio as RadioIcon, Satellite as SatelliteIcon,
+  Navigation as NavigationIcon, Compass as CompassIcon,
+  Map, Globe as GlobeIcon2, Layers as LayersIcon,
+  Grid as GridIcon, List as ListIcon, Filter as FilterIcon,
+  SortAsc, SortDesc, MoreHorizontal
 } from 'lucide-react';
 
 const ProfilePage = () => {
@@ -1453,89 +69,118 @@ const ProfilePage = () => {
   const [userType, setUserType] = useState(null);
   const [userData, setUserData] = useState(null);
   const [formData, setFormData] = useState({});
+  const [windowWidth, setWindowWidth] = useState(window.innerWidth);
 
-  // Hospital specific fields
-  const [hospitalDepartments, setHospitalDepartments] = useState([]);
-  const [availableServices, setAvailableServices] = useState([]);
+  // Device detection
+  const isMobile = windowWidth < 768;
+  const isTablet = windowWidth >= 768 && windowWidth < 1024;
+  const isDesktop = windowWidth >= 1024;
 
+  // Track window width
+  useEffect(() => {
+    const handleResize = () => {
+      setWindowWidth(window.innerWidth);
+    };
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
+
+  // User type configurations
+  const userTypesConfig = {
+    bloodDonor: {
+      key: 'bloodDonor',
+      label: 'Blood Donor',
+      icon: Droplets,
+      gradient: 'from-rose-500 to-pink-500',
+      lightGradient: 'from-rose-100 to-pink-100',
+      textColor: 'text-rose-600',
+      bgColor: 'bg-rose-50',
+      borderColor: 'border-rose-200',
+      badgeColor: 'bg-rose-500',
+      description: 'Blood donation champion'
+    },
+    organDonor: {
+      key: 'organDonor',
+      label: 'Organ Donor',
+      icon: ActivityIcon,
+      gradient: 'from-emerald-500 to-green-500',
+      lightGradient: 'from-emerald-100 to-green-100',
+      textColor: 'text-emerald-600',
+      bgColor: 'bg-emerald-50',
+      borderColor: 'border-emerald-200',
+      badgeColor: 'bg-emerald-500',
+      description: 'Life-saving hero'
+    },
+    patient: {
+      key: 'patient',
+      label: 'Patient/Family',
+      icon: Ambulance,
+      gradient: 'from-amber-500 to-orange-500',
+      lightGradient: 'from-amber-100 to-orange-100',
+      textColor: 'text-amber-600',
+      bgColor: 'bg-amber-50',
+      borderColor: 'border-amber-200',
+      badgeColor: 'bg-amber-500',
+      description: 'Patient or family member'
+    },
+    user: {
+      key: 'user',
+      label: 'Community Member',
+      icon: Users,
+      gradient: 'from-blue-500 to-cyan-500',
+      lightGradient: 'from-blue-100 to-cyan-100',
+      textColor: 'text-blue-600',
+      bgColor: 'bg-blue-50',
+      borderColor: 'border-blue-200',
+      badgeColor: 'bg-blue-500',
+      description: 'Community supporter'
+    },
+    hospital: {
+      key: 'hospital',
+      label: 'Hospital',
+      icon: Building2,
+      gradient: 'from-purple-500 to-indigo-500',
+      lightGradient: 'from-purple-100 to-indigo-100',
+      textColor: 'text-purple-600',
+      bgColor: 'bg-purple-50',
+      borderColor: 'border-purple-200',
+      badgeColor: 'bg-purple-500',
+      description: 'Medical institution'
+    }
+  };
+
+  // Load user data with better handling
   useEffect(() => {
     loadUserData();
+    
+    // Listen for auth changes from navbar
+    const handleAuthChange = () => {
+      console.log('🔄 Profile page received auth change event');
+      loadUserData();
+    };
+    
+    window.addEventListener('authChange', handleAuthChange);
+    return () => window.removeEventListener('authChange', handleAuthChange);
   }, []);
 
   const loadUserData = () => {
     setLoading(true);
+    console.log('🔄 Loading user data for profile page...');
     
-    // सभी possible user types
-    const userTypes = [
-      { 
-        key: 'bloodDonor', 
-        label: 'Blood Donor', 
-        color: 'from-rose-500 to-pink-500',
-        lightColor: 'bg-rose-50 text-rose-700 border-rose-200',
-        icon: Droplets,
-        badgeColor: 'bg-rose-500',
-        description: 'Blood donation champion'
-      },
-      { 
-        key: 'organDonor', 
-        label: 'Organ Donor', 
-        color: 'from-emerald-500 to-green-500',
-        lightColor: 'bg-emerald-50 text-emerald-700 border-emerald-200',
-        icon: ActivityIcon,
-        badgeColor: 'bg-emerald-500',
-        description: 'Life-saving hero'
-      },
-      { 
-        key: 'patient', 
-        label: 'Patient/Family', 
-        color: 'from-amber-500 to-orange-500',
-        lightColor: 'bg-amber-50 text-amber-700 border-amber-200',
-        icon: Ambulance,
-        badgeColor: 'bg-amber-500',
-        description: 'Patient or family member'
-      },
-      { 
-        key: 'user', 
-        label: 'Community Member', 
-        color: 'from-blue-500 to-cyan-500',
-        lightColor: 'bg-blue-50 text-blue-700 border-blue-200',
-        icon: Users,
-        badgeColor: 'bg-blue-500',
-        description: 'Community supporter'
-      },
-      { 
-        key: 'hospital', 
-        label: 'Hospital', 
-        color: 'from-purple-500 to-indigo-500',
-        lightColor: 'bg-purple-50 text-purple-700 border-purple-200',
-        icon: Building2,
-        badgeColor: 'bg-purple-500',
-        description: 'Medical institution'
-      }
-    ];
-
-    console.log('Loading user data from localStorage...');
-    
-    // पहले current user check करें
+    // First check current user storage
     const currentUserType = localStorage.getItem('currentUserType');
     const currentUserData = localStorage.getItem('currentUserData');
     
     if (currentUserType && currentUserData) {
       try {
         const parsedData = JSON.parse(currentUserData);
-        const type = userTypes.find(t => t.key === currentUserType);
+        const typeConfig = userTypesConfig[currentUserType];
         
-        if (type) {
-          console.log(`Found current user: ${currentUserType}`, parsedData);
-          setUserType(type);
+        if (typeConfig) {
+          console.log(`✅ Found current user: ${currentUserType}`, parsedData);
+          setUserType(typeConfig);
           setUserData(parsedData);
           setFormData(parsedData);
-          
-          // Hospital specific data load करें
-          if (currentUserType === 'hospital') {
-            loadHospitalData(parsedData);
-          }
-          
           setLoading(false);
           return;
         }
@@ -1544,109 +189,53 @@ const ProfilePage = () => {
       }
     }
     
-    // फिर individual user types check करें
-    for (const type of userTypes) {
-      const token = localStorage.getItem(`${type.key}Token`);
-      const data = localStorage.getItem(`${type.key}Data`);
+    // Check individual user types
+    for (const [typeKey, config] of Object.entries(userTypesConfig)) {
+      const token = localStorage.getItem(`${typeKey}Token`);
+      const data = localStorage.getItem(`${typeKey}Data`);
       
       if (token && data) {
         try {
           const parsedData = JSON.parse(data);
-          console.log(`Found ${type.key} user:`, parsedData);
+          console.log(`✅ Found ${typeKey} user`);
           
-          setUserType(type);
-          setUserData(parsedData);
-          setFormData(parsedData);
-          
-          // Current user store करें
-          localStorage.setItem('currentUserType', type.key);
+          // Update current storage
+          localStorage.setItem('currentUserType', typeKey);
           localStorage.setItem('currentUserData', data);
           
-          // Hospital specific data load करें
-          if (type.key === 'hospital') {
-            loadHospitalData(parsedData);
-          }
-          
+          setUserType(config);
+          setUserData(parsedData);
+          setFormData(parsedData);
           setLoading(false);
           return;
         } catch (error) {
-          console.error(`Error parsing ${type.key} data:`, error);
+          console.error(`Error parsing ${typeKey} data:`, error);
         }
       }
     }
     
-    // Hospital special case (hospitalToken)
-    const hospitalToken = localStorage.getItem('hospitalToken');
-    const hospitalData = localStorage.getItem('hospitalData');
-    
-    if (hospitalToken && hospitalData) {
-      try {
-        const parsedData = JSON.parse(hospitalData);
-        console.log('Found hospital user (special case):', parsedData);
-        
-        const hospitalType = userTypes.find(t => t.key === 'hospital');
-        setUserType(hospitalType);
-        setUserData(parsedData);
-        setFormData(parsedData);
-        
-        localStorage.setItem('currentUserType', 'hospital');
-        localStorage.setItem('currentUserData', hospitalData);
-        
-        loadHospitalData(parsedData);
-        setLoading(false);
-        return;
-      } catch (error) {
-        console.error('Error parsing hospital data:', error);
-      }
-    }
-    
-    // अगर कोई user नहीं मिला
-    console.log('No user found, redirecting to role selection');
-    navigate('/select-role');
+    // No user found - redirect to role selection
+    console.log('🚫 No user found');
     setLoading(false);
-  };
-
-  const loadHospitalData = (data) => {
-    // Hospital specific data initialize करें
-    if (data.departments) {
-      setHospitalDepartments(Array.isArray(data.departments) ? data.departments : [data.departments]);
-    } else {
-      setHospitalDepartments(['General Medicine']);
-    }
-    
-    if (data.services) {
-      setAvailableServices(Array.isArray(data.services) ? data.services : [data.services]);
-    } else {
-      setAvailableServices(['Emergency', 'OPD', 'Blood Bank']);
-    }
+    navigate('/select-role');
   };
 
   const handleInputChange = (e) => {
     const { name, value, type, checked } = e.target;
     
     if (type === 'checkbox') {
-      if (name === 'organsToDonate' || name === 'interests' || 
-          name === 'departments' || name === 'services' || 
-          name === 'specialties' || name === 'facilities') {
-        const currentArray = formData[name] || [];
-        const updatedArray = currentArray.includes(value)
-          ? currentArray.filter(item => item !== value)
-          : [...currentArray, value];
-        setFormData(prev => ({ ...prev, [name]: updatedArray }));
-      } else {
-        setFormData(prev => ({ ...prev, [name]: checked }));
-      }
-    } else if (type === 'radio') {
-      setFormData(prev => ({ ...prev, [name]: value }));
+      const currentArray = formData[name] || [];
+      const updatedArray = currentArray.includes(value)
+        ? currentArray.filter(item => item !== value)
+        : [...currentArray, value];
+      setFormData(prev => ({ ...prev, [name]: updatedArray }));
     } else if (type === 'file') {
-      // File handling (for profile picture)
       const file = e.target.files[0];
       if (file) {
         const reader = new FileReader();
         reader.onloadend = () => {
           setFormData(prev => ({ 
             ...prev, 
-            [name]: reader.result,
             profilePicture: reader.result 
           }));
         };
@@ -1657,24 +246,6 @@ const ProfilePage = () => {
     }
     
     setMessage({ type: '', text: '' });
-  };
-
-  const handleDepartmentChange = (dept) => {
-    const updatedDepartments = hospitalDepartments.includes(dept)
-      ? hospitalDepartments.filter(d => d !== dept)
-      : [...hospitalDepartments, dept];
-    
-    setHospitalDepartments(updatedDepartments);
-    setFormData(prev => ({ ...prev, departments: updatedDepartments }));
-  };
-
-  const handleServiceChange = (service) => {
-    const updatedServices = availableServices.includes(service)
-      ? availableServices.filter(s => s !== service)
-      : [...availableServices, service];
-    
-    setAvailableServices(updatedServices);
-    setFormData(prev => ({ ...prev, services: updatedServices }));
   };
 
   const handleSave = async () => {
@@ -1689,34 +260,20 @@ const ProfilePage = () => {
         return;
       }
 
+      // Simulate API call
       await new Promise(resolve => setTimeout(resolve, 1000));
 
       const updatedData = { 
         ...formData, 
         updatedAt: new Date().toISOString(),
-        lastUpdated: new Date().toLocaleString(),
-        userType: userType.key
+        lastUpdated: new Date().toLocaleString()
       };
-      
-      // Hospital specific data update करें
-      if (userType.key === 'hospital') {
-        updatedData.departments = hospitalDepartments;
-        updatedData.services = availableServices;
-      }
       
       // Save to localStorage
       localStorage.setItem(`${userType.key}Data`, JSON.stringify(updatedData));
       localStorage.setItem('currentUserData', JSON.stringify(updatedData));
-      localStorage.setItem('currentUserType', userType.key);
       
-      // Hospital special case
-      if (userType.key === 'hospital') {
-        localStorage.setItem('hospitalToken', localStorage.getItem('hospitalToken') || 'hospital_token');
-        localStorage.setItem('hospitalData', JSON.stringify(updatedData));
-      } else {
-        localStorage.setItem(`${userType.key}Token`, localStorage.getItem(`${userType.key}Token`) || `${userType.key}_token`);
-      }
-      
+      // Update state
       setUserData(updatedData);
       setIsEditing(false);
       setMessage({ 
@@ -1724,14 +281,14 @@ const ProfilePage = () => {
         text: 'Profile updated successfully!' 
       });
 
-      setTimeout(() => setMessage({ type: '', text: '' }), 3000);
-      
-      // Auth change event trigger करें ताकि navbar update हो
+      // Trigger auth change for navbar update
       window.dispatchEvent(new Event('authChange'));
+      
+      setTimeout(() => setMessage({ type: '', text: '' }), 3000);
     } catch (error) {
       setMessage({ 
         type: 'error', 
-        text: error.message || 'Failed to update profile. Please try again.' 
+        text: 'Failed to update profile. Please try again.' 
       });
     } finally {
       setSaving(false);
@@ -1756,46 +313,44 @@ const ProfilePage = () => {
       errors.push('Please enter a valid email address');
     }
     
-    if (userType?.key === 'bloodDonor' && !formData.bloodGroup) {
+    if (userType.key === 'bloodDonor' && !formData.bloodGroup) {
       errors.push('Blood group is required');
-    }
-    
-    if (userType?.key === 'organDonor' && (!formData.age || formData.age < 18)) {
-      errors.push('You must be at least 18 years old for organ donation');
     }
     
     return errors;
   };
 
   const handleLogout = () => {
-    const types = ['bloodDonor', 'organDonor', 'patient', 'user', 'hospital'];
+    // Clear all auth related storage
+    const keysToRemove = [];
+    for (let i = 0; i < localStorage.length; i++) {
+      const key = localStorage.key(i);
+      if (
+        key.includes('Token') || 
+        key.includes('Data') || 
+        key === 'currentUserType' ||
+        key === 'currentUserData'
+      ) {
+        keysToRemove.push(key);
+      }
+    }
     
-    types.forEach(type => {
-      localStorage.removeItem(`${type}Token`);
-      localStorage.removeItem(type);
-      localStorage.removeItem(`${type}Data`);
-    });
+    keysToRemove.forEach(key => localStorage.removeItem(key));
     
-    // Hospital special case
-    localStorage.removeItem('hospitalToken');
-    localStorage.removeItem('hospitalData');
-    
-    // Current user data remove करें
-    localStorage.removeItem('currentUserData');
-    localStorage.removeItem('currentUserType');
-    
-    // Auth change event trigger करें
+    // Trigger auth change for navbar
     window.dispatchEvent(new Event('authChange'));
+    window.dispatchEvent(new CustomEvent('logout'));
     
     navigate('/auth');
   };
 
+  // Get user stats based on type
   const getUserStats = () => {
     if (!userData) return [];
     
     const baseStats = [
       { 
-        label: 'Account Status', 
+        label: 'Status', 
         value: userData.status === 'active' ? 'Active' : 'Pending', 
         icon: CheckCircle, 
         color: 'text-emerald-500', 
@@ -1804,7 +359,7 @@ const ProfilePage = () => {
       },
       { 
         label: 'Member Since', 
-        value: new Date(userData.registrationDate || userData.joinDate || Date.now()).toLocaleDateString(), 
+        value: new Date(userData.registrationDate || Date.now()).toLocaleDateString('en-IN'), 
         icon: Calendar, 
         color: 'text-blue-500', 
         bg: 'bg-blue-50',
@@ -1817,7 +372,7 @@ const ProfilePage = () => {
         return [
           { 
             label: 'Total Donations', 
-            value: userData.donationCount || 0, 
+            value: userData.totalDonations || 0, 
             icon: Droplets, 
             color: 'text-rose-500', 
             bg: 'bg-rose-50',
@@ -1825,7 +380,7 @@ const ProfilePage = () => {
           },
           { 
             label: 'Lives Saved', 
-            value: (userData.donationCount || 0) * 3, 
+            value: (userData.totalDonations || 0) * 3, 
             icon: Heart, 
             color: 'text-pink-500', 
             bg: 'bg-pink-50',
@@ -1833,7 +388,7 @@ const ProfilePage = () => {
           },
           { 
             label: 'Donor Points', 
-            value: userData.points || 0, 
+            value: userData.points || 150, 
             icon: Award, 
             color: 'text-amber-500', 
             bg: 'bg-amber-50',
@@ -1841,7 +396,7 @@ const ProfilePage = () => {
           },
           { 
             label: 'Donor Level', 
-            value: userData.level || 'Beginner', 
+            value: userData.level || 'Bronze', 
             icon: Star, 
             color: 'text-purple-500', 
             bg: 'bg-purple-50',
@@ -1861,24 +416,34 @@ const ProfilePage = () => {
           },
           { 
             label: 'Donor Status', 
-            value: userData.status === 'approved' ? 'Approved' : 'Pending Review', 
+            value: userData.status || 'Registered', 
             icon: ShieldCheck, 
             color: 'text-blue-500', 
             bg: 'bg-blue-50',
             border: 'border-blue-200'
           },
-          ...baseStats
+          { 
+            label: 'Medical Clearance', 
+            value: userData.medicalClearance ? 'Cleared' : 'Pending', 
+            icon: CheckCircle, 
+            color: userData.medicalClearance ? 'text-emerald-500' : 'text-amber-500', 
+            bg: userData.medicalClearance ? 'bg-emerald-50' : 'bg-amber-50',
+            border: userData.medicalClearance ? 'border-emerald-200' : 'border-amber-200'
+          }
         ];
       
       case 'patient':
         return [
           { 
             label: 'Urgency Level', 
-            value: (userData.urgencyLevel || 'Normal').charAt(0).toUpperCase() + (userData.urgencyLevel || 'Normal').slice(1), 
+            value: userData.urgencyLevel || 'Normal', 
             icon: AlertTriangle, 
-            color: userData.urgencyLevel === 'emergency' ? 'text-red-500' : userData.urgencyLevel === 'urgent' ? 'text-amber-500' : 'text-blue-500', 
-            bg: userData.urgencyLevel === 'emergency' ? 'bg-red-50' : userData.urgencyLevel === 'urgent' ? 'bg-amber-50' : 'bg-blue-50',
-            border: userData.urgencyLevel === 'emergency' ? 'border-red-200' : userData.urgencyLevel === 'urgent' ? 'border-amber-200' : 'border-blue-200'
+            color: userData.urgencyLevel === 'emergency' ? 'text-red-500' : 
+                   userData.urgencyLevel === 'urgent' ? 'text-amber-500' : 'text-blue-500', 
+            bg: userData.urgencyLevel === 'emergency' ? 'bg-red-50' : 
+                userData.urgencyLevel === 'urgent' ? 'bg-amber-50' : 'bg-blue-50',
+            border: userData.urgencyLevel === 'emergency' ? 'border-red-200' : 
+                    userData.urgencyLevel === 'urgent' ? 'border-amber-200' : 'border-blue-200'
           },
           { 
             label: 'Blood Group', 
@@ -1896,14 +461,21 @@ const ProfilePage = () => {
             bg: 'bg-blue-50',
             border: 'border-blue-200'
           },
-          ...baseStats
+          { 
+            label: 'Condition', 
+            value: userData.medicalCondition || 'Not specified', 
+            icon: Stethoscope, 
+            color: 'text-purple-500', 
+            bg: 'bg-purple-50',
+            border: 'border-purple-200'
+          }
         ];
       
       case 'user':
         return [
           { 
             label: 'User Type', 
-            value: userData.userType ? userData.userType.charAt(0).toUpperCase() + userData.userType.slice(1) : 'Supporter', 
+            value: userData.userType || 'Supporter', 
             icon: Users, 
             color: 'text-blue-500', 
             bg: 'bg-blue-50',
@@ -1917,22 +489,37 @@ const ProfilePage = () => {
             bg: 'bg-purple-50',
             border: 'border-purple-200'
           },
-          ...baseStats
+          { 
+            label: 'Activities', 
+            value: userData.activities || 0, 
+            icon: ActivitySquareIcon, 
+            color: 'text-cyan-500', 
+            bg: 'bg-cyan-50',
+            border: 'border-cyan-200'
+          },
+          { 
+            label: 'Community Rank', 
+            value: userData.rank || 'Member', 
+            icon: Award, 
+            color: 'text-amber-500', 
+            bg: 'bg-amber-50',
+            border: 'border-amber-200'
+          }
         ];
       
       case 'hospital':
         return [
           { 
             label: 'Hospital Type', 
-            value: userData.hospitalType || 'General Hospital', 
+            value: userData.hospitalType || 'General', 
             icon: Building2, 
             color: 'text-purple-500', 
             bg: 'bg-purple-50',
             border: 'border-purple-200'
           },
           { 
-            label: 'Beds Available', 
-            value: userData.bedsAvailable || 0, 
+            label: 'Total Beds', 
+            value: userData.totalBeds || 0, 
             icon: Bed, 
             color: 'text-blue-500', 
             bg: 'bg-blue-50',
@@ -1953,8 +540,7 @@ const ProfilePage = () => {
             color: 'text-cyan-500', 
             bg: 'bg-cyan-50',
             border: 'border-cyan-200'
-          },
-          ...baseStats
+          }
         ];
       
       default:
@@ -1962,6 +548,7 @@ const ProfilePage = () => {
     }
   };
 
+  // Get quick actions based on user type
   const getQuickActions = () => {
     const baseActions = [
       { 
@@ -1979,19 +566,11 @@ const ProfilePage = () => {
         bg: 'bg-blue-50'
       },
       { 
-        label: 'Download Data', 
-        icon: Download, 
-        onClick: () => {
-          const dataStr = JSON.stringify(userData, null, 2);
-          const dataBlob = new Blob([dataStr], { type: 'application/json' });
-          const url = URL.createObjectURL(dataBlob);
-          const link = document.createElement('a');
-          link.href = url;
-          link.download = `${userType.key}_profile_data.json`;
-          link.click();
-        }, 
-        color: 'text-emerald-600',
-        bg: 'bg-emerald-50'
+        label: 'Help Center', 
+        icon: HelpCircle, 
+        onClick: () => navigate('/help'), 
+        color: 'text-cyan-600',
+        bg: 'bg-cyan-50'
       }
     ];
 
@@ -2001,21 +580,21 @@ const ProfilePage = () => {
           { 
             label: 'Schedule Donation', 
             icon: Calendar, 
-            onClick: () => navigate('/schedule-donation'), 
+            onClick: () => navigate('/donor/schedule'), 
             color: 'text-rose-600',
             bg: 'bg-rose-50'
           },
           { 
-            label: 'View History', 
+            label: 'Donation History', 
             icon: History, 
-            onClick: () => navigate('/donation-history'), 
+            onClick: () => navigate('/donor/history'), 
             color: 'text-purple-600',
             bg: 'bg-purple-50'
           },
           { 
             label: 'My Rewards', 
             icon: Gift, 
-            onClick: () => navigate('/rewards'), 
+            onClick: () => navigate('/donor/rewards'), 
             color: 'text-amber-600',
             bg: 'bg-amber-50'
           },
@@ -2027,14 +606,14 @@ const ProfilePage = () => {
           { 
             label: 'Medical Info', 
             icon: FileText, 
-            onClick: () => navigate('/medical-info'), 
+            onClick: () => navigate('/donor/medical'), 
             color: 'text-emerald-600',
             bg: 'bg-emerald-50'
           },
           { 
             label: 'Pledge Certificate', 
             icon: Award, 
-            onClick: () => {}, 
+            onClick: () => navigate('/donor/certificate'), 
             color: 'text-green-600',
             bg: 'bg-green-50'
           },
@@ -2046,14 +625,14 @@ const ProfilePage = () => {
           { 
             label: 'Request Help', 
             icon: AlertTriangle, 
-            onClick: () => navigate('/request-help'), 
+            onClick: () => navigate('/patient/request-help'), 
             color: 'text-red-600',
             bg: 'bg-red-50'
           },
           { 
             label: 'Find Donors', 
             icon: UsersIcon, 
-            onClick: () => navigate('/find-donors'), 
+            onClick: () => navigate('/patient/find-donors'), 
             color: 'text-blue-600',
             bg: 'bg-blue-50'
           },
@@ -2086,7 +665,7 @@ const ProfilePage = () => {
           { 
             label: 'Community', 
             icon: Globe, 
-            onClick: () => navigate('/forum'), 
+            onClick: () => navigate('/community'), 
             color: 'text-purple-600',
             bg: 'bg-purple-50'
           },
@@ -2116,20 +695,6 @@ const ProfilePage = () => {
             color: 'text-emerald-600',
             bg: 'bg-emerald-50'
           },
-          { 
-            label: 'Staff Management', 
-            icon: Users, 
-            onClick: () => navigate('/hospital/staff'), 
-            color: 'text-blue-600',
-            bg: 'bg-blue-50'
-          },
-          { 
-            label: 'Patient Records', 
-            icon: ClipboardCheck, 
-            onClick: () => navigate('/hospital/patients'), 
-            color: 'text-cyan-600',
-            bg: 'bg-cyan-50'
-          },
           ...baseActions
         ];
       
@@ -2138,6 +703,7 @@ const ProfilePage = () => {
     }
   };
 
+  // Render user type specific fields
   const renderUserTypeFields = () => {
     if (!userType) return null;
 
@@ -2150,7 +716,7 @@ const ProfilePage = () => {
               Blood Donor Information
             </h3>
             
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div className="space-y-2">
                 <label className="block text-sm font-medium text-gray-700">
                   Blood Group *
@@ -2159,7 +725,7 @@ const ProfilePage = () => {
                   name="bloodGroup"
                   value={formData.bloodGroup || ''}
                   onChange={handleInputChange}
-                  className="w-full px-4 py-3 bg-white border border-gray-200 rounded-xl focus:ring-2 focus:ring-rose-500/20 focus:border-rose-400 transition-all duration-200 disabled:bg-gray-50 disabled:cursor-not-allowed"
+                  className="w-full px-3 py-2.5 bg-white border border-gray-200 rounded-lg focus:ring-2 focus:ring-rose-500/20 focus:border-rose-400 transition-all duration-200 disabled:bg-gray-50 disabled:cursor-not-allowed"
                   disabled={!isEditing}
                 >
                   <option value="">Select Blood Group</option>
@@ -2178,11 +744,10 @@ const ProfilePage = () => {
                   name="age"
                   value={formData.age || ''}
                   onChange={handleInputChange}
-                  className="w-full px-4 py-3 bg-white border border-gray-200 rounded-xl focus:ring-2 focus:ring-rose-500/20 focus:border-rose-400 transition-all duration-200 disabled:bg-gray-50 disabled:cursor-not-allowed"
+                  className="w-full px-3 py-2.5 bg-white border border-gray-200 rounded-lg focus:ring-2 focus:ring-rose-500/20 focus:border-rose-400 transition-all duration-200 disabled:bg-gray-50 disabled:cursor-not-allowed"
                   disabled={!isEditing}
                   min="18"
                   max="65"
-                  placeholder="18-65"
                 />
               </div>
 
@@ -2195,10 +760,9 @@ const ProfilePage = () => {
                   name="weight"
                   value={formData.weight || ''}
                   onChange={handleInputChange}
-                  className="w-full px-4 py-3 bg-white border border-gray-200 rounded-xl focus:ring-2 focus:ring-rose-500/20 focus:border-rose-400 transition-all duration-200 disabled:bg-gray-50 disabled:cursor-not-allowed"
+                  className="w-full px-3 py-2.5 bg-white border border-gray-200 rounded-lg focus:ring-2 focus:ring-rose-500/20 focus:border-rose-400 transition-all duration-200 disabled:bg-gray-50 disabled:cursor-not-allowed"
                   disabled={!isEditing}
                   min="45"
-                  placeholder="Min. 45kg"
                 />
               </div>
 
@@ -2211,10 +775,25 @@ const ProfilePage = () => {
                   name="lastDonationDate"
                   value={formData.lastDonationDate || ''}
                   onChange={handleInputChange}
-                  className="w-full px-4 py-3 bg-white border border-gray-200 rounded-xl focus:ring-2 focus:ring-rose-500/20 focus:border-rose-400 transition-all duration-200 disabled:bg-gray-50 disabled:cursor-not-allowed"
+                  className="w-full px-3 py-2.5 bg-white border border-gray-200 rounded-lg focus:ring-2 focus:ring-rose-500/20 focus:border-rose-400 transition-all duration-200 disabled:bg-gray-50 disabled:cursor-not-allowed"
                   disabled={!isEditing}
                 />
               </div>
+            </div>
+
+            <div className="space-y-2">
+              <label className="block text-sm font-medium text-gray-700">
+                Health Conditions
+              </label>
+              <textarea
+                name="healthConditions"
+                value={formData.healthConditions || ''}
+                onChange={handleInputChange}
+                className="w-full px-3 py-2.5 bg-white border border-gray-200 rounded-lg focus:ring-2 focus:ring-rose-500/20 focus:border-rose-400 transition-all duration-200 resize-none disabled:bg-gray-50 disabled:cursor-not-allowed"
+                disabled={!isEditing}
+                rows="3"
+                placeholder="Any health conditions or medications..."
+              />
             </div>
           </div>
         );
@@ -2232,9 +811,9 @@ const ProfilePage = () => {
               <label className="block text-sm font-medium text-gray-700">
                 Organs to Donate
               </label>
-              <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
+              <div className="grid grid-cols-2 md:grid-cols-3 gap-2">
                 {organs.map(organ => (
-                  <label key={organ} className={`flex items-center gap-3 p-3 rounded-lg border ${isEditing ? 'cursor-pointer hover:bg-emerald-50 hover:border-emerald-300' : 'cursor-default'} ${(formData.organsToDonate || []).includes(organ) ? 'bg-emerald-50 border-emerald-300 text-emerald-700' : 'bg-white border-gray-200'}`}>
+                  <label key={organ} className={`flex items-center gap-3 p-2.5 rounded-lg border ${isEditing ? 'cursor-pointer hover:bg-emerald-50' : 'cursor-default'} ${(formData.organsToDonate || []).includes(organ) ? 'bg-emerald-50 border-emerald-300 text-emerald-700' : 'bg-white border-gray-200'}`}>
                     <input
                       type="checkbox"
                       name="organsToDonate"
@@ -2250,7 +829,7 @@ const ProfilePage = () => {
               </div>
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div className="space-y-2">
                 <label className="block text-sm font-medium text-gray-700">
                   Age *
@@ -2260,11 +839,28 @@ const ProfilePage = () => {
                   name="age"
                   value={formData.age || ''}
                   onChange={handleInputChange}
-                  className="w-full px-4 py-3 bg-white border border-gray-200 rounded-xl focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-400 transition-all duration-200 disabled:bg-gray-50 disabled:cursor-not-allowed"
+                  className="w-full px-3 py-2.5 bg-white border border-gray-200 rounded-lg focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-400 transition-all duration-200 disabled:bg-gray-50 disabled:cursor-not-allowed"
                   disabled={!isEditing}
                   min="18"
-                  placeholder="Min. 18 years"
                 />
+              </div>
+
+              <div className="space-y-2">
+                <label className="block text-sm font-medium text-gray-700">
+                  Blood Group
+                </label>
+                <select
+                  name="bloodGroup"
+                  value={formData.bloodGroup || ''}
+                  onChange={handleInputChange}
+                  className="w-full px-3 py-2.5 bg-white border border-gray-200 rounded-lg focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-400 transition-all duration-200 disabled:bg-gray-50 disabled:cursor-not-allowed"
+                  disabled={!isEditing}
+                >
+                  <option value="">Select Blood Group</option>
+                  {['A+', 'A-', 'B+', 'B-', 'O+', 'O-', 'AB+', 'AB-'].map(group => (
+                    <option key={group} value={group}>{group}</option>
+                  ))}
+                </select>
               </div>
 
               <div className="space-y-2 md:col-span-2">
@@ -2275,7 +871,7 @@ const ProfilePage = () => {
                   name="medicalHistory"
                   value={formData.medicalHistory || ''}
                   onChange={handleInputChange}
-                  className="w-full px-4 py-3 bg-white border border-gray-200 rounded-xl focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-400 transition-all duration-200 resize-none disabled:bg-gray-50 disabled:cursor-not-allowed"
+                  className="w-full px-3 py-2.5 bg-white border border-gray-200 rounded-lg focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-400 transition-all duration-200 resize-none disabled:bg-gray-50 disabled:cursor-not-allowed"
                   disabled={!isEditing}
                   rows="3"
                   placeholder="Any medical conditions or history..."
@@ -2297,37 +893,11 @@ const ProfilePage = () => {
                   I have discussed organ donation with my family and have their consent
                 </span>
               </label>
-
-              <label className={`flex items-start gap-3 ${isEditing ? 'cursor-pointer' : 'cursor-default'}`}>
-                <input
-                  type="checkbox"
-                  name="legalDocument"
-                  checked={formData.legalDocument || false}
-                  onChange={handleInputChange}
-                  className={`h-5 w-5 text-emerald-500 rounded mt-0.5 focus:ring-2 focus:ring-emerald-500/20 ${isEditing ? '' : 'cursor-not-allowed'}`}
-                  disabled={!isEditing}
-                />
-                <span className={`text-sm ${formData.legalDocument ? 'text-emerald-800 font-medium' : 'text-gray-700'}`}>
-                  I agree to complete the required legal documentation for organ donation
-                </span>
-              </label>
             </div>
           </div>
         );
 
       case 'patient':
-        const urgencyLevels = [
-          { value: 'normal', label: 'Normal', color: 'bg-blue-100 text-blue-800 border-blue-300' },
-          { value: 'urgent', label: 'Urgent', color: 'bg-amber-100 text-amber-800 border-amber-300' },
-          { value: 'emergency', label: 'Emergency', color: 'bg-red-100 text-red-800 border-red-300' }
-        ];
-
-        const patientTypes = [
-          { value: 'self', label: 'Self' },
-          { value: 'family', label: 'Family Member' },
-          { value: 'friend', label: 'Friend' }
-        ];
-
         return (
           <div className="space-y-6">
             <h3 className="text-lg font-semibold text-gray-800 flex items-center gap-2">
@@ -2335,29 +905,7 @@ const ProfilePage = () => {
               Patient Information
             </h3>
             
-            <div className="space-y-4">
-              <label className="block text-sm font-medium text-gray-700">
-                Patient Type
-              </label>
-              <div className="grid grid-cols-3 gap-2">
-                {patientTypes.map(type => (
-                  <label key={type.value} className={`flex items-center justify-center p-3 rounded-lg border ${isEditing ? 'cursor-pointer hover:bg-amber-50' : 'cursor-default'} ${formData.patientType === type.value ? 'bg-amber-50 border-amber-300 text-amber-700' : 'bg-white border-gray-200'}`}>
-                    <input
-                      type="radio"
-                      name="patientType"
-                      value={type.value}
-                      checked={formData.patientType === type.value}
-                      onChange={handleInputChange}
-                      className="sr-only"
-                      disabled={!isEditing}
-                    />
-                    <span className="font-medium">{type.label}</span>
-                  </label>
-                ))}
-              </div>
-            </div>
-
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div className="space-y-2">
                 <label className="block text-sm font-medium text-gray-700">
                   Blood Group
@@ -2366,13 +914,30 @@ const ProfilePage = () => {
                   name="bloodGroup"
                   value={formData.bloodGroup || ''}
                   onChange={handleInputChange}
-                  className="w-full px-4 py-3 bg-white border border-gray-200 rounded-xl focus:ring-2 focus:ring-amber-500/20 focus:border-amber-400 transition-all duration-200 disabled:bg-gray-50 disabled:cursor-not-allowed"
+                  className="w-full px-3 py-2.5 bg-white border border-gray-200 rounded-lg focus:ring-2 focus:ring-amber-500/20 focus:border-amber-400 transition-all duration-200 disabled:bg-gray-50 disabled:cursor-not-allowed"
                   disabled={!isEditing}
                 >
                   <option value="">Select Blood Group</option>
                   {['A+', 'A-', 'B+', 'B-', 'O+', 'O-', 'AB+', 'AB-'].map(group => (
                     <option key={group} value={group}>{group}</option>
                   ))}
+                </select>
+              </div>
+
+              <div className="space-y-2">
+                <label className="block text-sm font-medium text-gray-700">
+                  Urgency Level
+                </label>
+                <select
+                  name="urgencyLevel"
+                  value={formData.urgencyLevel || ''}
+                  onChange={handleInputChange}
+                  className="w-full px-3 py-2.5 bg-white border border-gray-200 rounded-lg focus:ring-2 focus:ring-amber-500/20 focus:border-amber-400 transition-all duration-200 disabled:bg-gray-50 disabled:cursor-not-allowed"
+                  disabled={!isEditing}
+                >
+                  <option value="normal">Normal</option>
+                  <option value="urgent">Urgent</option>
+                  <option value="emergency">Emergency</option>
                 </select>
               </div>
 
@@ -2385,32 +950,10 @@ const ProfilePage = () => {
                   name="medicalCondition"
                   value={formData.medicalCondition || ''}
                   onChange={handleInputChange}
-                  className="w-full px-4 py-3 bg-white border border-gray-200 rounded-xl focus:ring-2 focus:ring-amber-500/20 focus:border-amber-400 transition-all duration-200 disabled:bg-gray-50 disabled:cursor-not-allowed"
+                  className="w-full px-3 py-2.5 bg-white border border-gray-200 rounded-lg focus:ring-2 focus:ring-amber-500/20 focus:border-amber-400 transition-all duration-200 disabled:bg-gray-50 disabled:cursor-not-allowed"
                   disabled={!isEditing}
                   placeholder="e.g., Blood Cancer, Surgery, Accident"
                 />
-              </div>
-
-              <div className="space-y-2">
-                <label className="block text-sm font-medium text-gray-700">
-                  Urgency Level
-                </label>
-                <div className="grid grid-cols-3 gap-2">
-                  {urgencyLevels.map(level => (
-                    <label key={level.value} className={`flex items-center justify-center p-3 rounded-lg border ${isEditing ? 'cursor-pointer hover:bg-amber-50' : 'cursor-default'} ${formData.urgencyLevel === level.value ? level.color : 'bg-white border-gray-200'}`}>
-                      <input
-                        type="radio"
-                        name="urgencyLevel"
-                        value={level.value}
-                        checked={formData.urgencyLevel === level.value}
-                        onChange={handleInputChange}
-                        className="sr-only"
-                        disabled={!isEditing}
-                      />
-                      <span className="font-medium">{level.label}</span>
-                    </label>
-                  ))}
-                </div>
               </div>
 
               <div className="space-y-2">
@@ -2422,7 +965,7 @@ const ProfilePage = () => {
                   name="hospitalName"
                   value={formData.hospitalName || ''}
                   onChange={handleInputChange}
-                  className="w-full px-4 py-3 bg-white border border-gray-200 rounded-xl focus:ring-2 focus:ring-amber-500/20 focus:border-amber-400 transition-all duration-200 disabled:bg-gray-50 disabled:cursor-not-allowed"
+                  className="w-full px-3 py-2.5 bg-white border border-gray-200 rounded-lg focus:ring-2 focus:ring-amber-500/20 focus:border-amber-400 transition-all duration-200 disabled:bg-gray-50 disabled:cursor-not-allowed"
                   disabled={!isEditing}
                   placeholder="e.g., City General Hospital"
                 />
@@ -2437,7 +980,7 @@ const ProfilePage = () => {
                   name="emergencyContact"
                   value={formData.emergencyContact || ''}
                   onChange={handleInputChange}
-                  className="w-full px-4 py-3 bg-white border border-gray-200 rounded-xl focus:ring-2 focus:ring-amber-500/20 focus:border-amber-400 transition-all duration-200 disabled:bg-gray-50 disabled:cursor-not-allowed"
+                  className="w-full px-3 py-2.5 bg-white border border-gray-200 rounded-lg focus:ring-2 focus:ring-amber-500/20 focus:border-amber-400 transition-all duration-200 disabled:bg-gray-50 disabled:cursor-not-allowed"
                   disabled={!isEditing}
                   placeholder="Name and phone number"
                 />
@@ -2447,18 +990,6 @@ const ProfilePage = () => {
         );
 
       case 'user':
-        const interestsList = [
-          'Blood Donation', 'Organ Donation', 'Awareness Programs', 'Fundraising',
-          'Volunteering', 'Event Management', 'Medical Support', 'Community Outreach'
-        ];
-
-        const userTypes = [
-          { value: 'supporter', label: 'Supporter', icon: Heart },
-          { value: 'volunteer', label: 'Volunteer', icon: Users },
-          { value: 'organization', label: 'Organization', icon: Globe },
-          { value: 'healthcare', label: 'Healthcare Worker', icon: TrendingUp }
-        ];
-
         return (
           <div className="space-y-6">
             <h3 className="text-lg font-semibold text-gray-800 flex items-center gap-2">
@@ -2466,46 +997,23 @@ const ProfilePage = () => {
               Community Information
             </h3>
             
-            <div className="space-y-4">
-              <label className="block text-sm font-medium text-gray-700">
-                User Type
-              </label>
-              <div className="grid grid-cols-2 md:grid-cols-4 gap-2">
-                {userTypes.map(type => {
-                  const IconComponent = type.icon;
-                  return (
-                    <label key={type.value} className={`flex flex-col items-center justify-center p-3 rounded-lg border ${isEditing ? 'cursor-pointer hover:bg-blue-50' : 'cursor-default'} ${formData.userType === type.value ? 'bg-blue-50 border-blue-300 text-blue-700' : 'bg-white border-gray-200'}`}>
-                      <input
-                        type="radio"
-                        name="userType"
-                        value={type.value}
-                        checked={formData.userType === type.value}
-                        onChange={handleInputChange}
-                        className="sr-only"
-                        disabled={!isEditing}
-                      />
-                      <IconComponent className={`h-5 w-5 mb-2 ${formData.userType === type.value ? 'text-blue-500' : 'text-gray-400'}`} />
-                      <span className="text-xs font-medium">{type.label}</span>
-                    </label>
-                  );
-                })}
-              </div>
-            </div>
-
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div className="space-y-2">
                 <label className="block text-sm font-medium text-gray-700">
-                  Location
+                  User Type
                 </label>
-                <input
-                  type="text"
-                  name="location"
-                  value={formData.location || ''}
+                <select
+                  name="userType"
+                  value={formData.userType || ''}
                   onChange={handleInputChange}
-                  className="w-full px-4 py-3 bg-white border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500/20 focus:border-blue-400 transition-all duration-200 disabled:bg-gray-50 disabled:cursor-not-allowed"
+                  className="w-full px-3 py-2.5 bg-white border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500/20 focus:border-blue-400 transition-all duration-200 disabled:bg-gray-50 disabled:cursor-not-allowed"
                   disabled={!isEditing}
-                  placeholder="City, State"
-                />
+                >
+                  <option value="supporter">Supporter</option>
+                  <option value="volunteer">Volunteer</option>
+                  <option value="organization">Organization</option>
+                  <option value="healthcare">Healthcare Worker</option>
+                </select>
               </div>
 
               <div className="space-y-2">
@@ -2517,13 +1025,13 @@ const ProfilePage = () => {
                   name="occupation"
                   value={formData.occupation || ''}
                   onChange={handleInputChange}
-                  className="w-full px-4 py-3 bg-white border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500/20 focus:border-blue-400 transition-all duration-200 disabled:bg-gray-50 disabled:cursor-not-allowed"
+                  className="w-full px-3 py-2.5 bg-white border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500/20 focus:border-blue-400 transition-all duration-200 disabled:bg-gray-50 disabled:cursor-not-allowed"
                   disabled={!isEditing}
                   placeholder="e.g., Student, Teacher, Doctor"
                 />
               </div>
 
-              <div className="space-y-2 md:col-span-2">
+              <div className="space-y-2">
                 <label className="block text-sm font-medium text-gray-700">
                   Organization
                 </label>
@@ -2532,49 +1040,26 @@ const ProfilePage = () => {
                   name="organization"
                   value={formData.organization || ''}
                   onChange={handleInputChange}
-                  className="w-full px-4 py-3 bg-white border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500/20 focus:border-blue-400 transition-all duration-200 disabled:bg-gray-50 disabled:cursor-not-allowed"
+                  className="w-full px-3 py-2.5 bg-white border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500/20 focus:border-blue-400 transition-all duration-200 disabled:bg-gray-50 disabled:cursor-not-allowed"
                   disabled={!isEditing}
                   placeholder="e.g., ABC Hospital, XYZ NGO"
                 />
               </div>
-            </div>
 
-            <div className="space-y-4">
-              <label className="block text-sm font-medium text-gray-700">
-                Areas of Interest
-              </label>
-              <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-                {interestsList.map(interest => (
-                  <label key={interest} className={`flex items-center gap-3 p-3 rounded-lg border ${isEditing ? 'cursor-pointer hover:bg-blue-50 hover:border-blue-300' : 'cursor-default'} ${(formData.interests || []).includes(interest) ? 'bg-blue-50 border-blue-300 text-blue-700' : 'bg-white border-gray-200'}`}>
-                    <input
-                      type="checkbox"
-                      name="interests"
-                      value={interest}
-                      checked={(formData.interests || []).includes(interest)}
-                      onChange={handleInputChange}
-                      className="h-4 w-4 text-blue-500 rounded focus:ring-2 focus:ring-blue-500/20 disabled:opacity-50 disabled:cursor-not-allowed"
-                      disabled={!isEditing}
-                    />
-                    <span className="text-sm">{interest}</span>
-                  </label>
-                ))}
-              </div>
-            </div>
-
-            <div className="p-4 bg-blue-50 rounded-xl border border-blue-200">
-              <label className={`flex items-center gap-3 ${isEditing ? 'cursor-pointer' : 'cursor-default'}`}>
+              <div className="space-y-2">
+                <label className="block text-sm font-medium text-gray-700">
+                  Location
+                </label>
                 <input
-                  type="checkbox"
-                  name="notifications"
-                  checked={formData.notifications || false}
+                  type="text"
+                  name="location"
+                  value={formData.location || ''}
                   onChange={handleInputChange}
-                  className="h-5 w-5 text-blue-500 rounded focus:ring-2 focus:ring-blue-500/20 disabled:opacity-50 disabled:cursor-not-allowed"
+                  className="w-full px-3 py-2.5 bg-white border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500/20 focus:border-blue-400 transition-all duration-200 disabled:bg-gray-50 disabled:cursor-not-allowed"
                   disabled={!isEditing}
+                  placeholder="City, State"
                 />
-                <span className={`text-sm ${formData.notifications ? 'text-blue-800 font-medium' : 'text-gray-700'}`}>
-                  Receive notifications about donation drives and community activities
-                </span>
-              </label>
+              </div>
             </div>
           </div>
         );
@@ -2582,21 +1067,12 @@ const ProfilePage = () => {
       case 'hospital':
         const departmentsList = [
           'Cardiology', 'Neurology', 'Orthopedics', 'Pediatrics', 'Oncology',
-          'Gynecology', 'Radiology', 'Pathology', 'ENT', 'Dermatology',
-          'General Medicine', 'Emergency', 'ICU', 'NICU', 'Psychiatry'
+          'Gynecology', 'Emergency', 'ICU', 'General Medicine'
         ];
 
         const servicesList = [
           'Emergency', 'OPD', 'IPD', 'Blood Bank', 'Organ Transplant',
-          'ICU', 'Surgery', 'Diagnostics', 'Pharmacy', 'Ambulance',
-          '24/7 Emergency', 'Trauma Center', 'Cardiac Care', 'Cancer Care'
-        ];
-
-        const hospitalTypes = [
-          { value: 'government', label: 'Government Hospital' },
-          { value: 'private', label: 'Private Hospital' },
-          { value: 'trust', label: 'Trust Hospital' },
-          { value: 'specialty', label: 'Specialty Hospital' }
+          'Surgery', 'Diagnostics', 'Pharmacy', 'Ambulance'
         ];
 
         return (
@@ -2606,7 +1082,7 @@ const ProfilePage = () => {
               Hospital Information
             </h3>
             
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div className="space-y-2">
                 <label className="block text-sm font-medium text-gray-700">
                   Hospital Name *
@@ -2616,7 +1092,7 @@ const ProfilePage = () => {
                   name="hospitalName"
                   value={formData.hospitalName || ''}
                   onChange={handleInputChange}
-                  className="w-full px-4 py-3 bg-white border border-gray-200 rounded-xl focus:ring-2 focus:ring-purple-500/20 focus:border-purple-400 transition-all duration-200 disabled:bg-gray-50 disabled:cursor-not-allowed"
+                  className="w-full px-3 py-2.5 bg-white border border-gray-200 rounded-lg focus:ring-2 focus:ring-purple-500/20 focus:border-purple-400 transition-all duration-200 disabled:bg-gray-50 disabled:cursor-not-allowed"
                   disabled={!isEditing}
                   placeholder="e.g., City General Hospital"
                 />
@@ -2631,7 +1107,7 @@ const ProfilePage = () => {
                   name="registrationNumber"
                   value={formData.registrationNumber || ''}
                   onChange={handleInputChange}
-                  className="w-full px-4 py-3 bg-white border border-gray-200 rounded-xl focus:ring-2 focus:ring-purple-500/20 focus:border-purple-400 transition-all duration-200 disabled:bg-gray-50 disabled:cursor-not-allowed"
+                  className="w-full px-3 py-2.5 bg-white border border-gray-200 rounded-lg focus:ring-2 focus:ring-purple-500/20 focus:border-purple-400 transition-all duration-200 disabled:bg-gray-50 disabled:cursor-not-allowed"
                   disabled={!isEditing}
                   placeholder="e.g., REG-123456"
                 />
@@ -2645,13 +1121,14 @@ const ProfilePage = () => {
                   name="hospitalType"
                   value={formData.hospitalType || ''}
                   onChange={handleInputChange}
-                  className="w-full px-4 py-3 bg-white border border-gray-200 rounded-xl focus:ring-2 focus:ring-purple-500/20 focus:border-purple-400 transition-all duration-200 disabled:bg-gray-50 disabled:cursor-not-allowed"
+                  className="w-full px-3 py-2.5 bg-white border border-gray-200 rounded-lg focus:ring-2 focus:ring-purple-500/20 focus:border-purple-400 transition-all duration-200 disabled:bg-gray-50 disabled:cursor-not-allowed"
                   disabled={!isEditing}
                 >
                   <option value="">Select Hospital Type</option>
-                  {hospitalTypes.map(type => (
-                    <option key={type.value} value={type.value}>{type.label}</option>
-                  ))}
+                  <option value="government">Government Hospital</option>
+                  <option value="private">Private Hospital</option>
+                  <option value="trust">Trust Hospital</option>
+                  <option value="specialty">Specialty Hospital</option>
                 </select>
               </div>
 
@@ -2664,7 +1141,7 @@ const ProfilePage = () => {
                   name="totalBeds"
                   value={formData.totalBeds || ''}
                   onChange={handleInputChange}
-                  className="w-full px-4 py-3 bg-white border border-gray-200 rounded-xl focus:ring-2 focus:ring-purple-500/20 focus:border-purple-400 transition-all duration-200 disabled:bg-gray-50 disabled:cursor-not-allowed"
+                  className="w-full px-3 py-2.5 bg-white border border-gray-200 rounded-lg focus:ring-2 focus:ring-purple-500/20 focus:border-purple-400 transition-all duration-200 disabled:bg-gray-50 disabled:cursor-not-allowed"
                   disabled={!isEditing}
                   placeholder="e.g., 500"
                 />
@@ -2679,69 +1156,12 @@ const ProfilePage = () => {
                   name="contactPerson"
                   value={formData.contactPerson || ''}
                   onChange={handleInputChange}
-                  className="w-full px-4 py-3 bg-white border border-gray-200 rounded-xl focus:ring-2 focus:ring-purple-500/20 focus:border-purple-400 transition-all duration-200 disabled:bg-gray-50 disabled:cursor-not-allowed"
+                  className="w-full px-3 py-2.5 bg-white border border-gray-200 rounded-lg focus:ring-2 focus:ring-purple-500/20 focus:border-purple-400 transition-all duration-200 disabled:bg-gray-50 disabled:cursor-not-allowed"
                   disabled={!isEditing}
                   placeholder="e.g., Dr. John Doe"
                 />
               </div>
 
-              <div className="space-y-2">
-                <label className="block text-sm font-medium text-gray-700">
-                  Contact Position
-                </label>
-                <input
-                  type="text"
-                  name="contactPosition"
-                  value={formData.contactPosition || ''}
-                  onChange={handleInputChange}
-                  className="w-full px-4 py-3 bg-white border border-gray-200 rounded-xl focus:ring-2 focus:ring-purple-500/20 focus:border-purple-400 transition-all duration-200 disabled:bg-gray-50 disabled:cursor-not-allowed"
-                  disabled={!isEditing}
-                  placeholder="e.g., Hospital Administrator"
-                />
-              </div>
-            </div>
-
-            <div className="space-y-4">
-              <label className="block text-sm font-medium text-gray-700">
-                Departments
-              </label>
-              <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
-                {departmentsList.map(dept => (
-                  <label key={dept} className={`flex items-center gap-3 p-3 rounded-lg border ${isEditing ? 'cursor-pointer hover:bg-purple-50 hover:border-purple-300' : 'cursor-default'} ${hospitalDepartments.includes(dept) ? 'bg-purple-50 border-purple-300 text-purple-700' : 'bg-white border-gray-200'}`}>
-                    <input
-                      type="checkbox"
-                      checked={hospitalDepartments.includes(dept)}
-                      onChange={() => handleDepartmentChange(dept)}
-                      className="h-4 w-4 text-purple-500 rounded focus:ring-2 focus:ring-purple-500/20 disabled:opacity-50 disabled:cursor-not-allowed"
-                      disabled={!isEditing}
-                    />
-                    <span className="text-sm">{dept}</span>
-                  </label>
-                ))}
-              </div>
-            </div>
-
-            <div className="space-y-4">
-              <label className="block text-sm font-medium text-gray-700">
-                Available Services
-              </label>
-              <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
-                {servicesList.map(service => (
-                  <label key={service} className={`flex items-center gap-3 p-3 rounded-lg border ${isEditing ? 'cursor-pointer hover:bg-indigo-50 hover:border-indigo-300' : 'cursor-default'} ${availableServices.includes(service) ? 'bg-indigo-50 border-indigo-300 text-indigo-700' : 'bg-white border-gray-200'}`}>
-                    <input
-                      type="checkbox"
-                      checked={availableServices.includes(service)}
-                      onChange={() => handleServiceChange(service)}
-                      className="h-4 w-4 text-indigo-500 rounded focus:ring-2 focus:ring-indigo-500/20 disabled:opacity-50 disabled:cursor-not-allowed"
-                      disabled={!isEditing}
-                    />
-                    <span className="text-sm">{service}</span>
-                  </label>
-                ))}
-              </div>
-            </div>
-
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div className="space-y-2">
                 <label className="block text-sm font-medium text-gray-700">
                   Website
@@ -2751,46 +1171,75 @@ const ProfilePage = () => {
                   name="website"
                   value={formData.website || ''}
                   onChange={handleInputChange}
-                  className="w-full px-4 py-3 bg-white border border-gray-200 rounded-xl focus:ring-2 focus:ring-purple-500/20 focus:border-purple-400 transition-all duration-200 disabled:bg-gray-50 disabled:cursor-not-allowed"
+                  className="w-full px-3 py-2.5 bg-white border border-gray-200 rounded-lg focus:ring-2 focus:ring-purple-500/20 focus:border-purple-400 transition-all duration-200 disabled:bg-gray-50 disabled:cursor-not-allowed"
                   disabled={!isEditing}
                   placeholder="https://example.com"
                 />
               </div>
+            </div>
 
-              <div className="space-y-2">
-                <label className="block text-sm font-medium text-gray-700">
-                  Accreditation
-                </label>
-                <select
-                  name="accreditation"
-                  value={formData.accreditation || ''}
-                  onChange={handleInputChange}
-                  className="w-full px-4 py-3 bg-white border border-gray-200 rounded-xl focus:ring-2 focus:ring-purple-500/20 focus:border-purple-400 transition-all duration-200 disabled:bg-gray-50 disabled:cursor-not-allowed"
-                  disabled={!isEditing}
-                >
-                  <option value="">Select Accreditation</option>
-                  <option value="NABH">NABH</option>
-                  <option value="NABL">NABL</option>
-                  <option value="JCI">JCI</option>
-                  <option value="ISO">ISO</option>
-                  <option value="none">None</option>
-                </select>
+            <div className="space-y-4">
+              <label className="block text-sm font-medium text-gray-700">
+                Departments
+              </label>
+              <div className="flex flex-wrap gap-2">
+                {departmentsList.map(dept => {
+                  const isSelected = (formData.departments || []).includes(dept);
+                  return (
+                    <button
+                      key={dept}
+                      type="button"
+                      onClick={() => {
+                        if (!isEditing) return;
+                        const current = formData.departments || [];
+                        const updated = isSelected 
+                          ? current.filter(d => d !== dept)
+                          : [...current, dept];
+                        setFormData(prev => ({ ...prev, departments: updated }));
+                      }}
+                      className={`px-3 py-1.5 rounded-lg border text-sm ${isEditing ? 'cursor-pointer hover:scale-105 transition-transform' : 'cursor-default'} ${
+                        isSelected 
+                          ? 'bg-purple-50 text-purple-700 border-purple-300' 
+                          : 'bg-white text-gray-700 border-gray-300'
+                      }`}
+                    >
+                      {dept}
+                    </button>
+                  );
+                })}
               </div>
             </div>
 
-            <div className="space-y-2">
+            <div className="space-y-4">
               <label className="block text-sm font-medium text-gray-700">
-                Hospital Description
+                Available Services
               </label>
-              <textarea
-                name="description"
-                value={formData.description || ''}
-                onChange={handleInputChange}
-                className="w-full px-4 py-3 bg-white border border-gray-200 rounded-xl focus:ring-2 focus:ring-purple-500/20 focus:border-purple-400 transition-all duration-200 resize-none disabled:bg-gray-50 disabled:cursor-not-allowed"
-                disabled={!isEditing}
-                rows="4"
-                placeholder="Brief description about your hospital..."
-              />
+              <div className="flex flex-wrap gap-2">
+                {servicesList.map(service => {
+                  const isSelected = (formData.services || []).includes(service);
+                  return (
+                    <button
+                      key={service}
+                      type="button"
+                      onClick={() => {
+                        if (!isEditing) return;
+                        const current = formData.services || [];
+                        const updated = isSelected 
+                          ? current.filter(s => s !== service)
+                          : [...current, service];
+                        setFormData(prev => ({ ...prev, services: updated }));
+                      }}
+                      className={`px-3 py-1.5 rounded-lg border text-sm ${isEditing ? 'cursor-pointer hover:scale-105 transition-transform' : 'cursor-default'} ${
+                        isSelected 
+                          ? 'bg-indigo-50 text-indigo-700 border-indigo-300' 
+                          : 'bg-white text-gray-700 border-gray-300'
+                      }`}
+                    >
+                      {service}
+                    </button>
+                  );
+                })}
+              </div>
             </div>
           </div>
         );
@@ -2800,16 +1249,17 @@ const ProfilePage = () => {
     }
   };
 
+  // Render tab content
   const renderTabContent = () => {
     switch (activeTab) {
       case 'overview':
         return (
-          <div className="space-y-8">
-            <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6">
+          <div className="space-y-6">
+            <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
               <h2 className="text-xl font-bold text-gray-900 mb-6">Profile Information</h2>
               
               <div className="space-y-6">
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   {userType.key === 'hospital' ? (
                     <>
                       <div className="space-y-2">
@@ -2823,11 +1273,11 @@ const ProfilePage = () => {
                             name="hospitalName"
                             value={formData.hospitalName || ''}
                             onChange={handleInputChange}
-                            className="w-full px-4 py-3 bg-white border border-gray-200 rounded-xl focus:ring-2 focus:ring-purple-500/20 focus:border-purple-400 transition-all duration-200"
+                            className="w-full px-3 py-2.5 bg-white border border-gray-200 rounded-lg focus:ring-2 focus:ring-purple-500/20 focus:border-purple-400 transition-all duration-200"
                             required
                           />
                         ) : (
-                          <div className="px-4 py-3 bg-gray-50 rounded-xl text-gray-900">{userData.hospitalName || 'Not provided'}</div>
+                          <div className="px-3 py-2.5 bg-gray-50 rounded-lg text-gray-900">{userData.hospitalName || 'Not provided'}</div>
                         )}
                       </div>
 
@@ -2842,10 +1292,10 @@ const ProfilePage = () => {
                             name="registrationNumber"
                             value={formData.registrationNumber || ''}
                             onChange={handleInputChange}
-                            className="w-full px-4 py-3 bg-white border border-gray-200 rounded-xl focus:ring-2 focus:ring-purple-500/20 focus:border-purple-400 transition-all duration-200"
+                            className="w-full px-3 py-2.5 bg-white border border-gray-200 rounded-lg focus:ring-2 focus:ring-purple-500/20 focus:border-purple-400 transition-all duration-200"
                           />
                         ) : (
-                          <div className="px-4 py-3 bg-gray-50 rounded-xl text-gray-900">{userData.registrationNumber || 'Not provided'}</div>
+                          <div className="px-3 py-2.5 bg-gray-50 rounded-lg text-gray-900">{userData.registrationNumber || 'Not provided'}</div>
                         )}
                       </div>
                     </>
@@ -2862,11 +1312,11 @@ const ProfilePage = () => {
                             name="name"
                             value={formData.name || ''}
                             onChange={handleInputChange}
-                            className="w-full px-4 py-3 bg-white border border-gray-200 rounded-xl focus:ring-2 focus:ring-rose-500/20 focus:border-rose-400 transition-all duration-200"
+                            className="w-full px-3 py-2.5 bg-white border border-gray-200 rounded-lg focus:ring-2 focus:ring-rose-500/20 focus:border-rose-400 transition-all duration-200"
                             required
                           />
                         ) : (
-                          <div className="px-4 py-3 bg-gray-50 rounded-xl text-gray-900">{userData.name || 'Not provided'}</div>
+                          <div className="px-3 py-2.5 bg-gray-50 rounded-lg text-gray-900">{userData.name || 'Not provided'}</div>
                         )}
                       </div>
 
@@ -2881,11 +1331,11 @@ const ProfilePage = () => {
                             name="email"
                             value={formData.email || ''}
                             onChange={handleInputChange}
-                            className="w-full px-4 py-3 bg-white border border-gray-200 rounded-xl focus:ring-2 focus:ring-rose-500/20 focus:border-rose-400 transition-all duration-200"
+                            className="w-full px-3 py-2.5 bg-white border border-gray-200 rounded-lg focus:ring-2 focus:ring-rose-500/20 focus:border-rose-400 transition-all duration-200"
                             required
                           />
                         ) : (
-                          <div className="px-4 py-3 bg-gray-50 rounded-xl text-gray-900">{userData.email || 'Not provided'}</div>
+                          <div className="px-3 py-2.5 bg-gray-50 rounded-lg text-gray-900">{userData.email || 'Not provided'}</div>
                         )}
                       </div>
                     </>
@@ -2902,11 +1352,11 @@ const ProfilePage = () => {
                         name="phone"
                         value={formData.phone || ''}
                         onChange={handleInputChange}
-                        className="w-full px-4 py-3 bg-white border border-gray-200 rounded-xl focus:ring-2 focus:ring-rose-500/20 focus:border-rose-400 transition-all duration-200"
+                        className="w-full px-3 py-2.5 bg-white border border-gray-200 rounded-lg focus:ring-2 focus:ring-rose-500/20 focus:border-rose-400 transition-all duration-200"
                         required
                       />
                     ) : (
-                      <div className="px-4 py-3 bg-gray-50 rounded-xl text-gray-900">{userData.phone || 'Not provided'}</div>
+                      <div className="px-3 py-2.5 bg-gray-50 rounded-lg text-gray-900">{userData.phone || 'Not provided'}</div>
                     )}
                   </div>
 
@@ -2921,10 +1371,10 @@ const ProfilePage = () => {
                         name="address"
                         value={formData.address || ''}
                         onChange={handleInputChange}
-                        className="w-full px-4 py-3 bg-white border border-gray-200 rounded-xl focus:ring-2 focus:ring-rose-500/20 focus:border-rose-400 transition-all duration-200"
+                        className="w-full px-3 py-2.5 bg-white border border-gray-200 rounded-lg focus:ring-2 focus:ring-rose-500/20 focus:border-rose-400 transition-all duration-200"
                       />
                     ) : (
-                      <div className="px-4 py-3 bg-gray-50 rounded-xl text-gray-900">{userData.address || 'Not provided'}</div>
+                      <div className="px-3 py-2.5 bg-gray-50 rounded-lg text-gray-900">{userData.address || 'Not provided'}</div>
                     )}
                   </div>
                 </div>
@@ -2933,31 +1383,31 @@ const ProfilePage = () => {
               </div>
             </div>
 
-            <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6">
+            <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
               <h2 className="text-xl font-bold text-gray-900 mb-6">Recent Activity</h2>
               <div className="space-y-4">
-                <div className="flex items-center gap-4 p-4 border border-gray-100 rounded-xl hover:bg-gray-50 transition-colors">
+                <div className="flex items-center gap-4 p-4 border border-gray-100 rounded-lg hover:bg-gray-50 transition-colors">
                   <div className="p-3 rounded-lg bg-emerald-100 text-emerald-600">
-                    <CheckCircle className="h-6 w-6" />
+                    <CheckCircle className="h-5 w-5" />
                   </div>
                   <div className="flex-1">
                     <div className="font-semibold text-gray-900">Profile Updated</div>
                     <div className="text-sm text-gray-500">You updated your profile information</div>
                   </div>
                   <div className="text-sm text-gray-500">
-                    {userData.lastUpdated ? new Date(userData.lastUpdated).toLocaleDateString() : 'Never'}
+                    {userData.lastUpdated ? new Date(userData.lastUpdated).toLocaleDateString('en-IN') : 'Never'}
                   </div>
                 </div>
-                <div className="flex items-center gap-4 p-4 border border-gray-100 rounded-xl hover:bg-gray-50 transition-colors">
+                <div className="flex items-center gap-4 p-4 border border-gray-100 rounded-lg hover:bg-gray-50 transition-colors">
                   <div className="p-3 rounded-lg bg-blue-100 text-blue-600">
-                    <Calendar className="h-6 w-6" />
+                    <Calendar className="h-5 w-5" />
                   </div>
                   <div className="flex-1">
                     <div className="font-semibold text-gray-900">Account Created</div>
                     <div className="text-sm text-gray-500">You joined JeevanDaan community</div>
                   </div>
                   <div className="text-sm text-gray-500">
-                    {new Date(userData.registrationDate || userData.joinDate || Date.now()).toLocaleDateString()}
+                    {new Date(userData.registrationDate || Date.now()).toLocaleDateString('en-IN')}
                   </div>
                 </div>
               </div>
@@ -2967,11 +1417,11 @@ const ProfilePage = () => {
 
       case 'settings':
         return (
-          <div className="space-y-8">
-            <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6">
+          <div className="space-y-6">
+            <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
               <h2 className="text-xl font-bold text-gray-900 mb-6">Notification Settings</h2>
               <div className="space-y-4">
-                <div className="flex items-center justify-between p-4 border border-gray-100 rounded-xl">
+                <div className="flex items-center justify-between p-4 border border-gray-100 rounded-lg">
                   <div>
                     <div className="font-medium text-gray-900">Email Notifications</div>
                     <div className="text-sm text-gray-500">Receive updates via email</div>
@@ -2987,7 +1437,7 @@ const ProfilePage = () => {
                     <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-600"></div>
                   </label>
                 </div>
-                <div className="flex items-center justify-between p-4 border border-gray-100 rounded-xl">
+                <div className="flex items-center justify-between p-4 border border-gray-100 rounded-lg">
                   <div>
                     <div className="font-medium text-gray-900">Push Notifications</div>
                     <div className="text-sm text-gray-500">Get instant alerts</div>
@@ -3010,8 +1460,8 @@ const ProfilePage = () => {
 
       case 'security':
         return (
-          <div className="space-y-8">
-            <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6">
+          <div className="space-y-6">
+            <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
               <h2 className="text-xl font-bold text-gray-900 mb-6">Security Settings</h2>
               <div className="space-y-4">
                 <div className="space-y-2">
@@ -3019,7 +1469,7 @@ const ProfilePage = () => {
                   <div className="relative">
                     <input
                       type={showPassword ? "text" : "password"}
-                      className="w-full px-4 py-3 bg-white border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500/20 focus:border-blue-400"
+                      className="w-full px-3 py-2.5 bg-white border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500/20 focus:border-blue-400"
                       placeholder="Enter new password"
                       disabled={!isEditing}
                     />
@@ -3074,11 +1524,10 @@ const ProfilePage = () => {
     );
   }
 
-  const IconComponent = userType.icon;
   const stats = getUserStats();
   const quickActions = getQuickActions();
 
-  // Get display name based on user type
+  // Get display name
   const getDisplayName = () => {
     if (userType.key === 'hospital') {
       return userData.hospitalName || 'Hospital';
@@ -3088,154 +1537,154 @@ const ProfilePage = () => {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-50 via-white to-gray-100">
-      {/* Top Navigation */}
+      {/* Responsive Top Navigation */}
       <nav className="bg-white shadow-sm border-b sticky top-0 z-50">
         <div className="max-w-7xl mx-auto px-4">
           <div className="flex items-center justify-between h-16">
-            <Link to="/" className="flex items-center gap-3 group">
-              <div className={`bg-gradient-to-r ${userType.color} p-2 rounded-xl shadow-sm group-hover:scale-105 transition-transform duration-200`}>
-                <IconComponent className="h-6 w-6 text-white" />
-              </div>
-              <div>
-                <h1 className="text-xl font-bold bg-gradient-to-r from-gray-900 to-gray-700 bg-clip-text text-transparent">
-                  JeevanDaan
-                </h1>
-                <p className="text-xs text-gray-500 font-medium">Profile</p>
-              </div>
-            </Link>
-            
             <div className="flex items-center gap-3">
+              <Link to="/" className="flex items-center gap-2 group">
+                <div className={`bg-gradient-to-r ${userType.gradient} p-2 rounded-lg shadow-sm group-hover:scale-105 transition-transform duration-200`}>
+                  <userType.icon className="h-5 w-5 text-white" />
+                </div>
+                <div className="hidden sm:block">
+                  <h1 className="text-lg font-bold bg-gradient-to-r from-gray-900 to-gray-700 bg-clip-text text-transparent">
+                    JeevanDaan
+                  </h1>
+                  <p className="text-xs text-gray-500">Profile</p>
+                </div>
+              </Link>
+              
+              <div className="hidden md:block ml-4">
+                <span className={`px-3 py-1 rounded-full text-sm font-medium ${userType.bgColor} ${userType.textColor} border ${userType.borderColor}`}>
+                  {userType.label}
+                </span>
+              </div>
+            </div>
+            
+            <div className="flex items-center gap-2">
               <Link 
                 to="/" 
-                className="flex items-center gap-2 px-4 py-2 text-gray-600 hover:text-rose-600 hover:bg-rose-50 rounded-xl transition-all duration-200 font-medium"
+                className="flex items-center gap-2 px-3 py-2 text-gray-600 hover:text-rose-600 hover:bg-rose-50 rounded-lg transition-all duration-200 font-medium text-sm"
               >
                 <Home className="h-4 w-4" />
                 <span className="hidden sm:inline">Home</span>
               </Link>
+              
+              <button
+                onClick={() => setIsEditing(!isEditing)}
+                className="flex items-center gap-2 px-3 py-2 bg-gray-50 text-gray-700 hover:bg-gray-100 rounded-lg transition-all duration-200 font-medium text-sm"
+              >
+                {isEditing ? (
+                  <>
+                    <X className="h-4 w-4" />
+                    <span className="hidden sm:inline">Cancel Edit</span>
+                  </>
+                ) : (
+                  <>
+                    <Edit2 className="h-4 w-4" />
+                    <span className="hidden sm:inline">Edit Profile</span>
+                  </>
+                )}
+              </button>
+              
               <button
                 onClick={handleLogout}
-                className="flex items-center gap-2 px-4 py-2 bg-gray-50 text-gray-700 hover:bg-gray-100 rounded-xl transition-all duration-200 font-medium hover:scale-105"
+                className="flex items-center gap-2 px-3 py-2 bg-gradient-to-r from-rose-500 to-pink-500 text-white rounded-lg transition-all duration-200 font-medium hover:scale-105 text-sm"
               >
                 <LogOut className="h-4 w-4" />
-                <span>Logout</span>
+                <span className="hidden sm:inline">Logout</span>
               </button>
             </div>
           </div>
         </div>
       </nav>
 
-      <div className="max-w-7xl mx-auto px-4 py-8">
-        {/* Profile Header */}
-        <div className={`relative overflow-hidden rounded-2xl shadow-xl mb-8`}>
-          <div className={`absolute inset-0 bg-gradient-to-r ${userType.color} opacity-90`}></div>
-          <div className="relative p-6 md:p-8">
-            <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-6">
-              <div className="flex items-center gap-4">
-                <div className="relative">
-                  <div className="w-20 h-20 md:w-24 md:h-24 bg-white/20 backdrop-blur-sm rounded-2xl flex items-center justify-center">
-                    {userType.key === 'hospital' ? (
-                      <Building2 className="h-10 w-10 md:h-12 md:w-12 text-white" />
-                    ) : (
-                      <User className="h-10 w-10 md:h-12 md:w-12 text-white" />
-                    )}
+      <div className="max-w-7xl mx-auto px-4 py-6">
+        {/* Profile Header - Responsive */}
+        <div className="mb-6">
+          <div className={`relative overflow-hidden rounded-xl shadow-lg mb-4`}>
+            <div className={`absolute inset-0 bg-gradient-to-r ${userType.gradient} opacity-90`}></div>
+            <div className="relative p-4 md:p-6">
+              <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
+                <div className="flex items-center gap-3">
+                  <div className="relative">
+                    <div className="w-16 h-16 bg-white/20 backdrop-blur-sm rounded-xl flex items-center justify-center">
+                      {userType.key === 'hospital' ? (
+                        <Building2 className="h-8 w-8 text-white" />
+                      ) : (
+                        <User className="h-8 w-8 text-white" />
+                      )}
+                    </div>
+                    <div className="absolute -bottom-2 -right-2 w-8 h-8 bg-white rounded-full border-2 border-white flex items-center justify-center">
+                      <userType.icon className={`h-4 w-4 ${userType.gradient.replace('from-', 'text-').split(' ')[0]}`} />
+                    </div>
                   </div>
-                  <div className="absolute -bottom-2 -right-2 w-10 h-10 bg-white rounded-full border-4 border-white flex items-center justify-center">
-                    <IconComponent className={`h-5 w-5 ${userType.color.replace('from-', 'text-').split(' ')[0]}`} />
-                  </div>
-                </div>
-                <div>
-                  <h1 className="text-2xl md:text-3xl font-bold text-white">{getDisplayName()}</h1>
-                  <div className="flex items-center gap-3 mt-2">
-                    <span className="px-3 py-1 bg-white/20 backdrop-blur-sm text-white rounded-full text-sm font-medium">
-                      {userType.label}
-                    </span>
-                    <span className="flex items-center gap-1 text-white/80 text-sm">
-                      <CheckCircle className="h-4 w-4" />
-                      Verified
-                    </span>
-                    {userType.key === 'hospital' && userData.registrationNumber && (
-                      <span className="text-white/80 text-sm">
-                        Reg: {userData.registrationNumber}
+                  <div>
+                    <h1 className="text-xl md:text-2xl font-bold text-white">{getDisplayName()}</h1>
+                    <div className="flex items-center gap-2 mt-1">
+                      <span className="px-2 py-1 bg-white/20 backdrop-blur-sm text-white rounded-full text-xs font-medium">
+                        {userType.label}
                       </span>
-                    )}
+                      <span className="flex items-center gap-1 text-white/80 text-xs">
+                        <CheckCircle className="h-3 w-3" />
+                        Verified
+                      </span>
+                    </div>
                   </div>
                 </div>
-              </div>
-              
-              <div className="flex items-center gap-3">
-                {!isEditing ? (
-                  <button
-                    onClick={() => setIsEditing(true)}
-                    className="flex items-center gap-2 px-4 py-2.5 bg-white text-gray-700 rounded-xl font-medium hover:bg-gray-50 transition-all duration-200 hover:scale-105 shadow-lg"
-                  >
-                    <Edit2 className="h-4 w-4" />
-                    <span>Edit Profile</span>
-                  </button>
-                ) : (
-                  <div className="flex items-center gap-2">
+                
+                <div className="flex items-center gap-2 mt-4 md:mt-0">
+                  {isEditing ? (
                     <button
                       onClick={handleSave}
                       disabled={saving}
-                      className="flex items-center gap-2 px-4 py-2.5 bg-white text-emerald-600 rounded-xl font-medium hover:bg-emerald-50 transition-all duration-200 hover:scale-105 disabled:opacity-50 shadow-lg"
+                      className="flex items-center gap-2 px-3 py-2 bg-white text-emerald-600 rounded-lg font-medium hover:bg-emerald-50 transition-all duration-200 disabled:opacity-50 shadow-lg text-sm"
                     >
                       {saving ? <Loader2 className="h-4 w-4 animate-spin" /> : <Save className="h-4 w-4" />}
                       <span>{saving ? 'Saving...' : 'Save'}</span>
                     </button>
-                    <button
-                      onClick={() => {
-                        setIsEditing(false);
-                        setFormData({ ...userData });
-                        setMessage({ type: '', text: '' });
-                        if (userType.key === 'hospital') {
-                          loadHospitalData(userData);
-                        }
-                      }}
-                      className="flex items-center gap-2 px-4 py-2.5 bg-white text-gray-600 rounded-xl font-medium hover:bg-gray-100 transition-all duration-200 hover:scale-105 shadow-lg"
-                    >
-                      <X className="h-4 w-4" />
-                      <span>Cancel</span>
-                    </button>
-                  </div>
-                )}
+                  ) : null}
+                </div>
               </div>
             </div>
           </div>
+
+          {/* Message Alert */}
+          {message.text && (
+            <div className={`p-3 rounded-lg flex items-center gap-3 animate-fadeIn shadow-sm ${
+              message.type === 'success' 
+                ? 'bg-emerald-50 text-emerald-700 border border-emerald-200'
+                : 'bg-red-50 text-red-700 border border-red-200'
+            }`}>
+              {message.type === 'success' ? 
+                <CheckCircle className="h-5 w-5 flex-shrink-0" /> : 
+                <AlertCircle className="h-5 w-5 flex-shrink-0" />
+              }
+              <span className="font-medium text-sm">{message.text}</span>
+            </div>
+          )}
         </div>
 
-        {/* Message Alert */}
-        {message.text && (
-          <div className={`mb-6 p-4 rounded-xl flex items-center gap-3 animate-fadeIn shadow-sm ${
-            message.type === 'success' 
-              ? 'bg-emerald-50 text-emerald-700 border border-emerald-200'
-              : 'bg-red-50 text-red-700 border border-red-200'
-          }`}>
-            {message.type === 'success' ? 
-              <CheckCircle className="h-5 w-5 flex-shrink-0" /> : 
-              <AlertCircle className="h-5 w-5 flex-shrink-0" />
-            }
-            <span className="font-medium">{message.text}</span>
-          </div>
-        )}
-
-        <div className="grid grid-cols-1 lg:grid-cols-4 gap-8">
-          {/* Left Sidebar */}
-          <div className="lg:col-span-1 space-y-6">
+        {/* Main Content */}
+        <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
+          {/* Left Sidebar - Hidden on mobile */}
+          <div className="lg:col-span-1 space-y-4 hidden lg:block">
             {/* Stats Cards */}
-            <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6">
-              <h2 className="text-lg font-bold text-gray-900 mb-6 flex items-center gap-2">
+            <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-4">
+              <h2 className="text-lg font-bold text-gray-900 mb-4 flex items-center gap-2">
                 <BarChart3 className="h-5 w-5 text-gray-500" />
                 Your Stats
               </h2>
-              <div className="space-y-4">
+              <div className="space-y-3">
                 {stats.map((stat, index) => (
-                  <div key={index} className={`p-4 rounded-xl border ${stat.border} ${stat.bg} hover:scale-[1.02] transition-transform duration-200`}>
-                    <div className="flex items-center gap-3">
-                      <div className={`p-2 rounded-lg ${stat.bg} ${stat.color}`}>
-                        <stat.icon className="h-5 w-5" />
+                  <div key={index} className={`p-3 rounded-lg border ${stat.border} ${stat.bg} hover:scale-[1.02] transition-transform duration-200`}>
+                    <div className="flex items-center gap-2">
+                      <div className={`p-1.5 rounded ${stat.bg} ${stat.color}`}>
+                        <stat.icon className="h-4 w-4" />
                       </div>
-                      <div>
-                        <div className="text-2xl font-bold text-gray-900">{stat.value}</div>
-                        <div className="text-sm text-gray-600">{stat.label}</div>
+                      <div className="flex-1 min-w-0">
+                        <div className="text-lg font-bold text-gray-900 truncate">{stat.value}</div>
+                        <div className="text-xs text-gray-600 truncate">{stat.label}</div>
                       </div>
                     </div>
                   </div>
@@ -3244,71 +1693,42 @@ const ProfilePage = () => {
             </div>
 
             {/* Quick Actions */}
-            <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6">
-              <h2 className="text-lg font-bold text-gray-900 mb-6 flex items-center gap-2">
+            <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-4">
+              <h2 className="text-lg font-bold text-gray-900 mb-4 flex items-center gap-2">
                 <Zap className="h-5 w-5 text-amber-500" />
                 Quick Actions
               </h2>
-              <div className="space-y-3">
-                {quickActions.map((action, index) => (
+              <div className="space-y-2">
+                {quickActions.slice(0, isMobile ? 3 : 4).map((action, index) => (
                   <button
                     key={index}
                     onClick={action.onClick}
-                    className="w-full flex items-center justify-between p-3 border border-gray-200 rounded-xl hover:bg-gray-50 transition-all duration-200 hover:scale-[1.02] group"
+                    className="w-full flex items-center justify-between p-2 border border-gray-200 rounded-lg hover:bg-gray-50 transition-all duration-200 group text-sm"
                   >
-                    <div className="flex items-center gap-3">
-                      <div className={`p-2 rounded-lg ${action.bg}`}>
-                        <action.icon className={`h-4 w-4 ${action.color}`} />
+                    <div className="flex items-center gap-2">
+                      <div className={`p-1.5 rounded ${action.bg}`}>
+                        <action.icon className={`h-3.5 w-3.5 ${action.color}`} />
                       </div>
-                      <span className="font-medium text-gray-700 group-hover:text-gray-900">{action.label}</span>
+                      <span className="font-medium text-gray-700 group-hover:text-gray-900 truncate">{action.label}</span>
                     </div>
-                    <ChevronRight className="h-4 w-4 text-gray-400 group-hover:text-gray-600" />
+                    <ChevronRight className="h-3.5 w-3.5 text-gray-400 group-hover:text-gray-600" />
                   </button>
                 ))}
               </div>
             </div>
-
-            {/* Account Status */}
-            <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6">
-              <h2 className="text-lg font-bold text-gray-900 mb-4 flex items-center gap-2">
-                <Shield className="h-5 w-5 text-gray-500" />
-                Account Status
-              </h2>
-              <div className="space-y-4">
-                <div className="flex items-center justify-between">
-                  <span className="text-gray-600">Verification</span>
-                  <span className="flex items-center gap-1 text-emerald-600 font-medium">
-                    <CheckCircle className="h-4 w-4" />
-                    Verified
-                  </span>
-                </div>
-                <div className="flex items-center justify-between">
-                  <span className="text-gray-600">Account Type</span>
-                  <span className={`px-2 py-1 rounded-full text-xs font-medium ${userType.lightColor}`}>
-                    {userType.label}
-                  </span>
-                </div>
-                <div className="flex items-center justify-between">
-                  <span className="text-gray-600">Member Since</span>
-                  <span className="font-medium text-gray-900">
-                    {new Date(userData.registrationDate || userData.joinDate || Date.now()).toLocaleDateString()}
-                  </span>
-                </div>
-              </div>
-            </div>
           </div>
 
-          {/* Main Content */}
+          {/* Main Content Area */}
           <div className="lg:col-span-3">
-            {/* Tabs */}
-            <div className="flex items-center gap-2 mb-6 p-1 bg-gray-100 rounded-2xl">
+            {/* Responsive Tabs */}
+            <div className="flex items-center gap-1 mb-4 p-1 bg-gray-100 rounded-lg overflow-x-auto">
               {['overview', 'settings', 'security'].map(tab => (
                 <button
                   key={tab}
                   onClick={() => setActiveTab(tab)}
-                  className={`flex-1 px-4 py-2.5 rounded-xl text-sm font-medium transition-all duration-200 ${
+                  className={`px-3 py-2 rounded-lg text-sm font-medium transition-all duration-200 whitespace-nowrap ${
                     activeTab === tab
-                      ? `bg-white text-gray-900 shadow-sm ${userType.color.replace('from-', 'border-l-4 border-').split(' ')[0]}`
+                      ? `bg-white text-gray-900 shadow-sm ${userType.gradient.replace('from-', 'border-l-2 border-').split(' ')[0]}`
                       : 'text-gray-600 hover:text-gray-900'
                   }`}
                 >
@@ -3319,19 +1739,41 @@ const ProfilePage = () => {
 
             {renderTabContent()}
 
+            {/* Mobile Quick Actions */}
+            <div className="lg:hidden mt-6 bg-white rounded-xl shadow-sm border border-gray-100 p-4">
+              <h2 className="text-lg font-bold text-gray-900 mb-4 flex items-center gap-2">
+                <Zap className="h-5 w-5 text-amber-500" />
+                Quick Actions
+              </h2>
+              <div className="grid grid-cols-2 gap-2">
+                {quickActions.slice(0, 4).map((action, index) => (
+                  <button
+                    key={index}
+                    onClick={action.onClick}
+                    className="flex flex-col items-center justify-center p-3 border border-gray-200 rounded-lg hover:bg-gray-50 transition-all duration-200 group"
+                  >
+                    <div className={`p-2 rounded-lg ${action.bg} mb-2`}>
+                      <action.icon className={`h-4 w-4 ${action.color}`} />
+                    </div>
+                    <span className="text-xs font-medium text-gray-700 group-hover:text-gray-900 text-center truncate w-full">{action.label}</span>
+                  </button>
+                ))}
+              </div>
+            </div>
+
             {/* Danger Zone */}
-            <div className="mt-8 bg-white rounded-2xl shadow-sm border border-red-100 p-6">
-              <div className="flex items-center justify-between mb-4">
+            <div className="mt-6 bg-white rounded-xl shadow-sm border border-red-100 p-4">
+              <div className="flex items-center justify-between mb-3">
                 <h2 className="text-lg font-bold text-gray-900 flex items-center gap-2">
                   <AlertCircle className="h-5 w-5 text-red-500" />
                   Account Management
                 </h2>
                 <span className="text-xs text-red-600 bg-red-50 px-2 py-1 rounded-full">Danger Zone</span>
               </div>
-              <div className="space-y-3">
+              <div className="space-y-2">
                 <button
                   onClick={handleLogout}
-                  className="w-full text-left p-3 text-gray-600 hover:bg-gray-50 rounded-xl transition-colors flex items-center gap-3"
+                  className="w-full text-left p-2.5 text-gray-600 hover:bg-gray-50 rounded-lg transition-colors flex items-center gap-2 text-sm"
                 >
                   <LogOut className="h-4 w-4" />
                   <span>Logout from all devices</span>
@@ -3343,7 +1785,7 @@ const ProfilePage = () => {
                       navigate('/');
                     }
                   }}
-                  className="w-full text-left p-3 text-red-600 hover:bg-red-50 rounded-xl transition-colors flex items-center gap-3"
+                  className="w-full text-left p-2.5 text-red-600 hover:bg-red-50 rounded-lg transition-colors flex items-center gap-2 text-sm"
                 >
                   <AlertCircle className="h-4 w-4" />
                   <span>Delete Account</span>
@@ -3354,36 +1796,38 @@ const ProfilePage = () => {
         </div>
       </div>
 
-      {/* Footer */}
-      <footer className="mt-12 py-8 border-t border-gray-100 bg-white">
-        <div className="max-w-7xl mx-auto px-4">
-          <div className="flex flex-col md:flex-row items-center justify-between gap-4">
-            <div className="flex items-center gap-3">
-              <div className={`bg-gradient-to-r ${userType.color} p-2 rounded-lg`}>
-                <IconComponent className="h-5 w-5 text-white" />
-              </div>
-              <div>
-                <p className="text-gray-900 font-medium">JeevanDaan Profile</p>
-                <p className="text-sm text-gray-500">
-                  Last updated: {userData.lastUpdated ? new Date(userData.lastUpdated).toLocaleString() : 'Never'}
-                </p>
+      {/* Mobile Stats Cards - Bottom Sheet */}
+      <div className="lg:hidden fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 shadow-lg p-4">
+        <div className="grid grid-cols-2 gap-3">
+          {stats.slice(0, 4).map((stat, index) => (
+            <div key={index} className={`p-2 rounded-lg border ${stat.border} ${stat.bg}`}>
+              <div className="flex items-center gap-2">
+                <div className={`p-1 rounded ${stat.bg} ${stat.color}`}>
+                  <stat.icon className="h-3 w-3" />
+                </div>
+                <div className="flex-1 min-w-0">
+                  <div className="text-sm font-bold text-gray-900 truncate">{stat.value}</div>
+                  <div className="text-xs text-gray-600 truncate">{stat.label}</div>
+                </div>
               </div>
             </div>
-            
-            <div className="flex items-center gap-6">
-              <button className="text-sm text-gray-600 hover:text-gray-900 transition-colors">
-                <HelpCircle className="h-5 w-5" />
-              </button>
-              <button className="text-sm text-gray-600 hover:text-gray-900 transition-colors">
-                <MessageSquare className="h-5 w-5" />
-              </button>
-              <button className="text-sm text-gray-600 hover:text-gray-900 transition-colors">
-                <LifeBuoy className="h-5 w-5" />
-              </button>
-            </div>
-          </div>
+          ))}
         </div>
-      </footer>
+      </div>
+
+      {/* Add padding for mobile bottom stats */}
+      <div className="lg:hidden pb-20"></div>
+
+      <style jsx global>{`
+        @keyframes fadeIn {
+          from { opacity: 0; transform: translateY(-10px); }
+          to { opacity: 1; transform: translateY(0); }
+        }
+        
+        .animate-fadeIn {
+          animation: fadeIn 0.3s ease-out;
+        }
+      `}</style>
     </div>
   );
 };

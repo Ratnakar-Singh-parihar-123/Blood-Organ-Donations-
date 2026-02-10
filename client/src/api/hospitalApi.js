@@ -1,9 +1,10 @@
 import axios from "axios";
 
-const API = axios.create({
-  baseURL: "http://localhost:5000/api/hospitals", // backend URL
+export const API = axios.create({
+  baseURL: `${import.meta.env.VITE_API_URL}/hospitals`,
   withCredentials: true,
 });
+
 
 // REGISTER
 export const registerHospital = (data) =>
@@ -12,3 +13,4 @@ export const registerHospital = (data) =>
 // LOGIN
 export const loginHospital = (data) =>
   API.post("/login", data);
+
