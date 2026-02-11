@@ -155,6 +155,13 @@ const Navbar = () => {
   const [windowWidth, setWindowWidth] = useState(window.innerWidth);
   const [isLoading, setIsLoading] = useState(false);
   const [showEmergencyModal, setShowEmergencyModal] = useState(false);
+  const [showLoginPrompt, setShowLoginPrompt] = useState(false);
+  const [loginPromptData, setLoginPromptData] = useState({
+    title: '',
+    message: '',
+    redirectPath: '',
+    requiredUserType: null
+  });
   
   // User IDs
   const [patientId, setPatientId] = useState('');
@@ -463,6 +470,9 @@ const Navbar = () => {
         // Close any open modals
         setIsProfileOpen(false);
         setIsMobileMenuOpen(false);
+        
+        // Close login prompt if open
+        setShowLoginPrompt(false);
       }
     };
     
@@ -573,7 +583,15 @@ const Navbar = () => {
           if (userType === 'hospital') return `/hospital/blood-bank?id=${hospitalId}`;
           return '/blood-donation';
         },
-        requiresAuth: false
+        requiresAuth: false,
+        showLoginPrompt: true, // Show login prompt for this page when not logged in
+        loginPrompt: {
+          title: 'Login Required for Blood Donation',
+          message: 'Please login to access blood donation features, find donors, or request blood.',
+          icon: Droplets,
+          gradient: 'from-red-500 to-pink-500',
+          requiredUserTypes: ['bloodDonor', 'patient', 'user', 'organDonor']
+        }
       },
       {
         id: 'organ',
@@ -582,11 +600,19 @@ const Navbar = () => {
         description: 'Organ donation & transplantation',
         badge: userType === 'organDonor' ? 'Donor' : null,
         getPath: () => {
-          if (userType === 'organDonor') return `/donor/dashboard?type=organ&id=${donorId}`;
+          if (userType === 'organDonor') return `/donor-dashboard?type=organ&id=${donorId}`;
           if (userType === 'hospital') return `/hospital/organ-bank?id=${hospitalId}`;
           return '/organ-donation';
         },
-        requiresAuth: false
+        requiresAuth: false,
+        showLoginPrompt: true, // Show login prompt for this page when not logged in
+        loginPrompt: {
+          title: 'Login Required for Organ Donation',
+          message: 'Please login to access organ donation features, register as donor, or find organ matches.',
+          icon: ActivityIcon,
+          gradient: 'from-green-500 to-emerald-500',
+          requiredUserTypes: ['organDonor', 'patient', 'user', 'bloodDonor']
+        }
       },
       {
         id: 'urgent',
@@ -602,12 +628,20 @@ const Navbar = () => {
                     userType === 'hospital' ? 'Manage hospital requests' : 'Find urgent blood/organ needs',
         badge: notificationCount > 0 ? `${notificationCount}` : null,
         getPath: () => {
-          if (userType === 'patient') return `/patient/matches?id=${patientId}`;
-          if (userType === 'bloodDonor' || userType === 'organDonor') return `/donor/requests?id=${donorId}`;
+          if (userType === 'patient') return `/patient-matches/${patientId}`;
+          if (userType === 'bloodDonor' || userType === 'organDonor') return `/donor-request?id=${donorId}`;
           if (userType === 'hospital') return `/hospital/requests?id=${hospitalId}`;
           return '/urgent-requests';
         },
-        requiresAuth: false
+        requiresAuth: false,
+        showLoginPrompt: true, // Show login prompt for this page when not logged in
+        loginPrompt: {
+          title: 'Login Required',
+          message: 'Please login to view donor matches, requests, or urgent needs.',
+          icon: AlertCircle,
+          gradient: 'from-amber-500 to-orange-500',
+          requiredUserTypes: ['patient', 'bloodDonor', 'organDonor', 'user', 'hospital']
+        }
       },
       {
         id: 'hospitals',
@@ -617,7 +651,15 @@ const Navbar = () => {
         description: userType === 'hospital' ? 'Hospital management dashboard' : 'Find hospitals & clinics',
         badge: userType === 'hospital' ? 'Admin' : null,
         getPath: () => userType === 'hospital' ? `/hospital/dashboard?id=${hospitalId}` : '/hospitals',
-        requiresAuth: userType === 'hospital'
+        requiresAuth: userType === 'hospital',
+        showLoginPrompt: userType === 'hospital', // Only show prompt for hospital dashboard
+        loginPrompt: {
+          title: 'Hospital Login Required',
+          message: 'Please login with hospital credentials to access hospital dashboard.',
+          icon: Building2,
+          gradient: 'from-purple-500 to-violet-500',
+          requiredUserTypes: ['hospital']
+        }
       }
     ];
 
@@ -689,7 +731,8 @@ const Navbar = () => {
       bgColor: 'bg-blue-50',
       gradient: 'from-blue-500 to-cyan-500',
       getPath: () => '/',
-      requiresAuth: false
+      requiresAuth: false,
+      showLoginPrompt: false
     },
     {
       id: 'blood',
@@ -699,10 +742,17 @@ const Navbar = () => {
       bgColor: 'bg-red-50',
       gradient: 'from-red-500 to-pink-500',
       getPath: () => {
-        if (userType === 'bloodDonor') return `/donor/dashboard?type=blood&id=${donorId}`;
+        if (userType === 'bloodDonor') return `/donor-dashboard?type=blood&id=${donorId}`;
         return '/blood-donation';
       },
-      requiresAuth: false
+      requiresAuth: false,
+      showLoginPrompt: true,
+      loginPrompt: {
+        title: 'Login Required for Blood Donation',
+        message: 'Please login to access blood donation features.',
+        icon: Droplets,
+        gradient: 'from-red-500 to-pink-500'
+      }
     },
     {
       id: 'organ',
@@ -712,10 +762,17 @@ const Navbar = () => {
       bgColor: 'bg-green-50',
       gradient: 'from-green-500 to-emerald-500',
       getPath: () => {
-        if (userType === 'organDonor') return `/donor/dashboard?type=organ&id=${donorId}`;
+        if (userType === 'organDonor') return `/donor-dashboard?type=organ&id=${donorId}`;
         return '/organ-donation';
       },
-      requiresAuth: false
+      requiresAuth: false,
+      showLoginPrompt: true,
+      loginPrompt: {
+        title: 'Login Required for Organ Donation',
+        message: 'Please login to access organ donation features.',
+        icon: ActivityIcon,
+        gradient: 'from-green-500 to-emerald-500'
+      }
     },
     {
       id: 'urgent',
@@ -727,11 +784,18 @@ const Navbar = () => {
       gradient: 'from-amber-500 to-orange-500',
       getPath: () => {
         if (userType === 'patient') return `/patient/matches?id=${patientId}`;
-        if (userType === 'bloodDonor' || userType === 'organDonor') return `/donor/requests?id=${donorId}`;
+        if (userType === 'bloodDonor' || userType === 'organDonor') return `/donor-request?id=${donorId}`;
         if (userType === 'hospital') return `/hospital/requests?id=${hospitalId}`;
         return '/urgent-requests';
       },
-      requiresAuth: false
+      requiresAuth: false,
+      showLoginPrompt: true,
+      loginPrompt: {
+        title: 'Login Required',
+        message: 'Please login to view matches and requests.',
+        icon: AlertCircle,
+        gradient: 'from-amber-500 to-orange-500'
+      }
     },
     {
       id: 'profile',
@@ -743,7 +807,8 @@ const Navbar = () => {
       getPath: () => {
         return '/profile';
       },
-      requiresAuth: false
+      requiresAuth: false,
+      showLoginPrompt: false
     }
   ];
 
@@ -754,19 +819,41 @@ const Navbar = () => {
     // Check if auth is required
     if (item.requiresAuth && !isLoggedIn) {
       navigate('/auth?tab=login');
-    } else {
+    } 
+    // Check if login prompt should be shown
+    else if (!isLoggedIn && item.showLoginPrompt) {
+      // Show login prompt modal
+      setLoginPromptData({
+        title: item.loginPrompt?.title || 'Login Required',
+        message: item.loginPrompt?.message || 'Please login to access this feature.',
+        redirectPath: item.getPath ? item.getPath() : item.path,
+        requiredUserType: item.loginPrompt?.requiredUserTypes || null,
+        icon: item.loginPrompt?.icon || LogIn,
+        gradient: item.loginPrompt?.gradient || 'from-blue-500 to-cyan-500'
+      });
+      setShowLoginPrompt(true);
+      
+      // Close menus on mobile
+      if (window.innerWidth < 1024) {
+        setIsMobileMenuOpen(false);
+      }
+      setIsMoreOpen(false);
+      setIsProfileOpen(false);
+    } 
+    // User is logged in or no login required
+    else {
       const path = item.getPath ? item.getPath() : item.path;
       if (path) {
         navigate(path);
       }
+      
+      // Close menus on mobile
+      if (window.innerWidth < 1024) {
+        setIsMobileMenuOpen(false);
+      }
+      setIsMoreOpen(false);
+      setIsProfileOpen(false);
     }
-    
-    // Close menus on mobile
-    if (window.innerWidth < 1024) {
-      setIsMobileMenuOpen(false);
-    }
-    setIsMoreOpen(false);
-    setIsProfileOpen(false);
   };
 
   const handleNavigation = (itemId) => {
@@ -781,6 +868,18 @@ const Navbar = () => {
       navigate(`/search?q=${encodeURIComponent(searchQuery)}`);
       setIsSearchOpen(false);
       setSearchQuery('');
+    }
+  };
+
+  const handleLoginPromptAction = (action) => {
+    if (action === 'login') {
+      navigate('/auth?tab=login');
+      setShowLoginPrompt(false);
+    } else if (action === 'register') {
+      navigate('/auth?tab=register');
+      setShowLoginPrompt(false);
+    } else if (action === 'cancel') {
+      setShowLoginPrompt(false);
     }
   };
 
@@ -1221,9 +1320,9 @@ const Navbar = () => {
                             <button
                               onClick={() => {
                                 if (userType === 'bloodDonor' || userType === 'organDonor') {
-                                  navigate(`/donor/dashboard?id=${donorId}`);
+                                  navigate(`/donor-dashboard?id=${donorId}`);
                                 } else if (userType === 'patient') {
-                                  navigate(`/patient/dashboard?id=${patientId}`);
+                                  navigate(`/patient-dashboard?id=${patientId}`);
                                 } else if (userType === 'hospital') {
                                   navigate(`/hospital/dashboard?id=${hospitalId}`);
                                 } else if (userType === 'user') {
@@ -1768,6 +1867,120 @@ const Navbar = () => {
                   >
                     Close
                   </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* LOGIN PROMPT MODAL */}
+      {showLoginPrompt && (
+        <div className="fixed inset-0 z-[120] animate-fadeIn">
+          <div 
+            className="absolute inset-0 bg-black/50 backdrop-blur-sm"
+            onClick={() => setShowLoginPrompt(false)}
+          />
+          <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-[90vw] max-w-md">
+            <div className="bg-white rounded-2xl shadow-2xl overflow-hidden animate-fadeIn">
+              {/* Header with gradient based on page type */}
+              <div className={`bg-gradient-to-r ${loginPromptData.gradient} p-6 text-white`}>
+                <div className="flex items-center gap-4">
+                  <div className="w-12 h-12 bg-white/20 backdrop-blur-sm rounded-xl flex items-center justify-center">
+                    {loginPromptData.icon && React.createElement(loginPromptData.icon, { className: "h-6 w-6 text-white" })}
+                  </div>
+                  <div>
+                    <h2 className="text-xl font-bold">{loginPromptData.title}</h2>
+                    <p className="text-white/90 text-sm mt-1">Please login to continue</p>
+                  </div>
+                </div>
+              </div>
+              
+              {/* Content */}
+              <div className="p-6">
+                <div className="mb-6">
+                  <p className="text-gray-600 mb-4">{loginPromptData.message}</p>
+                  
+                  {loginPromptData.requiredUserType && (
+                    <div className="bg-gradient-to-r from-blue-50 to-cyan-50 border border-blue-200 rounded-xl p-4 mb-4">
+                      <h4 className="font-semibold text-blue-900 mb-2 text-sm">Who can access:</h4>
+                      <div className="flex flex-wrap gap-2">
+                        {loginPromptData.requiredUserType.map((type, idx) => {
+                          const typeConfig = userTypesConfig.find(t => t.key === type);
+                          if (!typeConfig) return null;
+                          const Icon = typeConfig.icon;
+                          return (
+                            <div key={idx} className="flex items-center gap-2 px-3 py-1.5 bg-white rounded-lg border border-gray-200">
+                              <div className={`p-1.5 rounded-lg ${typeConfig.bgColor}`}>
+                                <Icon className={`h-4 w-4 ${typeConfig.textColor}`} />
+                              </div>
+                              <span className="text-xs font-medium text-gray-700">{typeConfig.label}</span>
+                            </div>
+                          );
+                        })}
+                      </div>
+                    </div>
+                  )}
+                  
+                  <div className="bg-gradient-to-r from-amber-50 to-amber-100 border border-amber-200 rounded-xl p-4">
+                    <div className="flex items-start gap-3">
+                      <Info className="h-5 w-5 text-amber-600 mt-0.5" />
+                      <div>
+                        <h4 className="font-semibold text-amber-900 text-sm mb-1">Benefits of Login:</h4>
+                        <ul className="text-xs text-amber-800 space-y-1">
+                          <li className="flex items-center gap-2">
+                            <CheckCircle className="h-3 w-3 text-green-500" />
+                            Access donor/patient matching
+                          </li>
+                          <li className="flex items-center gap-2">
+                            <CheckCircle className="h-3 w-3 text-green-500" />
+                            Save your preferences and history
+                          </li>
+                          <li className="flex items-center gap-2">
+                            <CheckCircle className="h-3 w-3 text-green-500" />
+                            Receive notifications and updates
+                          </li>
+                          <li className="flex items-center gap-2">
+                            <CheckCircle className="h-3 w-3 text-green-500" />
+                            Track your donations and requests
+                          </li>
+                        </ul>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+                
+                {/* Action Buttons */}
+                <div className="space-y-3">
+                  <button
+                    onClick={() => handleLoginPromptAction('login')}
+                    className="w-full px-4 py-3 bg-gradient-to-r from-blue-600 to-cyan-500 text-white rounded-lg font-bold hover:shadow-lg hover:shadow-blue-500/30 transition-all flex items-center justify-center gap-2"
+                  >
+                    <LogIn className="h-5 w-5" />
+                    <span>Login Now</span>
+                  </button>
+                  
+                  <button
+                    onClick={() => handleLoginPromptAction('register')}
+                    className="w-full px-4 py-3 bg-gradient-to-r from-green-600 to-emerald-500 text-white rounded-lg font-bold hover:shadow-lg hover:shadow-green-500/30 transition-all flex items-center justify-center gap-2"
+                  >
+                    <UserPlus className="h-5 w-5" />
+                    <span>Create Account</span>
+                  </button>
+                  
+                  <button
+                    onClick={() => handleLoginPromptAction('cancel')}
+                    className="w-full px-4 py-3 bg-gray-100 text-gray-700 rounded-lg font-semibold hover:bg-gray-200 transition-colors"
+                  >
+                    Maybe Later
+                  </button>
+                </div>
+                
+                {/* Guest Info */}
+                <div className="mt-4 pt-4 border-t border-gray-200">
+                  <p className="text-xs text-gray-500 text-center">
+                    You can continue browsing as guest, but some features will be limited.
+                  </p>
                 </div>
               </div>
             </div>

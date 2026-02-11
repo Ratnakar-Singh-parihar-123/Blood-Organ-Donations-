@@ -22,6 +22,9 @@ import Notifications from "./notifications/NotificationsModal";
 import PatientMatches from "./pages/PatientMatches/PatientMatches";
 import Chat from "./pages/chat/chat";
 import Hospital from "./pages/hospital";
+import PatientDashboard from "./pages/patient-dashboard/PatientDashboard";
+import DonorDashboard from "./pages/blood/components/DonorDashboard";
+import DonorRequestPage from "./pages/DonorRequestPage/DonorRequestPage";
 
 // Authentication Modals (for modals on UserTypeSelectionPage)
 // import BloodDonorAuthModal from "./components/auth/BloodDonorAuthModal";
@@ -48,7 +51,9 @@ function App() {
         <Route path="/notifications" element={<Notifications />} />
         <Route path="/chat" element={<Chat />} />
         <Route path="/hospitals" element={<Hospital />} />
-
+        <Route path="/patient-dashboard" element={<PatientDashboard />} />
+        <Route path="/donor-dashboard" element={<DonorDashboard />} />
+        <Route path="/donor-request" element={<DonorRequestPage />} />
         {/* Protected Routes - Require Login */}
         <Route
           path="/emergency-request"
