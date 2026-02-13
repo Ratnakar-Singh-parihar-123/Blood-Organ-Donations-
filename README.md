@@ -1,7 +1,9 @@
 
 # 🩸 Jeevandaan
 
-![Uploading jeevandaan.png…]()
+<p align="center">
+  <img src="./screenshots/jeevandaan.png" width="80%" alt="Jeevandaan Banner" />
+</p>
 
 ### Real-Time Blood & Organ Donation Platform (MERN Stack)
 
