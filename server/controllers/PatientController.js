@@ -101,7 +101,6 @@ const register = async (req, res) => {
   }
 };
 
-
 // LOGIN
 
 const login = async (req, res) => {
@@ -115,9 +114,7 @@ const login = async (req, res) => {
       });
     }
 
-    const patient = await Patient
-      .findOne({ email })
-      .select("+password");
+    const patient = await Patient.findOne({ email }).select("+password");
 
     if (!patient) {
       return res.status(401).json({
@@ -162,7 +159,6 @@ const logout = (req, res) => {
   });
 };
 
-
 // SEND OTP
 const forgotPassword = async (req, res) => {
   try {
@@ -176,10 +172,7 @@ const forgotPassword = async (req, res) => {
     const otp = Math.floor(100000 + Math.random() * 900000).toString();
 
     // hash otp
-    const hashedOTP = crypto
-      .createHash("sha256")
-      .update(otp)
-      .digest("hex");
+    const hashedOTP = crypto.createHash("sha256").update(otp).digest("hex");
 
     patient.resetOTP = hashedOTP;
     patient.resetOTPExpire = Date.now() + 10 * 60 * 1000; // 10 min
@@ -188,7 +181,7 @@ const forgotPassword = async (req, res) => {
     await sendEmail(
       email,
       "Password Reset OTP",
-      `Your OTP is ${otp}. It will expire in 10 minutes.`
+      `Your OTP is ${otp}. It will expire in 10 minutes.`,
     );
 
     res.json({ message: "OTP sent to email" });
@@ -198,17 +191,12 @@ const forgotPassword = async (req, res) => {
   }
 };
 
-
-
 // VERIFY OTP
 const verifyOTP = async (req, res) => {
   try {
     const { email, otp } = req.body;
 
-    const hashedOTP = crypto
-      .createHash("sha256")
-      .update(otp)
-      .digest("hex");
+    const hashedOTP = crypto.createHash("sha256").update(otp).digest("hex");
 
     const patient = await Patient.findOne({
       email,
@@ -217,27 +205,31 @@ const verifyOTP = async (req, res) => {
     });
 
     if (!patient) {
-      return res.status(400).json({ message: "Invalid or expired OTP" });
+      return res.status(400).json({
+        success: false,
+        message: "Invalid or expired OTP",
+      });
     }
 
-    res.json({ message: "OTP verified successfully" });
+    return res.status(200).json({
+      success: true,
+      message: "OTP verified successfully",
+    });
   } catch (error) {
     console.error(error);
-    res.status(500).json({ message: "Server error" });
+    return res.status(500).json({
+      success: false,
+      message: "Server error",
+    });
   }
 };
-
-
 
 // RESET PASSWORD
 const resetPassword = async (req, res) => {
   try {
     const { email, otp, newPassword } = req.body;
 
-    const hashedOTP = crypto
-      .createHash("sha256")
-      .update(otp)
-      .digest("hex");
+    const hashedOTP = crypto.createHash("sha256").update(otp).digest("hex");
 
     const patient = await Patient.findOne({
       email,
@@ -285,10 +277,7 @@ const resendOTP = async (req, res) => {
     // generate new OTP
     const otp = Math.floor(100000 + Math.random() * 900000).toString();
 
-    const hashedOTP = crypto
-      .createHash("sha256")
-      .update(otp)
-      .digest("hex");
+    const hashedOTP = crypto.createHash("sha256").update(otp).digest("hex");
 
     // overwrite old OTP
     patient.resetOTP = hashedOTP;
@@ -299,7 +288,7 @@ const resendOTP = async (req, res) => {
     await sendEmail(
       email,
       "Resend Password Reset OTP",
-      `Your new OTP is ${otp}. It will expire in 10 minutes.`
+      `Your new OTP is ${otp}. It will expire in 10 minutes.`,
     );
 
     res.json({ message: "OTP resent successfully" });
@@ -309,9 +298,7 @@ const resendOTP = async (req, res) => {
   }
 };
 
-
-//  macth donor 
-
+//  macth donor
 
 module.exports = {
   register,

@@ -1,21 +1,46 @@
-import React, { useState, useEffect, useRef } from 'react';
-import { useNavigate, useLocation } from 'react-router-dom';
+import React, { useState, useEffect, useRef } from "react";
+import { useNavigate, useLocation } from "react-router-dom";
 import {
-  Home, Heart, Bell, User,
-  Search, MapPin, Menu, X, Droplets,
-  Calendar, Shield, ChevronDown,
-  LogOut, Settings, HelpCircle,
-  AlertCircle, Star, Award,
-  TrendingUp, History,
-  Gift, LifeBuoy,
-  Bookmark, LogIn, UserPlus,
+  Home,
+  Heart,
+  Bell,
+  User,
+  Search,
+  MapPin,
+  Menu,
+  X,
+  Droplets,
+  Calendar,
+  Shield,
+  ChevronDown,
+  LogOut,
+  Settings,
+  HelpCircle,
+  AlertCircle,
+  Star,
+  Award,
+  TrendingUp,
+  History,
+  Gift,
+  LifeBuoy,
+  Bookmark,
+  LogIn,
+  UserPlus,
   Activity as ActivityIcon,
   Hospital as HospitalIcon,
   Ambulance,
-  CheckCircle, ChevronRight,
-  Sparkles, Zap, MoreVertical,
-  Info, Target, BookOpen,
-  Users, Globe, Phone, Mail,
+  CheckCircle,
+  ChevronRight,
+  Sparkles,
+  Zap,
+  MoreVertical,
+  Info,
+  Target,
+  BookOpen,
+  Users,
+  Globe,
+  Phone,
+  Mail,
   ChevronLeft,
   ExternalLink,
   MessageCircle,
@@ -123,8 +148,8 @@ import {
   Mouse,
   MonitorSpeaker,
   Speaker,
-  Volume1
-} from 'lucide-react';
+  Volume1,
+} from "lucide-react";
 import jeevandaans from "../../public/jeevandaan.png";
 import NotificationsModal from "../notifications/NotificationsModal";
 
@@ -137,7 +162,7 @@ const Navbar = () => {
   const mobileMenuRef = useRef(null);
   const locationRef = useRef(null);
 
-  const [activeTab, setActiveTab] = useState('home');
+  const [activeTab, setActiveTab] = useState("home");
   const [isScrolled, setIsScrolled] = useState(false);
   const [showNotifications, setShowNotifications] = useState(false);
   const [notificationCount, setNotificationCount] = useState(5);
@@ -146,28 +171,28 @@ const Navbar = () => {
   const [isProfileOpen, setIsProfileOpen] = useState(false);
   const [isLocationOpen, setIsLocationOpen] = useState(false);
   const [isMoreOpen, setIsMoreOpen] = useState(false);
-  const [currentLocation, setCurrentLocation] = useState('Mumbai, India');
-  const [searchQuery, setSearchQuery] = useState('');
+  const [currentLocation, setCurrentLocation] = useState("Mumbai, India");
+  const [searchQuery, setSearchQuery] = useState("");
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [userData, setUserData] = useState(null);
-  const [userType, setUserType] = useState('');
+  const [userType, setUserType] = useState("");
   const [userTypeConfig, setUserTypeConfig] = useState(null);
   const [windowWidth, setWindowWidth] = useState(window.innerWidth);
   const [isLoading, setIsLoading] = useState(false);
   const [showEmergencyModal, setShowEmergencyModal] = useState(false);
   const [showLoginPrompt, setShowLoginPrompt] = useState(false);
   const [loginPromptData, setLoginPromptData] = useState({
-    title: '',
-    message: '',
-    redirectPath: '',
-    requiredUserType: null
+    title: "",
+    message: "",
+    redirectPath: "",
+    requiredUserType: null,
   });
-  
+
   // User IDs
-  const [patientId, setPatientId] = useState('');
-  const [donorId, setDonorId] = useState('');
-  const [hospitalId, setHospitalId] = useState('');
-  const [userId, setUserId] = useState('');
+  const [patientId, setPatientId] = useState("");
+  const [donorId, setDonorId] = useState("");
+  const [hospitalId, setHospitalId] = useState("");
+  const [userId, setUserId] = useState("");
 
   // Device detection
   const isMobile = windowWidth < 768;
@@ -178,86 +203,91 @@ const Navbar = () => {
   // User type configurations
   const userTypesConfig = [
     {
-      key: 'bloodDonor',
-      label: 'Blood Donor',
+      key: "bloodDonor",
+      label: "Blood Donor",
       icon: Droplets,
-      gradient: 'bg-gradient-to-r from-red-600 to-pink-600',
-      lightGradient: 'bg-gradient-to-r from-red-100 to-pink-100',
-      textColor: 'text-red-600',
-      bgColor: 'bg-red-50',
-      borderColor: 'border-red-200',
-      shadowColor: 'shadow-red-500/20',
-      badgeColor: 'bg-red-500'
+      gradient: "bg-gradient-to-r from-red-600 to-pink-600",
+      lightGradient: "bg-gradient-to-r from-red-100 to-pink-100",
+      textColor: "text-red-600",
+      bgColor: "bg-red-50",
+      borderColor: "border-red-200",
+      shadowColor: "shadow-red-500/20",
+      badgeColor: "bg-red-500",
+      dashboardPath: (id) => `/donor/dashboard?type=blood&id=${id || ""}`,
     },
     {
-      key: 'organDonor',
-      label: 'Organ Donor',
+      key: "organDonor",
+      label: "Organ Donor",
       icon: ActivityIcon,
-      gradient: 'bg-gradient-to-r from-green-600 to-emerald-600',
-      lightGradient: 'bg-gradient-to-r from-green-100 to-emerald-100',
-      textColor: 'text-green-600',
-      bgColor: 'bg-green-50',
-      borderColor: 'border-green-200',
-      shadowColor: 'shadow-green-500/20',
-      badgeColor: 'bg-green-500'
+      gradient: "bg-gradient-to-r from-green-600 to-emerald-600",
+      lightGradient: "bg-gradient-to-r from-green-100 to-emerald-100",
+      textColor: "text-green-600",
+      bgColor: "bg-green-50",
+      borderColor: "border-green-200",
+      shadowColor: "shadow-green-500/20",
+      badgeColor: "bg-green-500",
+      dashboardPath: (id) => `/donor/dashboard?type=organ&id=${id || ""}`,
     },
     {
-      key: 'patient',
-      label: 'Patient/Family',
+      key: "patient",
+      label: "Patient/Family",
       icon: User,
-      gradient: 'bg-gradient-to-r from-blue-600 to-cyan-600',
-      lightGradient: 'bg-gradient-to-r from-blue-100 to-cyan-100',
-      textColor: 'text-blue-600',
-      bgColor: 'bg-blue-50',
-      borderColor: 'border-blue-200',
-      shadowColor: 'shadow-blue-500/20',
-      badgeColor: 'bg-blue-500'
+      gradient: "bg-gradient-to-r from-blue-600 to-cyan-600",
+      lightGradient: "bg-gradient-to-r from-blue-100 to-cyan-100",
+      textColor: "text-blue-600",
+      bgColor: "bg-blue-50",
+      borderColor: "border-blue-200",
+      shadowColor: "shadow-blue-500/20",
+      badgeColor: "bg-blue-500",
+      dashboardPath: (id) => `/patient/dashboard?id=${id || ""}`,
     },
     {
-      key: 'user',
-      label: 'Community Member',
+      key: "user",
+      label: "Community Member",
       icon: Users,
-      gradient: 'bg-gradient-to-r from-indigo-600 to-purple-600',
-      lightGradient: 'bg-gradient-to-r from-indigo-100 to-purple-100',
-      textColor: 'text-indigo-600',
-      bgColor: 'bg-indigo-50',
-      borderColor: 'border-indigo-200',
-      shadowColor: 'shadow-purple-500/20',
-      badgeColor: 'bg-purple-500'
+      gradient: "bg-gradient-to-r from-indigo-600 to-purple-600",
+      lightGradient: "bg-gradient-to-r from-indigo-100 to-purple-100",
+      textColor: "text-indigo-600",
+      bgColor: "bg-indigo-50",
+      borderColor: "border-indigo-200",
+      shadowColor: "shadow-purple-500/20",
+      badgeColor: "bg-purple-500",
+      dashboardPath: (id) => `/user/dashboard?id=${id || ""}`,
     },
     {
-      key: 'hospital',
-      label: 'Hospital/Clinic',
+      key: "hospital",
+      label: "Hospital/Clinic",
       icon: Building2,
-      gradient: 'bg-gradient-to-r from-purple-600 to-violet-600',
-      lightGradient: 'bg-gradient-to-r from-purple-100 to-violet-100',
-      textColor: 'text-purple-600',
-      bgColor: 'bg-purple-50',
-      borderColor: 'border-purple-200',
-      shadowColor: 'shadow-purple-500/20',
-      badgeColor: 'bg-purple-500'
-    }
+      gradient: "bg-gradient-to-r from-purple-600 to-violet-600",
+      lightGradient: "bg-gradient-to-r from-purple-100 to-violet-100",
+      textColor: "text-purple-600",
+      bgColor: "bg-purple-50",
+      borderColor: "border-purple-200",
+      shadowColor: "shadow-purple-500/20",
+      badgeColor: "bg-purple-500",
+      dashboardPath: (id) => `/hospital/dashboard?id=${id || ""}`,
+    },
   ];
 
   // Enhanced authentication check
   const checkUserAuth = () => {
-    console.log('🔄 Navbar - Checking authentication...');
-    
+    console.log("🔄 Navbar - Checking authentication...");
+
     let foundUser = false;
-    let currentUserType = '';
+    let currentUserType = "";
     let currentUserData = null;
 
     // First check current user storage
-    const currentUserTypeStored = localStorage.getItem('currentUserType');
-    const currentUserDataStored = localStorage.getItem('currentUserData');
-    
+    const currentUserTypeStored = localStorage.getItem("currentUserType");
+    const currentUserDataStored = localStorage.getItem("currentUserData");
+
     if (currentUserTypeStored && currentUserDataStored) {
       try {
         currentUserData = JSON.parse(currentUserDataStored);
         currentUserType = currentUserTypeStored;
         foundUser = true;
       } catch (error) {
-        console.error('❌ Navbar - Error parsing current user data:', error);
+        console.error("❌ Navbar - Error parsing current user data:", error);
       }
     }
 
@@ -265,43 +295,48 @@ const Navbar = () => {
     if (!foundUser) {
       for (const typeConfig of userTypesConfig) {
         const typeKey = typeConfig.key;
-        
+
         // Check for token
-        const token = localStorage.getItem(`${typeKey}Token`) || 
-                     localStorage.getItem(`${typeKey}_token`) ||
-                     localStorage.getItem(`${typeKey.toLowerCase()}Token`);
-        
+        const token =
+          localStorage.getItem(`${typeKey}Token`) ||
+          localStorage.getItem(`${typeKey}_token`) ||
+          localStorage.getItem(`${typeKey.toLowerCase()}Token`);
+
         // Check for data
-        const data = localStorage.getItem(`${typeKey}Data`) || 
-                    localStorage.getItem(typeKey) ||
-                    localStorage.getItem(`${typeKey.toLowerCase()}Data`);
-        
+        const data =
+          localStorage.getItem(`${typeKey}Data`) ||
+          localStorage.getItem(typeKey) ||
+          localStorage.getItem(`${typeKey.toLowerCase()}Data`);
+
         if (token && data) {
           try {
             currentUserData = JSON.parse(data);
             currentUserType = typeKey;
             foundUser = true;
-            
+
             // Save to current storage for consistency
-            localStorage.setItem('currentUserType', typeKey);
-            localStorage.setItem('currentUserData', data);
+            localStorage.setItem("currentUserType", typeKey);
+            localStorage.setItem("currentUserData", data);
             break;
           } catch (error) {
             console.error(`❌ Navbar - Error parsing ${typeKey} data:`, error);
-            
+
             // If JSON parse fails but we have data string, create basic user
-            if (data && typeof data === 'string') {
-              currentUserData = { 
+            if (data && typeof data === "string") {
+              currentUserData = {
                 name: data,
-                email: 'user@example.com',
-                phone: '0000000000'
+                email: "user@example.com",
+                phone: "0000000000",
               };
               currentUserType = typeKey;
               foundUser = true;
-              
+
               // Save properly formatted data
-              localStorage.setItem('currentUserType', typeKey);
-              localStorage.setItem('currentUserData', JSON.stringify(currentUserData));
+              localStorage.setItem("currentUserType", typeKey);
+              localStorage.setItem(
+                "currentUserData",
+                JSON.stringify(currentUserData),
+              );
               break;
             }
           }
@@ -311,8 +346,8 @@ const Navbar = () => {
 
     // Set state based on found user
     if (foundUser && currentUserData && currentUserType) {
-      const typeConfig = userTypesConfig.find(t => t.key === currentUserType);
-      
+      const typeConfig = userTypesConfig.find((t) => t.key === currentUserType);
+
       setIsLoggedIn(true);
       setUserData(currentUserData);
       setUserType(currentUserType);
@@ -320,74 +355,90 @@ const Navbar = () => {
 
       // Set IDs based on user type
       switch (currentUserType) {
-        case 'bloodDonor':
-        case 'organDonor':
-          const donorIdValue = currentUserData.donorId || 
-                             currentUserData.id || 
-                             localStorage.getItem('currentDonorId') || 
-                             `donor-${Date.now().toString(36)}`;
+        case "bloodDonor":
+        case "organDonor": {
+          const donorIdValue =
+            currentUserData.donorId ||
+            currentUserData.id ||
+            localStorage.getItem("currentDonorId") ||
+            `donor-${Date.now().toString(36)}`;
           setDonorId(donorIdValue);
-          localStorage.setItem('currentDonorId', donorIdValue);
+          localStorage.setItem("currentDonorId", donorIdValue);
           break;
-        case 'patient':
-          const patientIdValue = currentUserData.patientId || 
-                               currentUserData.id || 
-                               localStorage.getItem('currentPatientId') || 
-                               `patient-${Date.now().toString(36)}`;
+        }
+        case "patient": {
+          const patientIdValue =
+            currentUserData.patientId ||
+            currentUserData.id ||
+            localStorage.getItem("currentPatientId") ||
+            `patient-${Date.now().toString(36)}`;
           setPatientId(patientIdValue);
-          localStorage.setItem('currentPatientId', patientIdValue);
+          localStorage.setItem("currentPatientId", patientIdValue);
           break;
-        case 'hospital':
-          const hospitalIdValue = currentUserData.hospitalId || 
-                                currentUserData.id || 
-                                currentUserData.registrationNumber ||
-                                localStorage.getItem('currentHospitalId') || 
-                                `hospital-${Date.now().toString(36)}`;
+        }
+        case "hospital": {
+          const hospitalIdValue =
+            currentUserData.hospitalId ||
+            currentUserData.id ||
+            currentUserData.registrationNumber ||
+            localStorage.getItem("currentHospitalId") ||
+            `hospital-${Date.now().toString(36)}`;
           setHospitalId(hospitalIdValue);
-          localStorage.setItem('currentHospitalId', hospitalIdValue);
+          localStorage.setItem("currentHospitalId", hospitalIdValue);
           break;
-        case 'user':
-          const userIdValue = currentUserData.userId || 
-                            currentUserData.id || 
-                            localStorage.getItem('currentUserId') || 
-                            `user-${Date.now().toString(36)}`;
+        }
+        case "user": {
+          const userIdValue =
+            currentUserData.userId ||
+            currentUserData.id ||
+            localStorage.getItem("currentUserId") ||
+            `user-${Date.now().toString(36)}`;
           setUserId(userIdValue);
-          localStorage.setItem('currentUserId', userIdValue);
+          localStorage.setItem("currentUserId", userIdValue);
           break;
+        }
       }
     } else {
       setIsLoggedIn(false);
       setUserData(null);
-      setUserType('');
+      setUserType("");
       setUserTypeConfig(null);
-      
+
       // Generate guest IDs (preserve if exist)
-      const guestId = 'guest-' + Date.now().toString(36) + Math.random().toString(36).substr(2);
-      
-      ['guestPatientId', 'guestDonorId', 'guestHospitalId', 'guestUserId'].forEach(key => {
+      const guestId =
+        "guest-" +
+        Date.now().toString(36) +
+        Math.random().toString(36).substr(2);
+
+      [
+        "guestPatientId",
+        "guestDonorId",
+        "guestHospitalId",
+        "guestUserId",
+      ].forEach((key) => {
         if (!localStorage.getItem(key)) {
           localStorage.setItem(key, guestId);
         }
       });
-      
+
       // Set guest IDs
-      setPatientId(localStorage.getItem('guestPatientId') || guestId);
-      setDonorId(localStorage.getItem('guestDonorId') || guestId);
-      setHospitalId(localStorage.getItem('guestHospitalId') || guestId);
-      setUserId(localStorage.getItem('guestUserId') || guestId);
+      setPatientId(localStorage.getItem("guestPatientId") || guestId);
+      setDonorId(localStorage.getItem("guestDonorId") || guestId);
+      setHospitalId(localStorage.getItem("guestHospitalId") || guestId);
+      setUserId(localStorage.getItem("guestUserId") || guestId);
     }
-    
+
     setIsLoading(false);
   };
 
   // Load user data on mount
   useEffect(() => {
     setIsLoading(true);
-    
+
     const timer = setTimeout(() => {
       checkUserAuth();
     }, 100);
-    
+
     return () => clearTimeout(timer);
   }, []);
 
@@ -395,110 +446,140 @@ const Navbar = () => {
   useEffect(() => {
     const handleStorageChange = (e) => {
       if (
-        e.key?.includes('Token') || 
-        e.key?.includes('token') ||
-        e.key?.includes('Data') || 
-        e.key?.includes('data') ||
-        e.key?.includes('user') ||
-        e.key?.includes('User') ||
-        e.key === 'currentUserType' || 
-        e.key === 'currentUserData' ||
+        e.key?.includes("Token") ||
+        e.key?.includes("token") ||
+        e.key?.includes("Data") ||
+        e.key?.includes("data") ||
+        e.key?.includes("user") ||
+        e.key?.includes("User") ||
+        e.key === "currentUserType" ||
+        e.key === "currentUserData" ||
         !e.key
       ) {
         setTimeout(() => checkUserAuth(), 100);
       }
     };
-    
+
     const handleAuthChange = () => {
       checkUserAuth();
     };
-    
+
     const handleAuthSuccess = (e) => {
       if (e.detail && e.detail.userType && e.detail.userData) {
         const { userType, userData, token } = e.detail;
-        
+
         // Find type config
-        const typeConfig = userTypesConfig.find(t => t.key === userType);
-        
+        const typeConfig = userTypesConfig.find((t) => t.key === userType);
+
         // Update state immediately
         setIsLoggedIn(true);
         setUserType(userType);
         setUserData(userData);
         setUserTypeConfig(typeConfig || userTypesConfig[0]);
-        
+
         // Save to localStorage properly
-        localStorage.setItem('currentUserType', userType);
-        localStorage.setItem('currentUserData', JSON.stringify(userData));
-        
+        localStorage.setItem("currentUserType", userType);
+        localStorage.setItem("currentUserData", JSON.stringify(userData));
+
         // Save token based on user type
         if (token) {
           localStorage.setItem(`${userType}Token`, token);
           localStorage.setItem(`${userType}_token`, token);
         } else {
-          localStorage.setItem(`${userType}Token`, `${userType}_token_${Date.now()}`);
+          localStorage.setItem(
+            `${userType}Token`,
+            `${userType}_token_${Date.now()}`,
+          );
         }
-        
+
         // Save user data in type-specific storage
         localStorage.setItem(`${userType}Data`, JSON.stringify(userData));
         localStorage.setItem(userType, JSON.stringify(userData));
-        
+
         // Set ID based on user type
         switch (userType) {
-          case 'bloodDonor':
-          case 'organDonor':
-            const donorIdValue = userData.donorId || userData.id || `donor-${Date.now().toString(36)}`;
+          case "bloodDonor":
+          case "organDonor": {
+            const donorIdValue =
+              userData.donorId ||
+              userData.id ||
+              `donor-${Date.now().toString(36)}`;
             setDonorId(donorIdValue);
-            localStorage.setItem('currentDonorId', donorIdValue);
+            localStorage.setItem("currentDonorId", donorIdValue);
             break;
-          case 'patient':
-            const patientIdValue = userData.patientId || userData.id || `patient-${Date.now().toString(36)}`;
+          }
+          case "patient": {
+            const patientIdValue =
+              userData.patientId ||
+              userData.id ||
+              `patient-${Date.now().toString(36)}`;
             setPatientId(patientIdValue);
-            localStorage.setItem('currentPatientId', patientIdValue);
+            localStorage.setItem("currentPatientId", patientIdValue);
             break;
-          case 'hospital':
-            const hospitalIdValue = userData.hospitalId || userData.id || userData.registrationNumber || `hospital-${Date.now().toString(36)}`;
+          }
+          case "hospital": {
+            const hospitalIdValue =
+              userData.hospitalId ||
+              userData.id ||
+              userData.registrationNumber ||
+              `hospital-${Date.now().toString(36)}`;
             setHospitalId(hospitalIdValue);
-            localStorage.setItem('currentHospitalId', hospitalIdValue);
+            localStorage.setItem("currentHospitalId", hospitalIdValue);
             break;
-          case 'user':
-            const userIdValue = userData.userId || userData.id || `user-${Date.now().toString(36)}`;
+          }
+          case "user": {
+            const userIdValue =
+              userData.userId ||
+              userData.id ||
+              `user-${Date.now().toString(36)}`;
             setUserId(userIdValue);
-            localStorage.setItem('currentUserId', userIdValue);
+            localStorage.setItem("currentUserId", userIdValue);
             break;
+          }
         }
-        
+
         // Close any open modals
         setIsProfileOpen(false);
         setIsMobileMenuOpen(false);
-        
+
         // Close login prompt if open
         setShowLoginPrompt(false);
       }
     };
-    
-    window.addEventListener('storage', handleStorageChange);
-    window.addEventListener('authChange', handleAuthChange);
-    window.addEventListener('authSuccess', handleAuthSuccess);
-    
+
+    window.addEventListener("storage", handleStorageChange);
+    window.addEventListener("authChange", handleAuthChange);
+    window.addEventListener("authSuccess", handleAuthSuccess);
+
     return () => {
-      window.removeEventListener('storage', handleStorageChange);
-      window.removeEventListener('authChange', handleAuthChange);
-      window.removeEventListener('authSuccess', handleAuthSuccess);
+      window.removeEventListener("storage", handleStorageChange);
+      window.removeEventListener("authChange", handleAuthChange);
+      window.removeEventListener("authSuccess", handleAuthSuccess);
     };
   }, []);
 
   // Update active tab based on route
   useEffect(() => {
     const path = location.pathname;
-    
-    if (path === '/') setActiveTab('home');
-    else if (path.includes('/blood')) setActiveTab('blood');
-    else if (path.includes('/organ')) setActiveTab('organ');
-    else if (path.includes('/patient') || path.includes('/matches') || path.includes('/requests')) setActiveTab('urgent');
-    else if (path.includes('/hospital')) setActiveTab('hospitals');
-    else if (path.includes('/profile')) setActiveTab('profile');
-    else if (path.includes('/auth') || path.includes('/login') || path.includes('/register')) setActiveTab('auth');
-    else if (path.includes('/dashboard')) setActiveTab('dashboard');
+
+    if (path === "/") setActiveTab("home");
+    else if (path.includes("/blood")) setActiveTab("blood");
+    else if (path.includes("/organ")) setActiveTab("organ");
+    else if (
+      path.includes("/patient") ||
+      path.includes("/matches") ||
+      path.includes("/requests")
+    )
+      setActiveTab("urgent");
+    else if (path.includes("/hospital")) setActiveTab("hospitals");
+    else if (path.includes("/profile")) setActiveTab("profile");
+    else if (
+      path.includes("/auth") ||
+      path.includes("/login") ||
+      path.includes("/register")
+    )
+      setActiveTab("auth");
+    else if (path.includes("/dashboard")) setActiveTab("dashboard");
   }, [location]);
 
   // Track window width
@@ -506,7 +587,7 @@ const Navbar = () => {
     const handleResize = () => {
       const newWidth = window.innerWidth;
       setWindowWidth(newWidth);
-      
+
       // Auto close menus on resize
       if (newWidth >= 1024) {
         setIsMobileMenuOpen(false);
@@ -518,9 +599,9 @@ const Navbar = () => {
         setIsMoreOpen(false);
       }
     };
-    
-    window.addEventListener('resize', handleResize);
-    return () => window.removeEventListener('resize', handleResize);
+
+    window.addEventListener("resize", handleResize);
+    return () => window.removeEventListener("resize", handleResize);
   }, [isSearchOpen]);
 
   // Scroll effect
@@ -528,139 +609,230 @@ const Navbar = () => {
     const handleScroll = () => {
       setIsScrolled(window.scrollY > 20);
     };
-    window.addEventListener('scroll', handleScroll, { passive: true });
-    return () => window.removeEventListener('scroll', handleScroll);
+    window.addEventListener("scroll", handleScroll, { passive: true });
+    return () => window.removeEventListener("scroll", handleScroll);
   }, []);
 
   // Close dropdowns on click outside
   useEffect(() => {
     const handleClickOutside = (event) => {
       const clickTarget = event.target;
-      
-      if (isProfileOpen && profileRef.current && !profileRef.current.contains(clickTarget)) {
+
+      if (
+        isProfileOpen &&
+        profileRef.current &&
+        !profileRef.current.contains(clickTarget)
+      ) {
         setIsProfileOpen(false);
       }
-      
-      if (isMoreOpen && moreRef.current && !moreRef.current.contains(clickTarget)) {
+
+      if (
+        isMoreOpen &&
+        moreRef.current &&
+        !moreRef.current.contains(clickTarget)
+      ) {
         setIsMoreOpen(false);
       }
-      
-      if (isLocationOpen && locationRef.current && !locationRef.current.contains(clickTarget)) {
+
+      if (
+        isLocationOpen &&
+        locationRef.current &&
+        !locationRef.current.contains(clickTarget)
+      ) {
         setIsLocationOpen(false);
       }
-      
-      if (isSearchOpen && searchRef.current && !searchRef.current.contains(clickTarget)) {
+
+      if (
+        isSearchOpen &&
+        searchRef.current &&
+        !searchRef.current.contains(clickTarget)
+      ) {
         setIsSearchOpen(false);
       }
-      
-      if (isMobileMenuOpen && mobileMenuRef.current && 
-          !mobileMenuRef.current.contains(clickTarget) && 
-          !clickTarget.closest('.mobile-menu-trigger')) {
+
+      if (
+        isMobileMenuOpen &&
+        mobileMenuRef.current &&
+        !mobileMenuRef.current.contains(clickTarget) &&
+        !clickTarget.closest(".mobile-menu-trigger")
+      ) {
         setIsMobileMenuOpen(false);
       }
     };
-    
-    document.addEventListener('mousedown', handleClickOutside);
-    document.addEventListener('touchstart', handleClickOutside);
-    
+
+    document.addEventListener("mousedown", handleClickOutside);
+    document.addEventListener("touchstart", handleClickOutside);
+
     return () => {
-      document.removeEventListener('mousedown', handleClickOutside);
-      document.removeEventListener('touchstart', handleClickOutside);
+      document.removeEventListener("mousedown", handleClickOutside);
+      document.removeEventListener("touchstart", handleClickOutside);
     };
-  }, [isProfileOpen, isMoreOpen, isLocationOpen, isSearchOpen, isMobileMenuOpen]);
+  }, [
+    isProfileOpen,
+    isMoreOpen,
+    isLocationOpen,
+    isSearchOpen,
+    isMobileMenuOpen,
+  ]);
+
+  // Helper function to get correct donor dashboard path
+  const getDonorDashboardPath = () => {
+    if (userType === "bloodDonor") {
+      return `/donor/dashboard?type=blood&id=${donorId}`;
+    } else if (userType === "organDonor") {
+      return `/donor/dashboard?type=organ&id=${donorId}`;
+    }
+    return "/donor/dashboard";
+  };
+
+  // Helper function to get correct blood donation path
+  const getBloodDonationPath = () => {
+    if (userType === "bloodDonor") {
+      return `/donor/dashboard?type=blood&id=${donorId}`;
+    }
+    return "/blood-donation";
+  };
+
+  // Helper function to get correct organ donation path
+  const getOrganDonationPath = () => {
+    if (userType === "organDonor") {
+      return `/donor/dashboard?type=organ&id=${donorId}`;
+    }
+    return "/organ-donation";
+  };
+
+  // Helper function to get correct urgent requests path
+  const getUrgentRequestsPath = () => {
+    if (userType === "patient") {
+      return `/patient/matches?id=${patientId}`;
+    }
+    if (userType === "bloodDonor" || userType === "organDonor") {
+      return `/donor/requests?id=${donorId}`;
+    }
+    if (userType === "hospital") {
+      return `/hospital/requests?id=${hospitalId}`;
+    }
+    return "/urgent-requests";
+  };
+
+  // Helper function to get correct hospitals path
+  const getHospitalsPath = () => {
+    if (userType === "hospital") {
+      return `/hospital/dashboard?id=${hospitalId}`;
+    }
+    return "/hospitals";
+  };
 
   // Responsive navigation items
   const getMainNavItems = () => {
     const items = [
       {
-        id: 'blood',
-        label: isMobile ? 'Blood' : 'Blood Donation',
+        id: "blood",
+        label: isMobile ? "Blood" : "Blood Donation",
         icon: Droplets,
-        description: 'Find blood donors & donate blood',
-        badge: userType === 'bloodDonor' ? 'Donor' : null,
-        getPath: () => {
-          if (userType === 'bloodDonor') return `/donor/dashboard?type=blood&id=${donorId}`;
-          if (userType === 'hospital') return `/hospital/blood-bank?id=${hospitalId}`;
-          return '/blood-donation';
-        },
+        description: "Find blood donors & donate blood",
+        badge: userType === "bloodDonor" ? "Donor" : null,
+        getPath: getBloodDonationPath,
         requiresAuth: false,
-        showLoginPrompt: true, // Show login prompt for this page when not logged in
+        showLoginPrompt: true,
         loginPrompt: {
-          title: 'Login Required for Blood Donation',
-          message: 'Please login to access blood donation features, find donors, or request blood.',
+          title: "Login Required for Blood Donation",
+          message:
+            "Please login to access blood donation features, find donors, or request blood.",
           icon: Droplets,
-          gradient: 'from-red-500 to-pink-500',
-          requiredUserTypes: ['bloodDonor', 'patient', 'user', 'organDonor']
-        }
+          gradient: "from-red-500 to-pink-500",
+          requiredUserTypes: ["bloodDonor", "patient", "user", "organDonor"],
+        },
       },
       {
-        id: 'organ',
-        label: isMobile ? 'Organ' : 'Organ Donation',
+        id: "organ",
+        label: isMobile ? "Organ" : "Organ Donation",
         icon: ActivityIcon,
-        description: 'Organ donation & transplantation',
-        badge: userType === 'organDonor' ? 'Donor' : null,
-        getPath: () => {
-          if (userType === 'organDonor') return `/donor-dashboard?type=organ&id=${donorId}`;
-          if (userType === 'hospital') return `/hospital/organ-bank?id=${hospitalId}`;
-          return '/organ-donation';
-        },
+        description: "Organ donation & transplantation",
+        badge: userType === "organDonor" ? "Donor" : null,
+        getPath: getOrganDonationPath,
         requiresAuth: false,
-        showLoginPrompt: true, // Show login prompt for this page when not logged in
+        showLoginPrompt: true,
         loginPrompt: {
-          title: 'Login Required for Organ Donation',
-          message: 'Please login to access organ donation features, register as donor, or find organ matches.',
+          title: "Login Required for Organ Donation",
+          message:
+            "Please login to access organ donation features, register as donor, or find organ matches.",
           icon: ActivityIcon,
-          gradient: 'from-green-500 to-emerald-500',
-          requiredUserTypes: ['organDonor', 'patient', 'user', 'bloodDonor']
-        }
-      },
-      {
-        id: 'urgent',
-        label: isMobile ? 
-               (userType === 'patient' ? 'Matches' : 
-                userType === 'hospital' ? 'Hospital' : 'Urgent') :
-               (userType === 'patient' ? 'My Matches' : 
-                userType === 'bloodDonor' || userType === 'organDonor' ? 'Donation Requests' :
-                userType === 'hospital' ? 'Hospital Requests' : 'Urgent Requests'),
-        icon: AlertCircle,
-        description: userType === 'patient' ? 'View your donor matches' : 
-                    userType === 'bloodDonor' || userType === 'organDonor' ? 'View donation requests' :
-                    userType === 'hospital' ? 'Manage hospital requests' : 'Find urgent blood/organ needs',
-        badge: notificationCount > 0 ? `${notificationCount}` : null,
-        getPath: () => {
-          if (userType === 'patient') return `/patient-matches/${patientId}`;
-          if (userType === 'bloodDonor' || userType === 'organDonor') return `/donor-request?id=${donorId}`;
-          if (userType === 'hospital') return `/hospital/requests?id=${hospitalId}`;
-          return '/urgent-requests';
+          gradient: "from-green-500 to-emerald-500",
+          requiredUserTypes: ["organDonor", "patient", "user", "bloodDonor"],
         },
-        requiresAuth: false,
-        showLoginPrompt: true, // Show login prompt for this page when not logged in
-        loginPrompt: {
-          title: 'Login Required',
-          message: 'Please login to view donor matches, requests, or urgent needs.',
-          icon: AlertCircle,
-          gradient: 'from-amber-500 to-orange-500',
-          requiredUserTypes: ['patient', 'bloodDonor', 'organDonor', 'user', 'hospital']
-        }
       },
       {
-        id: 'hospitals',
-        label: userType === 'hospital' ? (isMobile ? 'Dashboard' : 'Dashboard') : 
-               isMobile ? 'Hospitals' : 'Hospitals',
-        icon: userType === 'hospital' ? Building2 : HospitalIcon,
-        description: userType === 'hospital' ? 'Hospital management dashboard' : 'Find hospitals & clinics',
-        badge: userType === 'hospital' ? 'Admin' : null,
-        getPath: () => userType === 'hospital' ? `/hospital/dashboard?id=${hospitalId}` : '/hospitals',
-        requiresAuth: userType === 'hospital',
-        showLoginPrompt: userType === 'hospital', // Only show prompt for hospital dashboard
+        id: "urgent",
+        label: isMobile
+          ? userType === "patient"
+            ? "Matches"
+            : userType === "hospital"
+              ? "Hospital"
+              : "Urgent"
+          : userType === "patient"
+            ? "My Matches"
+            : userType === "bloodDonor" || userType === "organDonor"
+              ? "Donation Requests"
+              : userType === "hospital"
+                ? "Hospital Requests"
+                : "Urgent Requests",
+        icon: AlertCircle,
+        description:
+          userType === "patient"
+            ? "View your donor matches"
+            : userType === "bloodDonor" || userType === "organDonor"
+              ? "View donation requests"
+              : userType === "hospital"
+                ? "Manage hospital requests"
+                : "Find urgent blood/organ needs",
+        badge: notificationCount > 0 ? `${notificationCount}` : null,
+        getPath: getUrgentRequestsPath,
+        requiresAuth: false,
+        showLoginPrompt: true,
         loginPrompt: {
-          title: 'Hospital Login Required',
-          message: 'Please login with hospital credentials to access hospital dashboard.',
+          title: "Login Required",
+          message:
+            "Please login to view donor matches, requests, or urgent needs.",
+          icon: AlertCircle,
+          gradient: "from-amber-500 to-orange-500",
+          requiredUserTypes: [
+            "patient",
+            "bloodDonor",
+            "organDonor",
+            "user",
+            "hospital",
+          ],
+        },
+      },
+      {
+        id: "hospitals",
+        label:
+          userType === "hospital"
+            ? isMobile
+              ? "Dashboard"
+              : "Dashboard"
+            : isMobile
+              ? "Hospitals"
+              : "Hospitals",
+        icon: userType === "hospital" ? Building2 : HospitalIcon,
+        description:
+          userType === "hospital"
+            ? "Hospital management dashboard"
+            : "Find hospitals & clinics",
+        badge: userType === "hospital" ? "Admin" : null,
+        getPath: getHospitalsPath,
+        requiresAuth: userType === "hospital",
+        showLoginPrompt: userType === "hospital",
+        loginPrompt: {
+          title: "Hospital Login Required",
+          message:
+            "Please login with hospital credentials to access hospital dashboard.",
           icon: Building2,
-          gradient: 'from-purple-500 to-violet-500',
-          requiredUserTypes: ['hospital']
-        }
-      }
+          gradient: "from-purple-500 to-violet-500",
+          requiredUserTypes: ["hospital"],
+        },
+      },
     ];
 
     // For tablet, show only 3 items
@@ -673,180 +845,175 @@ const Navbar = () => {
 
   const secondaryNavItems = [
     {
-      id: 'about',
-      label: 'About Us',
+      id: "about",
+      label: "About Us",
       icon: Info,
-      path: '/about',
-      description: 'Our mission, vision & team',
-      gradient: 'from-blue-500 to-cyan-500'
+      path: "/about",
+      description: "Our mission, vision & team",
+      gradient: "from-blue-500 to-cyan-500",
     },
     {
-      id: 'resources',
-      label: 'Resources',
+      id: "resources",
+      label: "Resources",
       icon: BookOpen,
-      path: '/resources',
-      description: 'Educational materials & guides',
-      gradient: 'from-green-500 to-emerald-500'
+      path: "/resources",
+      description: "Educational materials & guides",
+      gradient: "from-green-500 to-emerald-500",
     },
     {
-      id: 'community',
-      label: 'Community',
+      id: "community",
+      label: "Community",
       icon: Users,
-      path: '/community',
-      description: 'Connect with donors & recipients',
-      gradient: 'from-purple-500 to-pink-500'
+      path: "/community",
+      description: "Connect with donors & recipients",
+      gradient: "from-purple-500 to-pink-500",
     },
     {
-      id: 'events',
-      label: 'Events',
+      id: "events",
+      label: "Events",
       icon: Calendar,
-      path: '/events',
-      description: 'Upcoming donation events',
-      gradient: 'from-orange-500 to-red-500'
+      path: "/events",
+      description: "Upcoming donation events",
+      gradient: "from-orange-500 to-red-500",
     },
     {
-      id: 'faq',
-      label: 'FAQ',
+      id: "faq",
+      label: "FAQ",
       icon: HelpCircle,
-      path: '/faq',
-      description: 'Frequently asked questions',
-      gradient: 'from-indigo-500 to-blue-500'
+      path: "/faq",
+      description: "Frequently asked questions",
+      gradient: "from-indigo-500 to-blue-500",
     },
     {
-      id: 'contact',
-      label: 'Contact',
+      id: "contact",
+      label: "Contact",
       icon: Phone,
-      path: '/contact',
-      description: 'Get in touch with us',
-      gradient: 'from-teal-500 to-green-500'
-    }
+      path: "/contact",
+      description: "Get in touch with us",
+      gradient: "from-teal-500 to-green-500",
+    },
   ];
 
   const mobileNavItems = [
     {
-      id: 'home',
-      label: 'Home',
+      id: "home",
+      label: "Home",
       icon: Home,
-      color: 'text-blue-600',
-      bgColor: 'bg-blue-50',
-      gradient: 'from-blue-500 to-cyan-500',
-      getPath: () => '/',
+      color: "text-blue-600",
+      bgColor: "bg-blue-50",
+      gradient: "from-blue-500 to-cyan-500",
+      getPath: () => "/",
       requiresAuth: false,
-      showLoginPrompt: false
+      showLoginPrompt: false,
     },
     {
-      id: 'blood',
-      label: 'Blood',
+      id: "blood",
+      label: "Blood",
       icon: Droplets,
-      color: 'text-red-600',
-      bgColor: 'bg-red-50',
-      gradient: 'from-red-500 to-pink-500',
-      getPath: () => {
-        if (userType === 'bloodDonor') return `/donor-dashboard?type=blood&id=${donorId}`;
-        return '/blood-donation';
-      },
+      color: "text-red-600",
+      bgColor: "bg-red-50",
+      gradient: "from-red-500 to-pink-500",
+      getPath: getBloodDonationPath,
       requiresAuth: false,
       showLoginPrompt: true,
       loginPrompt: {
-        title: 'Login Required for Blood Donation',
-        message: 'Please login to access blood donation features.',
+        title: "Login Required for Blood Donation",
+        message: "Please login to access blood donation features.",
         icon: Droplets,
-        gradient: 'from-red-500 to-pink-500'
-      }
+        gradient: "from-red-500 to-pink-500",
+      },
     },
     {
-      id: 'organ',
-      label: 'Organ',
+      id: "organ",
+      label: "Organ",
       icon: ActivityIcon,
-      color: 'text-green-600',
-      bgColor: 'bg-green-50',
-      gradient: 'from-green-500 to-emerald-500',
-      getPath: () => {
-        if (userType === 'organDonor') return `/donor-dashboard?type=organ&id=${donorId}`;
-        return '/organ-donation';
-      },
+      color: "text-green-600",
+      bgColor: "bg-green-50",
+      gradient: "from-green-500 to-emerald-500",
+      getPath: getOrganDonationPath,
       requiresAuth: false,
       showLoginPrompt: true,
       loginPrompt: {
-        title: 'Login Required for Organ Donation',
-        message: 'Please login to access organ donation features.',
+        title: "Login Required for Organ Donation",
+        message: "Please login to access organ donation features.",
         icon: ActivityIcon,
-        gradient: 'from-green-500 to-emerald-500'
-      }
+        gradient: "from-green-500 to-emerald-500",
+      },
     },
     {
-      id: 'urgent',
-      label: userType === 'patient' ? 'Matches' : 
-             userType === 'hospital' ? 'Hospital' : 'Urgent',
+      id: "urgent",
+      label:
+        userType === "patient"
+          ? "Matches"
+          : userType === "hospital"
+            ? "Hospital"
+            : "Urgent",
       icon: AlertCircle,
-      color: 'text-amber-600',
-      bgColor: 'bg-amber-50',
-      gradient: 'from-amber-500 to-orange-500',
-      getPath: () => {
-        if (userType === 'patient') return `/patient/matches?id=${patientId}`;
-        if (userType === 'bloodDonor' || userType === 'organDonor') return `/donor-request?id=${donorId}`;
-        if (userType === 'hospital') return `/hospital/requests?id=${hospitalId}`;
-        return '/urgent-requests';
-      },
+      color: "text-amber-600",
+      bgColor: "bg-amber-50",
+      gradient: "from-amber-500 to-orange-500",
+      getPath: getUrgentRequestsPath,
       requiresAuth: false,
       showLoginPrompt: true,
       loginPrompt: {
-        title: 'Login Required',
-        message: 'Please login to view matches and requests.',
+        title: "Login Required",
+        message: "Please login to view matches and requests.",
         icon: AlertCircle,
-        gradient: 'from-amber-500 to-orange-500'
-      }
+        gradient: "from-amber-500 to-orange-500",
+      },
     },
     {
-      id: 'profile',
-      label: 'Profile',
+      id: "profile",
+      label: "Profile",
       icon: User,
-      color: 'text-purple-600',
-      bgColor: 'bg-purple-50',
-      gradient: 'from-purple-500 to-violet-500',
+      color: "text-purple-600",
+      bgColor: "bg-purple-50",
+      gradient: "from-purple-500 to-violet-500",
       getPath: () => {
-        return '/profile';
+        return "/profile";
       },
       requiresAuth: false,
-      showLoginPrompt: false
-    }
+      showLoginPrompt: false,
+    },
   ];
 
   // Enhanced navigation handler
   const handleTabClick = (item) => {
     setActiveTab(item.id);
-    
+
     // Check if auth is required
     if (item.requiresAuth && !isLoggedIn) {
-      navigate('/auth?tab=login');
-    } 
+      navigate("/auth?tab=login");
+    }
     // Check if login prompt should be shown
     else if (!isLoggedIn && item.showLoginPrompt) {
       // Show login prompt modal
       setLoginPromptData({
-        title: item.loginPrompt?.title || 'Login Required',
-        message: item.loginPrompt?.message || 'Please login to access this feature.',
+        title: item.loginPrompt?.title || "Login Required",
+        message:
+          item.loginPrompt?.message || "Please login to access this feature.",
         redirectPath: item.getPath ? item.getPath() : item.path,
         requiredUserType: item.loginPrompt?.requiredUserTypes || null,
         icon: item.loginPrompt?.icon || LogIn,
-        gradient: item.loginPrompt?.gradient || 'from-blue-500 to-cyan-500'
+        gradient: item.loginPrompt?.gradient || "from-blue-500 to-cyan-500",
       });
       setShowLoginPrompt(true);
-      
+
       // Close menus on mobile
       if (window.innerWidth < 1024) {
         setIsMobileMenuOpen(false);
       }
       setIsMoreOpen(false);
       setIsProfileOpen(false);
-    } 
+    }
     // User is logged in or no login required
     else {
       const path = item.getPath ? item.getPath() : item.path;
       if (path) {
+        console.log("Navigating to:", path); // Debug log
         navigate(path);
       }
-      
+
       // Close menus on mobile
       if (window.innerWidth < 1024) {
         setIsMobileMenuOpen(false);
@@ -857,7 +1024,7 @@ const Navbar = () => {
   };
 
   const handleNavigation = (itemId) => {
-    const item = getMainNavItems().find(i => i.id === itemId);
+    const item = getMainNavItems().find((i) => i.id === itemId);
     if (!item) return;
     handleTabClick(item);
   };
@@ -867,79 +1034,88 @@ const Navbar = () => {
     if (searchQuery.trim()) {
       navigate(`/search?q=${encodeURIComponent(searchQuery)}`);
       setIsSearchOpen(false);
-      setSearchQuery('');
+      setSearchQuery("");
     }
   };
 
   const handleLoginPromptAction = (action) => {
-    if (action === 'login') {
-      navigate('/auth?tab=login');
+    if (action === "login") {
+      navigate("/auth?tab=login");
       setShowLoginPrompt(false);
-    } else if (action === 'register') {
-      navigate('/auth?tab=register');
+    } else if (action === "register") {
+      navigate("/auth?tab=register");
       setShowLoginPrompt(false);
-    } else if (action === 'cancel') {
+    } else if (action === "cancel") {
       setShowLoginPrompt(false);
     }
   };
 
   const handleLogout = () => {
     setIsLoading(true);
-    
+
     // Clear all auth related storage
     const keysToRemove = [];
     for (let i = 0; i < localStorage.length; i++) {
       const key = localStorage.key(i);
       if (
-        key.includes('Token') || 
-        key.includes('token') ||
-        key.includes('Data') || 
-        key.includes('data') ||
-        key.includes('Auth') ||
-        key.includes('auth') ||
-        key === 'currentUserType' ||
-        key === 'currentUserData' ||
-        (key.startsWith('current') && key.includes('Id')) ||
-        key === 'bloodDonor' || key === 'organDonor' || key === 'patient' || 
-        key === 'user' || key === 'hospital'
+        key.includes("Token") ||
+        key.includes("token") ||
+        key.includes("Data") ||
+        key.includes("data") ||
+        key.includes("Auth") ||
+        key.includes("auth") ||
+        key === "currentUserType" ||
+        key === "currentUserData" ||
+        (key.startsWith("current") && key.includes("Id")) ||
+        key === "bloodDonor" ||
+        key === "organDonor" ||
+        key === "patient" ||
+        key === "user" ||
+        key === "hospital"
       ) {
         keysToRemove.push(key);
       }
     }
-    
-    keysToRemove.forEach(key => {
+
+    keysToRemove.forEach((key) => {
       localStorage.removeItem(key);
     });
-    
+
     // Keep guest IDs for anonymous browsing
-    const guestId = 'guest-' + Date.now().toString(36) + Math.random().toString(36).substr(2);
-    ['guestPatientId', 'guestDonorId', 'guestHospitalId', 'guestUserId'].forEach(key => {
+    const guestId =
+      "guest-" + Date.now().toString(36) + Math.random().toString(36).substr(2);
+    [
+      "guestPatientId",
+      "guestDonorId",
+      "guestHospitalId",
+      "guestUserId",
+    ].forEach((key) => {
       if (!localStorage.getItem(key)) {
         localStorage.setItem(key, guestId);
       }
     });
-    
+
     // Reset state
     setIsLoggedIn(false);
     setUserData(null);
-    setUserType('');
+    setUserType("");
     setUserTypeConfig(null);
     setIsProfileOpen(false);
     setIsMobileMenuOpen(false);
-    
+
     // Set guest IDs
-    setPatientId(localStorage.getItem('guestPatientId') || guestId);
-    setDonorId(localStorage.getItem('guestDonorId') || guestId);
-    setHospitalId(localStorage.getItem('guestHospitalId') || guestId);
-    setUserId(localStorage.getItem('guestUserId') || guestId);
-    
+    setPatientId(localStorage.getItem("guestPatientId") || guestId);
+    setDonorId(localStorage.getItem("guestDonorId") || guestId);
+    setHospitalId(localStorage.getItem("guestHospitalId") || guestId);
+    setUserId(localStorage.getItem("guestUserId") || guestId);
+
     // Trigger events for other components
-    window.dispatchEvent(new Event('authChange'));
-    window.dispatchEvent(new CustomEvent('logout'));
-    
+    window.dispatchEvent(new Event("authChange"));
+    window.dispatchEvent(new CustomEvent("logout"));
+
     // Navigate home
-    navigate('/');
-    
+    navigate("/");
+
     setTimeout(() => {
       setIsLoading(false);
     }, 500);
@@ -955,10 +1131,10 @@ const Navbar = () => {
   };
 
   const getUserInitials = () => {
-    if (!userData) return 'U';
-    
-    if (userType === 'hospital') {
-      return userData.hospitalName?.charAt(0).toUpperCase() || 'H';
+    if (!userData) return "U";
+
+    if (userType === "hospital") {
+      return userData.hospitalName?.charAt(0).toUpperCase() || "H";
     }
     if (userData.name) {
       return userData.name.charAt(0).toUpperCase();
@@ -969,85 +1145,96 @@ const Navbar = () => {
     if (userData.email) {
       return userData.email.charAt(0).toUpperCase();
     }
-    return userType?.charAt(0).toUpperCase() || 'U';
+    return userType?.charAt(0).toUpperCase() || "U";
   };
 
   const getUserDisplayName = () => {
-    if (!userData) return 'User';
-    
-    if (userType === 'hospital') {
-      return userData.hospitalName || 'Hospital';
+    if (!userData) return "User";
+
+    if (userType === "hospital") {
+      return userData.hospitalName || "Hospital";
     }
     if (userData.name) {
       return userData.name;
     }
     if (userData.firstName) {
-      return `${userData.firstName} ${userData.lastName || ''}`.trim();
+      return `${userData.firstName} ${userData.lastName || ""}`.trim();
     }
     if (userData.email) {
-      return userData.email.split('@')[0];
+      return userData.email.split("@")[0];
     }
-    return userTypeConfig?.label || 'User';
+    return userTypeConfig?.label || "User";
   };
 
   const getUserEmail = () => {
-    return userData?.email || userData?.contactEmail || 'No email provided';
+    return userData?.email || userData?.contactEmail || "No email provided";
   };
 
   const getUserTypeLabel = () => {
-    return userTypeConfig?.label || 'Guest User';
+    return userTypeConfig?.label || "Guest User";
   };
 
   const getTabStyle = (itemId, isActive) => {
     if (isActive) {
-      if (itemId === 'blood') return 'bg-gradient-to-r from-red-600 to-pink-600 text-white shadow-lg shadow-red-500/30';
-      if (itemId === 'organ') return 'bg-gradient-to-r from-green-600 to-emerald-600 text-white shadow-lg shadow-green-500/30';
-      if (itemId === 'urgent') return 'bg-gradient-to-r from-amber-600 to-orange-600 text-white shadow-lg shadow-amber-500/30';
-      if (itemId === 'hospitals' && userType === 'hospital') return 'bg-gradient-to-r from-purple-600 to-violet-600 text-white shadow-lg shadow-purple-500/30';
-      return 'bg-gradient-to-r from-blue-600 to-cyan-600 text-white shadow-lg shadow-blue-500/30';
+      if (itemId === "blood")
+        return "bg-gradient-to-r from-red-600 to-pink-600 text-white shadow-lg shadow-red-500/30";
+      if (itemId === "organ")
+        return "bg-gradient-to-r from-green-600 to-emerald-600 text-white shadow-lg shadow-green-500/30";
+      if (itemId === "urgent")
+        return "bg-gradient-to-r from-amber-600 to-orange-600 text-white shadow-lg shadow-amber-500/30";
+      if (itemId === "hospitals" && userType === "hospital")
+        return "bg-gradient-to-r from-purple-600 to-violet-600 text-white shadow-lg shadow-purple-500/30";
+      return "bg-gradient-to-r from-blue-600 to-cyan-600 text-white shadow-lg shadow-blue-500/30";
     }
 
-    if (itemId === 'blood') return 'text-gray-700 hover:text-red-600 hover:bg-red-50 border border-transparent hover:border-red-200';
-    if (itemId === 'organ') return 'text-gray-700 hover:text-green-600 hover:bg-green-50 border border-transparent hover:border-green-200';
-    if (itemId === 'urgent') return 'text-gray-700 hover:text-amber-600 hover:bg-amber-50 border border-transparent hover:border-amber-200';
-    if (itemId === 'hospitals' && userType === 'hospital') return 'text-gray-700 hover:text-purple-600 hover:bg-purple-50 border border-transparent hover:border-purple-200';
-    return 'text-gray-700 hover:text-blue-600 hover:bg-blue-50 border border-transparent hover:border-blue-200';
+    if (itemId === "blood")
+      return "text-gray-700 hover:text-red-600 hover:bg-red-50 border border-transparent hover:border-red-200";
+    if (itemId === "organ")
+      return "text-gray-700 hover:text-green-600 hover:bg-green-50 border border-transparent hover:border-green-200";
+    if (itemId === "urgent")
+      return "text-gray-700 hover:text-amber-600 hover:bg-amber-50 border border-transparent hover:border-amber-200";
+    if (itemId === "hospitals" && userType === "hospital")
+      return "text-gray-700 hover:text-purple-600 hover:bg-purple-50 border border-transparent hover:border-purple-200";
+    return "text-gray-700 hover:text-blue-600 hover:bg-blue-50 border border-transparent hover:border-blue-200";
   };
 
   const handleHospitalLogin = () => {
-    window.dispatchEvent(new CustomEvent('openHospitalAuthModal'));
+    window.dispatchEvent(new CustomEvent("openHospitalAuthModal"));
     setIsMobileMenuOpen(false);
     setIsProfileOpen(false);
   };
 
   // Location options
   const locations = [
-    { city: 'Mumbai', state: 'Maharashtra', flag: '🇮🇳' },
-    { city: 'Delhi', state: 'Delhi', flag: '🇮🇳' },
-    { city: 'Bangalore', state: 'Karnataka', flag: '🇮🇳' },
-    { city: 'Chennai', state: 'Tamil Nadu', flag: '🇮🇳' },
-    { city: 'Hyderabad', state: 'Telangana', flag: '🇮🇳' },
-    { city: 'Kolkata', state: 'West Bengal', flag: '🇮🇳' },
-    { city: 'Pune', state: 'Maharashtra', flag: '🇮🇳' },
-    { city: 'Ahmedabad', state: 'Gujarat', flag: '🇮🇳' }
+    { city: "Mumbai", state: "Maharashtra", flag: "🇮🇳" },
+    { city: "Delhi", state: "Delhi", flag: "🇮🇳" },
+    { city: "Bangalore", state: "Karnataka", flag: "🇮🇳" },
+    { city: "Chennai", state: "Tamil Nadu", flag: "🇮🇳" },
+    { city: "Hyderabad", state: "Telangana", flag: "🇮🇳" },
+    { city: "Kolkata", state: "West Bengal", flag: "🇮🇳" },
+    { city: "Pune", state: "Maharashtra", flag: "🇮🇳" },
+    { city: "Ahmedabad", state: "Gujarat", flag: "🇮🇳" },
   ];
 
   return (
     <>
       {/* DESKTOP NAVBAR (1024px and above) */}
       {isDesktop && (
-        <nav className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${
-          isScrolled 
-            ? 'bg-white/95 backdrop-blur-xl shadow-2xl shadow-black/5 py-2 border-b border-gray-200/30' 
-            : 'bg-white py-3 border-b border-gray-100'
-        }`}>
-          <div className={`mx-auto px-6 ${isLargeDesktop ? 'max-w-7xl' : 'max-w-6xl'}`}>
+        <nav
+          className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${
+            isScrolled
+              ? "bg-white/95 backdrop-blur-xl shadow-2xl shadow-black/5 py-2 border-b border-gray-200/30"
+              : "bg-white py-3 border-b border-gray-100"
+          }`}
+        >
+          <div
+            className={`mx-auto px-6 ${isLargeDesktop ? "max-w-7xl" : "max-w-6xl"}`}
+          >
             <div className="flex items-center justify-between">
-              
               {/* Logo */}
               <div className="flex items-center gap-4">
                 <button
-                  onClick={() => navigate('/')}
+                  onClick={() => navigate("/")}
                   className="flex items-center gap-3 group"
                 >
                   <div className="relative">
@@ -1061,7 +1248,9 @@ const Navbar = () => {
                     </div>
                   </div>
                   <div className="text-left">
-                    <h1 className={`font-bold ${isLargeDesktop ? 'text-2xl' : 'text-xl'} tracking-tight`}>
+                    <h1
+                      className={`font-bold ${isLargeDesktop ? "text-2xl" : "text-xl"} tracking-tight`}
+                    >
                       <span className="bg-gradient-to-r from-blue-600 to-cyan-500 bg-clip-text text-transparent">
                         JeevanDaan
                       </span>
@@ -1078,43 +1267,49 @@ const Navbar = () => {
                 {getMainNavItems().map((item) => {
                   const Icon = item.icon;
                   const isActive = activeTab === item.id;
-                  
+
                   return (
                     <button
                       key={item.id}
                       onClick={() => handleNavigation(item.id)}
                       className={`px-4 py-2.5 rounded-xl font-semibold transition-all duration-300 flex items-center gap-2.5 relative group ${getTabStyle(item.id, isActive)} ${
-                        isLargeDesktop ? 'text-sm' : 'text-xs'
+                        isLargeDesktop ? "text-sm" : "text-xs"
                       }`}
                       title={item.description}
                     >
-                      <Icon className={`${isLargeDesktop ? 'h-5 w-5' : 'h-4 w-4'}`} />
+                      <Icon
+                        className={`${isLargeDesktop ? "h-5 w-5" : "h-4 w-4"}`}
+                      />
                       <span>{item.label}</span>
                       {item.badge && (
-                        <span className={`absolute -top-2 -right-2 px-2 py-0.5 text-xs font-bold rounded-full ${isActive ? 'bg-white text-black' : 'bg-red-500 text-white'} shadow-md`}>
+                        <span
+                          className={`absolute -top-2 -right-2 px-2 py-0.5 text-xs font-bold rounded-full ${isActive ? "bg-white text-black" : "bg-red-500 text-white"} shadow-md`}
+                        >
                           {item.badge}
                         </span>
                       )}
                     </button>
                   );
                 })}
-                
+
                 {/* More Dropdown */}
                 {isLargeDesktop && (
                   <div className="relative" ref={moreRef}>
                     <button
                       onClick={() => setIsMoreOpen(!isMoreOpen)}
                       className={`px-4 py-2.5 rounded-xl font-semibold transition-all duration-300 flex items-center gap-2.5 ${
-                        isMoreOpen 
-                          ? 'bg-gradient-to-r from-gray-800 to-gray-900 text-white shadow-lg' 
-                          : 'text-gray-700 hover:text-gray-900 hover:bg-gray-50 border border-transparent hover:border-gray-200'
+                        isMoreOpen
+                          ? "bg-gradient-to-r from-gray-800 to-gray-900 text-white shadow-lg"
+                          : "text-gray-700 hover:text-gray-900 hover:bg-gray-50 border border-transparent hover:border-gray-200"
                       }`}
                     >
                       <MoreVertical className="h-5 w-5" />
                       <span className="text-sm">More</span>
-                      <ChevronDown className={`h-4 w-4 transition-transform duration-300 ${isMoreOpen ? 'rotate-180' : ''}`} />
+                      <ChevronDown
+                        className={`h-4 w-4 transition-transform duration-300 ${isMoreOpen ? "rotate-180" : ""}`}
+                      />
                     </button>
-                    
+
                     {isMoreOpen && (
                       <div className="absolute top-full left-0 mt-2 w-80 bg-white rounded-2xl shadow-2xl shadow-black/10 border border-gray-200/50 p-3 z-50 animate-fadeIn">
                         <div className="grid grid-cols-2 gap-2">
@@ -1124,17 +1319,23 @@ const Navbar = () => {
                               onClick={() => handleTabClick(item)}
                               className="group flex flex-col items-center p-4 rounded-xl hover:bg-gray-50 transition-all duration-300 border border-transparent hover:border-gray-200"
                             >
-                              <div className={`p-3 rounded-xl bg-gradient-to-r ${item.gradient} mb-3 group-hover:scale-110 transition-transform`}>
+                              <div
+                                className={`p-3 rounded-xl bg-gradient-to-r ${item.gradient} mb-3 group-hover:scale-110 transition-transform`}
+                              >
                                 <item.icon className="h-6 w-6 text-white" />
                               </div>
                               <div className="text-center">
-                                <div className="font-semibold text-gray-900 text-sm mb-1">{item.label}</div>
-                                <div className="text-xs text-gray-500">{item.description}</div>
+                                <div className="font-semibold text-gray-900 text-sm mb-1">
+                                  {item.label}
+                                </div>
+                                <div className="text-xs text-gray-500">
+                                  {item.description}
+                                </div>
                               </div>
                             </button>
                           ))}
                         </div>
-                        
+
                         {!isLoggedIn && (
                           <div className="mt-3 pt-3 border-t border-gray-100">
                             <button
@@ -1146,8 +1347,12 @@ const Navbar = () => {
                                   <Building2 className="h-5 w-5 text-white" />
                                 </div>
                                 <div className="text-left">
-                                  <div className="font-semibold text-gray-900">Hospital Login</div>
-                                  <div className="text-xs text-gray-600">For hospitals & clinics</div>
+                                  <div className="font-semibold text-gray-900">
+                                    Hospital Login
+                                  </div>
+                                  <div className="text-xs text-gray-600">
+                                    For hospitals & clinics
+                                  </div>
                                 </div>
                               </div>
                               <ChevronRight className="h-4 w-4 text-gray-400 group-hover:text-purple-600 group-hover:translate-x-1 transition-all" />
@@ -1171,34 +1376,52 @@ const Navbar = () => {
                     >
                       <MapPin className="h-4 w-4 text-blue-500" />
                       <div className="text-left">
-                        <div className="text-xs font-semibold text-gray-900">{currentLocation.split(',')[0]}</div>
-                        <div className="text-xs text-gray-500 hidden xl:block">📍 Location</div>
+                        <div className="text-xs font-semibold text-gray-900">
+                          {currentLocation.split(",")[0]}
+                        </div>
+                        <div className="text-xs text-gray-500 hidden xl:block">
+                          📍 Location
+                        </div>
                       </div>
-                      <ChevronDown className={`h-3 w-3 text-gray-400 transition-transform duration-300 ${isLocationOpen ? 'rotate-180' : ''}`} />
+                      <ChevronDown
+                        className={`h-3 w-3 text-gray-400 transition-transform duration-300 ${isLocationOpen ? "rotate-180" : ""}`}
+                      />
                     </button>
-                    
+
                     {isLocationOpen && (
                       <div className="absolute top-full right-0 mt-2 w-64 bg-white rounded-2xl shadow-2xl shadow-black/10 border border-gray-200/50 p-3 z-50 animate-fadeIn">
                         <div className="flex items-center justify-between mb-2">
-                          <h4 className="font-bold text-gray-900 text-sm">Select Location</h4>
-                          <span className="text-xs text-gray-500">🇮🇳 India</span>
+                          <h4 className="font-bold text-gray-900 text-sm">
+                            Select Location
+                          </h4>
+                          <span className="text-xs text-gray-500">
+                            🇮🇳 India
+                          </span>
                         </div>
                         <div className="space-y-1 max-h-56 overflow-y-auto">
                           {locations.map((loc) => (
                             <button
                               key={loc.city}
-                              onClick={() => handleLocationSelect(`${loc.city}, ${loc.state}`)}
+                              onClick={() =>
+                                handleLocationSelect(
+                                  `${loc.city}, ${loc.state}`,
+                                )
+                              }
                               className={`w-full flex items-center justify-between px-3 py-2 rounded-lg transition-all duration-300 text-sm ${
-                                currentLocation.startsWith(loc.city) 
-                                  ? 'bg-gradient-to-r from-blue-50 to-cyan-50 border border-blue-200' 
-                                  : 'hover:bg-gray-50 border border-transparent hover:border-gray-200'
+                                currentLocation.startsWith(loc.city)
+                                  ? "bg-gradient-to-r from-blue-50 to-cyan-50 border border-blue-200"
+                                  : "hover:bg-gray-50 border border-transparent hover:border-gray-200"
                               }`}
                             >
                               <div className="flex items-center gap-2">
                                 <div className="text-lg">{loc.flag}</div>
                                 <div className="text-left">
-                                  <div className="font-medium text-gray-900">{loc.city}</div>
-                                  <div className="text-xs text-gray-500">{loc.state}</div>
+                                  <div className="font-medium text-gray-900">
+                                    {loc.city}
+                                  </div>
+                                  <div className="text-xs text-gray-500">
+                                    {loc.state}
+                                  </div>
                                 </div>
                               </div>
                               {currentLocation.startsWith(loc.city) && (
@@ -1218,7 +1441,9 @@ const Navbar = () => {
                   className="flex items-center gap-2 px-3 py-2 rounded-xl bg-gray-50 hover:bg-gray-100 transition-all duration-300 border border-gray-200 hover:border-gray-300 group"
                 >
                   <Search className="h-4 w-4 text-gray-600 group-hover:text-blue-600 transition-colors" />
-                  <span className="text-xs font-medium text-gray-700 hidden xl:block">Search</span>
+                  <span className="text-xs font-medium text-gray-700 hidden xl:block">
+                    Search
+                  </span>
                 </button>
 
                 {/* Emergency Button */}
@@ -1250,44 +1475,62 @@ const Navbar = () => {
                       onClick={() => setIsProfileOpen(!isProfileOpen)}
                       className="flex items-center gap-2 p-1 hover:bg-gray-100 rounded-xl transition-all duration-300 group"
                     >
-                      <div className={`w-9 h-9 rounded-full ${userTypeConfig?.gradient || 'bg-gradient-to-r from-blue-500 to-cyan-500'} flex items-center justify-center text-white font-bold text-sm shadow-lg group-hover:scale-105 transition-transform`}>
+                      <div
+                        className={`w-9 h-9 rounded-full ${userTypeConfig?.gradient || "bg-gradient-to-r from-blue-500 to-cyan-500"} flex items-center justify-center text-white font-bold text-sm shadow-lg group-hover:scale-105 transition-transform`}
+                      >
                         {getUserInitials()}
                       </div>
                       <div className="text-left hidden xl:block">
-                        <div className="font-bold text-gray-900 text-sm">{getUserDisplayName()}</div>
-                        <div className="text-xs text-gray-600">{getUserTypeLabel()}</div>
+                        <div className="font-bold text-gray-900 text-sm">
+                          {getUserDisplayName()}
+                        </div>
+                        <div className="text-xs text-gray-600">
+                          {getUserTypeLabel()}
+                        </div>
                       </div>
-                      <ChevronDown className={`h-3 w-3 text-gray-400 transition-transform duration-300 ${isProfileOpen ? 'rotate-180' : ''}`} />
+                      <ChevronDown
+                        className={`h-3 w-3 text-gray-400 transition-transform duration-300 ${isProfileOpen ? "rotate-180" : ""}`}
+                      />
                     </button>
-                    
+
                     {isProfileOpen && (
                       <div className="absolute top-full right-0 mt-2 w-80 bg-white rounded-2xl shadow-2xl shadow-black/10 border border-gray-200/50 p-4 z-50 animate-fadeIn">
                         {/* Profile Header */}
                         <div className="flex items-center gap-3 pb-3 border-b border-gray-200">
-                          <div className={`w-12 h-12 rounded-xl ${userTypeConfig?.gradient || 'bg-gradient-to-r from-blue-500 to-cyan-500'} flex items-center justify-center text-white font-bold text-lg shadow-lg`}>
+                          <div
+                            className={`w-12 h-12 rounded-xl ${userTypeConfig?.gradient || "bg-gradient-to-r from-blue-500 to-cyan-500"} flex items-center justify-center text-white font-bold text-lg shadow-lg`}
+                          >
                             {getUserInitials()}
                           </div>
                           <div className="flex-1">
-                            <h3 className="font-bold text-gray-900 text-sm">{getUserDisplayName()}</h3>
+                            <h3 className="font-bold text-gray-900 text-sm">
+                              {getUserDisplayName()}
+                            </h3>
                             <div className="flex items-center gap-1 mt-1">
-                              <span className={`px-2 py-0.5 rounded-full text-xs font-bold ${userTypeConfig?.bgColor || 'bg-blue-50'} ${userTypeConfig?.textColor || 'text-blue-600'} border ${userTypeConfig?.borderColor || 'border-blue-200'}`}>
+                              <span
+                                className={`px-2 py-0.5 rounded-full text-xs font-bold ${userTypeConfig?.bgColor || "bg-blue-50"} ${userTypeConfig?.textColor || "text-blue-600"} border ${userTypeConfig?.borderColor || "border-blue-200"}`}
+                              >
                                 {getUserTypeLabel()}
                               </span>
-                              <span className="text-xs text-gray-500">{getUserEmail()}</span>
+                              <span className="text-xs text-gray-500">
+                                {getUserEmail()}
+                              </span>
                             </div>
-                            {userType === 'hospital' && userData?.registrationNumber && (
-                              <p className="text-xs text-gray-500 mt-1">
-                                <span className="font-medium">Reg:</span> {userData.registrationNumber}
-                              </p>
-                            )}
+                            {userType === "hospital" &&
+                              userData?.registrationNumber && (
+                                <p className="text-xs text-gray-500 mt-1">
+                                  <span className="font-medium">Reg:</span>{" "}
+                                  {userData.registrationNumber}
+                                </p>
+                              )}
                           </div>
                         </div>
-                        
+
                         {/* Quick Actions */}
                         <div className="grid grid-cols-3 gap-2 py-3">
                           <button
                             onClick={() => {
-                              navigate('/profile');
+                              navigate("/profile");
                               setIsProfileOpen(false);
                             }}
                             className="flex flex-col items-center p-2 rounded-lg hover:bg-gray-50 transition-colors"
@@ -1297,7 +1540,7 @@ const Navbar = () => {
                           </button>
                           <button
                             onClick={() => {
-                              navigate('/settings');
+                              navigate("/settings");
                               setIsProfileOpen(false);
                             }}
                             className="flex flex-col items-center p-2 rounded-lg hover:bg-gray-50 transition-colors"
@@ -1313,26 +1556,35 @@ const Navbar = () => {
                             <span className="text-xs mt-1">Logout</span>
                           </button>
                         </div>
-                        
+
                         {/* User Type Specific Links */}
                         {userType && (
                           <div className="border-t border-gray-100 pt-3">
                             <button
                               onClick={() => {
-                                if (userType === 'bloodDonor' || userType === 'organDonor') {
-                                  navigate(`/donor-dashboard?id=${donorId}`);
-                                } else if (userType === 'patient') {
-                                  navigate(`/patient-dashboard?id=${patientId}`);
-                                } else if (userType === 'hospital') {
-                                  navigate(`/hospital/dashboard?id=${hospitalId}`);
-                                } else if (userType === 'user') {
+                                if (
+                                  userType === "bloodDonor" ||
+                                  userType === "organDonor"
+                                ) {
+                                  navigate(getDonorDashboardPath());
+                                } else if (userType === "patient") {
+                                  navigate(
+                                    `/patient/dashboard?id=${patientId}`,
+                                  );
+                                } else if (userType === "hospital") {
+                                  navigate(
+                                    `/hospital/dashboard?id=${hospitalId}`,
+                                  );
+                                } else if (userType === "user") {
                                   navigate(`/user/dashboard?id=${userId}`);
                                 }
                                 setIsProfileOpen(false);
                               }}
                               className="w-full flex items-center gap-2 p-2 text-sm text-gray-700 hover:bg-gray-50 rounded-lg transition-colors"
                             >
-                              {userTypeConfig?.icon && <userTypeConfig.icon className="h-4 w-4" />}
+                              {userTypeConfig?.icon && (
+                                <userTypeConfig.icon className="h-4 w-4" />
+                              )}
                               <span>{userTypeConfig?.label} Dashboard</span>
                             </button>
                           </div>
@@ -1343,13 +1595,13 @@ const Navbar = () => {
                 ) : (
                   <div className="flex items-center gap-2">
                     <button
-                      onClick={() => navigate('/auth?tab=login')}
+                      onClick={() => navigate("/auth?tab=login")}
                       className="px-3 py-1.5 text-blue-600 hover:text-blue-700 font-semibold rounded-xl hover:bg-blue-50 transition-all duration-300 border border-blue-200 hover:border-blue-300 text-xs"
                     >
                       Login
                     </button>
                     <button
-                      onClick={() => navigate('/auth?tab=register')}
+                      onClick={() => navigate("/auth?tab=register")}
                       className="px-3 py-1.5 bg-gradient-to-r from-blue-600 to-cyan-500 text-white rounded-xl font-bold hover:shadow-lg hover:shadow-blue-500/30 transition-all duration-300 text-xs"
                     >
                       Register
@@ -1364,17 +1616,18 @@ const Navbar = () => {
 
       {/* TABLET NAVBAR (768px - 1023px) */}
       {isTablet && (
-        <nav className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${
-          isScrolled 
-            ? 'bg-white/95 backdrop-blur-lg shadow-lg py-2 border-b border-gray-200' 
-            : 'bg-white py-3 border-b border-gray-100'
-        }`}>
+        <nav
+          className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${
+            isScrolled
+              ? "bg-white/95 backdrop-blur-lg shadow-lg py-2 border-b border-gray-200"
+              : "bg-white py-3 border-b border-gray-100"
+          }`}
+        >
           <div className="max-w-4xl mx-auto px-4">
             <div className="flex items-center justify-between">
-              
               {/* Logo */}
               <button
-                onClick={() => navigate('/')}
+                onClick={() => navigate("/")}
                 className="flex items-center gap-2 group"
               >
                 <div className="bg-white w-8 h-8 rounded-lg flex items-center justify-center shadow border border-gray-100 group-hover:scale-105 transition-transform duration-300">
@@ -1388,7 +1641,9 @@ const Navbar = () => {
                   <h1 className="font-bold text-base bg-gradient-to-r from-blue-600 to-cyan-500 bg-clip-text text-transparent">
                     JeevanDaan
                   </h1>
-                  <p className="text-[10px] text-gray-500 hidden md:block">Life Saving Platform</p>
+                  <p className="text-[10px] text-gray-500 hidden md:block">
+                    Life Saving Platform
+                  </p>
                 </div>
               </button>
 
@@ -1397,20 +1652,26 @@ const Navbar = () => {
                 {getMainNavItems().map((item) => {
                   const Icon = item.icon;
                   const isActive = activeTab === item.id;
-                  
+
                   return (
                     <button
                       key={item.id}
                       onClick={() => handleNavigation(item.id)}
-                      className={`p-2.5 rounded-lg transition-all duration-300 relative ${isActive ? 'text-white shadow-md' : 'text-gray-600 hover:text-gray-900 hover:bg-gray-100'}`}
-                      style={isActive ? {
-                        background: `linear-gradient(135deg, ${item.id === 'blood' ? '#dc2626, #db2777' : item.id === 'organ' ? '#16a34a, #059669' : '#f59e0b, #ea580c'})`
-                      } : {}}
+                      className={`p-2.5 rounded-lg transition-all duration-300 relative ${isActive ? "text-white shadow-md" : "text-gray-600 hover:text-gray-900 hover:bg-gray-100"}`}
+                      style={
+                        isActive
+                          ? {
+                              background: `linear-gradient(135deg, ${item.id === "blood" ? "#dc2626, #db2777" : item.id === "organ" ? "#16a34a, #059669" : "#f59e0b, #ea580c"})`,
+                            }
+                          : {}
+                      }
                       title={item.description}
                     >
                       <Icon className="h-4 w-4" />
                       {item.badge && (
-                        <span className={`absolute -top-1 -right-1 w-4 h-4 text-[10px] font-bold rounded-full flex items-center justify-center ${isActive ? 'bg-white text-black' : 'bg-red-500 text-white'} shadow`}>
+                        <span
+                          className={`absolute -top-1 -right-1 w-4 h-4 text-[10px] font-bold rounded-full flex items-center justify-center ${isActive ? "bg-white text-black" : "bg-red-500 text-white"} shadow`}
+                        >
                           {item.badge}
                         </span>
                       )}
@@ -1428,7 +1689,7 @@ const Navbar = () => {
                   <Ambulance className="h-3 w-3" />
                   <span>Emergency</span>
                 </button>
-                
+
                 <button
                   onClick={() => setShowNotifications(true)}
                   className="relative p-2 hover:bg-gray-100 rounded-lg transition-colors"
@@ -1438,13 +1699,15 @@ const Navbar = () => {
                     {notificationCount}
                   </span>
                 </button>
-                
+
                 {isLoggedIn && userData ? (
                   <button
                     onClick={() => setIsProfileOpen(!isProfileOpen)}
                     className="p-1 hover:bg-gray-100 rounded-lg transition-all"
                   >
-                    <div className={`w-8 h-8 rounded-full ${userTypeConfig?.gradient || 'bg-gradient-to-r from-blue-500 to-cyan-500'} flex items-center justify-center text-white font-bold text-xs shadow`}>
+                    <div
+                      className={`w-8 h-8 rounded-full ${userTypeConfig?.gradient || "bg-gradient-to-r from-blue-500 to-cyan-500"} flex items-center justify-center text-white font-bold text-xs shadow`}
+                    >
                       {getUserInitials()}
                     </div>
                   </button>
@@ -1466,18 +1729,19 @@ const Navbar = () => {
       {isMobile && (
         <>
           {/* Top Navbar */}
-          <div className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${
-            isScrolled 
-              ? 'bg-white/95 backdrop-blur-lg shadow-lg py-2 border-b border-gray-200' 
-              : 'bg-white py-3 border-b border-gray-100'
-          }`}>
+          <div
+            className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${
+              isScrolled
+                ? "bg-white/95 backdrop-blur-lg shadow-lg py-2 border-b border-gray-200"
+                : "bg-white py-3 border-b border-gray-100"
+            }`}
+          >
             <div className="px-4">
               <div className="flex items-center justify-between">
-                
                 {/* Logo and Location */}
                 <div className="flex items-center gap-2">
                   <button
-                    onClick={() => navigate('/')}
+                    onClick={() => navigate("/")}
                     className="flex items-center gap-1.5"
                   >
                     <div className="bg-white w-7 h-7 rounded-lg flex items-center justify-center shadow border border-gray-100">
@@ -1491,13 +1755,15 @@ const Navbar = () => {
                       JeevanDaan
                     </h1>
                   </button>
-                  
+
                   <button
                     onClick={() => setIsLocationOpen(!isLocationOpen)}
                     className="flex items-center gap-1 text-xs text-gray-700 px-1.5 py-1 rounded-md hover:bg-gray-100 transition-colors"
                   >
                     <MapPin className="h-3 w-3 text-blue-500" />
-                    <span className="font-medium">{currentLocation.split(',')[0]}</span>
+                    <span className="font-medium">
+                      {currentLocation.split(",")[0]}
+                    </span>
                   </button>
                 </div>
 
@@ -1509,7 +1775,7 @@ const Navbar = () => {
                   >
                     <Search className="h-4 w-4 text-gray-600" />
                   </button>
-                  
+
                   <button
                     onClick={() => setShowNotifications(true)}
                     className="relative p-1.5 hover:bg-gray-100 rounded-lg transition-colors"
@@ -1519,13 +1785,15 @@ const Navbar = () => {
                       {notificationCount}
                     </span>
                   </button>
-                  
+
                   {isLoggedIn && userData ? (
                     <button
                       onClick={() => setIsProfileOpen(!isProfileOpen)}
                       className="p-0.5 hover:bg-gray-100 rounded-lg"
                     >
-                      <div className={`w-7 h-7 rounded-full ${userTypeConfig?.gradient || 'bg-gradient-to-r from-blue-500 to-cyan-500'} flex items-center justify-center text-white font-bold text-xs shadow`}>
+                      <div
+                        className={`w-7 h-7 rounded-full ${userTypeConfig?.gradient || "bg-gradient-to-r from-blue-500 to-cyan-500"} flex items-center justify-center text-white font-bold text-xs shadow`}
+                      >
                         {getUserInitials()}
                       </div>
                     </button>
@@ -1548,26 +1816,32 @@ const Navbar = () => {
               {mobileNavItems.map((item) => {
                 const Icon = item.icon;
                 const isActive = activeTab === item.id;
-                
+
                 return (
                   <button
                     key={item.id}
                     onClick={() => handleTabClick(item)}
                     className={`flex flex-col items-center justify-center p-1.5 relative transition-all duration-300 flex-1 ${
-                      isActive ? 'transform -translate-y-1' : ''
+                      isActive ? "transform -translate-y-1" : ""
                     }`}
                     title={item.label}
                   >
-                    <div className={`p-2 rounded-lg transition-all duration-300 relative ${
-                      isActive 
-                        ? `bg-gradient-to-r ${item.gradient} text-white shadow-md` 
-                        : 'bg-gray-100 text-gray-400'
-                    }`}>
-                      <Icon className={`h-4 w-4 ${isActive ? 'text-white' : item.color}`} />
+                    <div
+                      className={`p-2 rounded-lg transition-all duration-300 relative ${
+                        isActive
+                          ? `bg-gradient-to-r ${item.gradient} text-white shadow-md`
+                          : "bg-gray-100 text-gray-400"
+                      }`}
+                    >
+                      <Icon
+                        className={`h-4 w-4 ${isActive ? "text-white" : item.color}`}
+                      />
                     </div>
-                    <span className={`text-[10px] mt-1 font-semibold transition-colors ${
-                      isActive ? 'text-gray-900' : 'text-gray-500'
-                    }`}>
+                    <span
+                      className={`text-[10px] mt-1 font-semibold transition-colors ${
+                        isActive ? "text-gray-900" : "text-gray-500"
+                      }`}
+                    >
                       {item.label}
                     </span>
                   </button>
@@ -1582,13 +1856,13 @@ const Navbar = () => {
       {isMobileMenuOpen && (
         <div className="fixed inset-0 z-[100]">
           {/* Backdrop */}
-          <div 
+          <div
             className="absolute inset-0 bg-black/40 backdrop-blur-sm animate-fadeIn"
             onClick={() => setIsMobileMenuOpen(false)}
           />
-          
+
           {/* Menu Panel */}
-          <div 
+          <div
             ref={mobileMenuRef}
             className="absolute right-0 top-0 bottom-0 w-[85vw] max-w-xs bg-white shadow-xl animate-slideIn"
           >
@@ -1616,18 +1890,28 @@ const Navbar = () => {
                   <X className="h-5 w-5 text-gray-600" />
                 </button>
               </div>
-              
+
               {/* User Info or Auth Buttons */}
               {isLoggedIn && userData ? (
-                <div className={`p-3 rounded-xl ${userTypeConfig?.lightGradient || 'bg-gradient-to-r from-blue-50 to-cyan-50'} border ${userTypeConfig?.borderColor || 'border-blue-200'}`}>
+                <div
+                  className={`p-3 rounded-xl ${userTypeConfig?.lightGradient || "bg-gradient-to-r from-blue-50 to-cyan-50"} border ${userTypeConfig?.borderColor || "border-blue-200"}`}
+                >
                   <div className="flex items-center gap-2">
-                    <div className={`w-10 h-10 rounded-xl ${userTypeConfig?.gradient || 'bg-gradient-to-r from-blue-500 to-cyan-500'} flex items-center justify-center text-white font-bold text-sm shadow`}>
+                    <div
+                      className={`w-10 h-10 rounded-xl ${userTypeConfig?.gradient || "bg-gradient-to-r from-blue-500 to-cyan-500"} flex items-center justify-center text-white font-bold text-sm shadow`}
+                    >
                       {getUserInitials()}
                     </div>
                     <div className="flex-1 min-w-0">
-                      <h3 className="font-bold text-gray-900 text-sm truncate">{getUserDisplayName()}</h3>
-                      <p className="text-xs text-gray-600">{getUserTypeLabel()}</p>
-                      <p className="text-xs text-gray-500 truncate">{getUserEmail()}</p>
+                      <h3 className="font-bold text-gray-900 text-sm truncate">
+                        {getUserDisplayName()}
+                      </h3>
+                      <p className="text-xs text-gray-600">
+                        {getUserTypeLabel()}
+                      </p>
+                      <p className="text-xs text-gray-500 truncate">
+                        {getUserEmail()}
+                      </p>
                     </div>
                   </div>
                 </div>
@@ -1635,7 +1919,7 @@ const Navbar = () => {
                 <div className="grid grid-cols-2 gap-2">
                   <button
                     onClick={() => {
-                      navigate('/auth?tab=login');
+                      navigate("/auth?tab=login");
                       setIsMobileMenuOpen(false);
                     }}
                     className="px-3 py-2 text-blue-600 font-semibold rounded-lg border border-blue-200 hover:bg-blue-50 transition-all text-sm"
@@ -1644,7 +1928,7 @@ const Navbar = () => {
                   </button>
                   <button
                     onClick={() => {
-                      navigate('/auth?tab=register');
+                      navigate("/auth?tab=register");
                       setIsMobileMenuOpen(false);
                     }}
                     className="px-3 py-2 bg-gradient-to-r from-blue-600 to-cyan-500 text-white rounded-lg font-bold hover:shadow-lg transition-all text-sm"
@@ -1654,12 +1938,14 @@ const Navbar = () => {
                 </div>
               )}
             </div>
-            
+
             {/* Menu Items */}
             <div className="overflow-y-auto h-[calc(100vh-180px)] p-3">
               {/* Main Navigation */}
               <div className="mb-4">
-                <h3 className="font-bold text-gray-900 mb-3 text-sm">Main Navigation</h3>
+                <h3 className="font-bold text-gray-900 mb-3 text-sm">
+                  Main Navigation
+                </h3>
                 <div className="space-y-1">
                   {getMainNavItems().map((item) => (
                     <button
@@ -1675,8 +1961,12 @@ const Navbar = () => {
                           <item.icon className={`h-4 w-4 ${item.textColor}`} />
                         </div>
                         <div className="text-left">
-                          <div className="font-semibold text-gray-900">{item.label}</div>
-                          <div className="text-xs text-gray-500">{item.description}</div>
+                          <div className="font-semibold text-gray-900">
+                            {item.label}
+                          </div>
+                          <div className="text-xs text-gray-500">
+                            {item.description}
+                          </div>
                         </div>
                       </div>
                       <ChevronRight className="h-4 w-4 text-gray-400" />
@@ -1684,11 +1974,13 @@ const Navbar = () => {
                   ))}
                 </div>
               </div>
-              
+
               {/* Emergency Section */}
               <div className="mb-4">
                 <div className="bg-gradient-to-r from-red-50 to-red-100 rounded-xl p-3 border border-red-200">
-                  <h3 className="font-bold text-gray-900 mb-1 text-sm">Emergency</h3>
+                  <h3 className="font-bold text-gray-900 mb-1 text-sm">
+                    Emergency
+                  </h3>
                   <p className="text-xs text-gray-600 mb-2">Available 24/7</p>
                   <button
                     onClick={handleEmergency}
@@ -1699,29 +1991,35 @@ const Navbar = () => {
                   </button>
                 </div>
               </div>
-              
+
               {/* Contact Info */}
               <div className="bg-gradient-to-r from-gray-50 to-gray-100 rounded-xl p-3 border border-gray-200">
-                <h3 className="font-bold text-gray-900 mb-2 text-sm">Support</h3>
+                <h3 className="font-bold text-gray-900 mb-2 text-sm">
+                  Support
+                </h3>
                 <div className="space-y-2">
                   <div className="flex items-center gap-2 p-2 bg-white rounded-lg">
                     <Phone className="h-3 w-3 text-blue-500" />
                     <div>
                       <div className="text-xs text-gray-600">Helpline</div>
-                      <div className="font-bold text-blue-600 text-xs">108 / 102</div>
+                      <div className="font-bold text-blue-600 text-xs">
+                        108 / 102
+                      </div>
                     </div>
                   </div>
                   <div className="flex items-center gap-2 p-2 bg-white rounded-lg">
                     <Mail className="h-3 w-3 text-blue-500" />
                     <div>
                       <div className="text-xs text-gray-600">Email</div>
-                      <div className="font-medium text-blue-600 text-xs">help@jeevandaan.org</div>
+                      <div className="font-medium text-blue-600 text-xs">
+                        help@jeevandaan.org
+                      </div>
                     </div>
                   </div>
                 </div>
               </div>
             </div>
-            
+
             {/* Footer */}
             <div className="absolute bottom-0 left-0 right-0 p-3 border-t border-gray-200 bg-white">
               {isLoggedIn && (
@@ -1733,7 +2031,9 @@ const Navbar = () => {
                   <span>Logout</span>
                 </button>
               )}
-              <p className="text-xs text-gray-500 text-center">© 2024 JeevanDaan</p>
+              <p className="text-xs text-gray-500 text-center">
+                © 2024 JeevanDaan
+              </p>
             </div>
           </div>
         </div>
@@ -1742,12 +2042,17 @@ const Navbar = () => {
       {/* SEARCH MODAL (All Devices) */}
       {isSearchOpen && (
         <div className="fixed inset-0 z-[100] animate-fadeIn">
-          <div 
+          <div
             className="absolute inset-0 bg-black/30 backdrop-blur-sm"
             onClick={() => setIsSearchOpen(false)}
           />
-          <div className={`absolute top-4 left-1/2 transform -translate-x-1/2 w-full ${isMobile ? 'px-3 max-w-md' : 'px-4 max-w-2xl'}`}>
-            <div ref={searchRef} className="bg-white rounded-xl shadow-xl p-4 animate-fadeIn">
+          <div
+            className={`absolute top-4 left-1/2 transform -translate-x-1/2 w-full ${isMobile ? "px-3 max-w-md" : "px-4 max-w-2xl"}`}
+          >
+            <div
+              ref={searchRef}
+              className="bg-white rounded-xl shadow-xl p-4 animate-fadeIn"
+            >
               <div className="relative">
                 <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
                 <input
@@ -1757,7 +2062,7 @@ const Navbar = () => {
                   placeholder="Search for blood donors, hospitals, information..."
                   className="w-full pl-10 pr-10 py-3 bg-gray-50 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-300 focus:border-transparent text-sm"
                   autoFocus
-                  onKeyDown={(e) => e.key === 'Enter' && handleSearch(e)}
+                  onKeyDown={(e) => e.key === "Enter" && handleSearch(e)}
                 />
                 <button
                   onClick={() => setIsSearchOpen(false)}
@@ -1766,16 +2071,38 @@ const Navbar = () => {
                   <X className="h-4 w-4" />
                 </button>
               </div>
-              
+
               {/* Quick Links */}
               <div className="mt-3">
-                <h4 className="font-semibold text-gray-800 mb-2 text-xs">Quick Search</h4>
+                <h4 className="font-semibold text-gray-800 mb-2 text-xs">
+                  Quick Search
+                </h4>
                 <div className="grid grid-cols-2 gap-2">
                   {[
-                    { label: 'Blood Donation', icon: Droplets, color: 'red', path: '/blood-donation' },
-                    { label: 'Organ Donation', icon: ActivityIcon, color: 'green', path: '/organ-donation' },
-                    { label: 'Find Hospitals', icon: HospitalIcon, color: 'blue', path: '/hospitals' },
-                    { label: 'Eligibility', icon: Shield, color: 'indigo', path: '/eligibility' }
+                    {
+                      label: "Blood Donation",
+                      icon: Droplets,
+                      color: "red",
+                      path: "/blood-donation",
+                    },
+                    {
+                      label: "Organ Donation",
+                      icon: ActivityIcon,
+                      color: "green",
+                      path: "/organ-donation",
+                    },
+                    {
+                      label: "Find Hospitals",
+                      icon: HospitalIcon,
+                      color: "blue",
+                      path: "/hospitals",
+                    },
+                    {
+                      label: "Eligibility",
+                      icon: Shield,
+                      color: "indigo",
+                      path: "/eligibility",
+                    },
                   ].map((link, idx) => (
                     <button
                       key={idx}
@@ -1786,7 +2113,11 @@ const Navbar = () => {
                       className={`px-2 py-2 rounded-lg bg-${link.color}-50 border border-${link.color}-200 flex items-center gap-2 hover:opacity-90 transition-all text-xs`}
                     >
                       <link.icon className={`h-3 w-3 text-${link.color}-600`} />
-                      <span className={`font-medium text-${link.color}-600 truncate`}>{link.label}</span>
+                      <span
+                        className={`font-medium text-${link.color}-600 truncate`}
+                      >
+                        {link.label}
+                      </span>
                     </button>
                   ))}
                 </div>
@@ -1799,7 +2130,7 @@ const Navbar = () => {
       {/* EMERGENCY MODAL */}
       {showEmergencyModal && (
         <div className="fixed inset-0 z-[110] animate-fadeIn">
-          <div 
+          <div
             className="absolute inset-0 bg-black/50 backdrop-blur-sm"
             onClick={() => setShowEmergencyModal(false)}
           />
@@ -1808,45 +2139,63 @@ const Navbar = () => {
               <div className="bg-gradient-to-r from-red-600 to-red-500 p-4">
                 <div className="flex items-center gap-3">
                   <Ambulance className="h-6 w-6 text-white" />
-                  <h2 className="text-xl font-bold text-white">Emergency Assistance</h2>
+                  <h2 className="text-xl font-bold text-white">
+                    Emergency Assistance
+                  </h2>
                 </div>
               </div>
-              
+
               <div className="p-6">
-                <p className="text-gray-600 mb-4">Please call these numbers immediately for emergency assistance:</p>
-                
+                <p className="text-gray-600 mb-4">
+                  Please call these numbers immediately for emergency
+                  assistance:
+                </p>
+
                 <div className="space-y-3">
                   <div className="flex items-center justify-between p-3 bg-red-50 rounded-xl border border-red-200">
                     <div className="flex items-center gap-3">
                       <Phone className="h-5 w-5 text-red-600" />
                       <div>
                         <div className="font-bold text-red-700">108</div>
-                        <div className="text-sm text-gray-600">National Emergency</div>
+                        <div className="text-sm text-gray-600">
+                          National Emergency
+                        </div>
                       </div>
                     </div>
                     <button className="px-3 py-1 bg-red-600 text-white rounded-lg text-sm font-semibold hover:bg-red-700 transition-colors">
                       Call Now
                     </button>
                   </div>
-                  
+
                   <div className="flex items-center justify-between p-3 bg-blue-50 rounded-xl border border-blue-200">
                     <div className="flex items-center gap-3">
                       <HospitalIcon className="h-5 w-5 text-blue-600" />
                       <div>
                         <div className="font-bold text-blue-700">102</div>
-                        <div className="text-sm text-gray-600">Ambulance Service</div>
+                        <div className="text-sm text-gray-600">
+                          Ambulance Service
+                        </div>
                       </div>
                     </div>
                     <button className="px-3 py-1 bg-blue-600 text-white rounded-lg text-sm font-semibold hover:bg-blue-700 transition-colors">
                       Call Now
                     </button>
                   </div>
-                  
+
                   <div className="p-3 bg-gray-50 rounded-xl border border-gray-200">
-                    <h4 className="font-semibold text-gray-900 mb-2">Nearest Hospitals:</h4>
+                    <h4 className="font-semibold text-gray-900 mb-2">
+                      Nearest Hospitals:
+                    </h4>
                     <div className="space-y-2">
-                      {['Apollo Hospital', 'Fortis Hospital', 'Max Healthcare'].map((hospital, idx) => (
-                        <div key={idx} className="flex items-center justify-between">
+                      {[
+                        "Apollo Hospital",
+                        "Fortis Hospital",
+                        "Max Healthcare",
+                      ].map((hospital, idx) => (
+                        <div
+                          key={idx}
+                          className="flex items-center justify-between"
+                        >
                           <div className="flex items-center gap-2">
                             <MapPin className="h-3 w-3 text-gray-500" />
                             <span className="text-sm">{hospital}</span>
@@ -1859,7 +2208,7 @@ const Navbar = () => {
                     </div>
                   </div>
                 </div>
-                
+
                 <div className="mt-6 pt-4 border-t border-gray-200">
                   <button
                     onClick={() => setShowEmergencyModal(false)}
@@ -1876,113 +2225,76 @@ const Navbar = () => {
 
       {/* LOGIN PROMPT MODAL */}
       {showLoginPrompt && (
-        <div className="fixed inset-0 z-[120] animate-fadeIn">
-          <div 
-            className="absolute inset-0 bg-black/50 backdrop-blur-sm"
+        <div className="fixed inset-0 z-[120] flex items-center justify-center animate-fadeIn">
+          {/* Overlay */}
+          <div
+            className="absolute inset-0 bg-black/40 backdrop-blur-sm"
             onClick={() => setShowLoginPrompt(false)}
           />
-          <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-[90vw] max-w-md">
-            <div className="bg-white rounded-2xl shadow-2xl overflow-hidden animate-fadeIn">
-              {/* Header with gradient based on page type */}
-              <div className={`bg-gradient-to-r ${loginPromptData.gradient} p-6 text-white`}>
-                <div className="flex items-center gap-4">
-                  <div className="w-12 h-12 bg-white/20 backdrop-blur-sm rounded-xl flex items-center justify-center">
-                    {loginPromptData.icon && React.createElement(loginPromptData.icon, { className: "h-6 w-6 text-white" })}
-                  </div>
-                  <div>
-                    <h2 className="text-xl font-bold">{loginPromptData.title}</h2>
-                    <p className="text-white/90 text-sm mt-1">Please login to continue</p>
-                  </div>
+
+          {/* Modal */}
+          <div className="relative w-[92%] max-w-sm bg-white rounded-2xl shadow-2xl overflow-hidden animate-scaleIn">
+            {/* Header */}
+            <div
+              className={`bg-gradient-to-r ${loginPromptData.gradient} p-4 text-white`}
+            >
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 bg-white/20 rounded-lg flex items-center justify-center">
+                  {loginPromptData.icon &&
+                    React.createElement(loginPromptData.icon, {
+                      className: "h-5 w-5 text-white",
+                    })}
+                </div>
+                <div>
+                  <h2 className="text-base font-bold">
+                    {loginPromptData.title}
+                  </h2>
+                  <p className="text-white/80 text-xs">Login required</p>
                 </div>
               </div>
-              
-              {/* Content */}
-              <div className="p-6">
-                <div className="mb-6">
-                  <p className="text-gray-600 mb-4">{loginPromptData.message}</p>
-                  
-                  {loginPromptData.requiredUserType && (
-                    <div className="bg-gradient-to-r from-blue-50 to-cyan-50 border border-blue-200 rounded-xl p-4 mb-4">
-                      <h4 className="font-semibold text-blue-900 mb-2 text-sm">Who can access:</h4>
-                      <div className="flex flex-wrap gap-2">
-                        {loginPromptData.requiredUserType.map((type, idx) => {
-                          const typeConfig = userTypesConfig.find(t => t.key === type);
-                          if (!typeConfig) return null;
-                          const Icon = typeConfig.icon;
-                          return (
-                            <div key={idx} className="flex items-center gap-2 px-3 py-1.5 bg-white rounded-lg border border-gray-200">
-                              <div className={`p-1.5 rounded-lg ${typeConfig.bgColor}`}>
-                                <Icon className={`h-4 w-4 ${typeConfig.textColor}`} />
-                              </div>
-                              <span className="text-xs font-medium text-gray-700">{typeConfig.label}</span>
-                            </div>
-                          );
-                        })}
-                      </div>
-                    </div>
-                  )}
-                  
-                  <div className="bg-gradient-to-r from-amber-50 to-amber-100 border border-amber-200 rounded-xl p-4">
-                    <div className="flex items-start gap-3">
-                      <Info className="h-5 w-5 text-amber-600 mt-0.5" />
-                      <div>
-                        <h4 className="font-semibold text-amber-900 text-sm mb-1">Benefits of Login:</h4>
-                        <ul className="text-xs text-amber-800 space-y-1">
-                          <li className="flex items-center gap-2">
-                            <CheckCircle className="h-3 w-3 text-green-500" />
-                            Access donor/patient matching
-                          </li>
-                          <li className="flex items-center gap-2">
-                            <CheckCircle className="h-3 w-3 text-green-500" />
-                            Save your preferences and history
-                          </li>
-                          <li className="flex items-center gap-2">
-                            <CheckCircle className="h-3 w-3 text-green-500" />
-                            Receive notifications and updates
-                          </li>
-                          <li className="flex items-center gap-2">
-                            <CheckCircle className="h-3 w-3 text-green-500" />
-                            Track your donations and requests
-                          </li>
-                        </ul>
-                      </div>
-                    </div>
-                  </div>
+            </div>
+
+            {/* Body */}
+            <div className="p-4 space-y-4">
+              {/* Message */}
+              <p className="text-sm text-gray-600">{loginPromptData.message}</p>
+
+              {/* Compact Benefits */}
+              <div className="bg-gray-50 rounded-lg p-3 space-y-1 text-xs text-gray-600">
+                <div className="flex items-center gap-2">
+                  <CheckCircle className="h-3.5 w-3.5 text-green-500" />
+                  Access donor/patient matching
                 </div>
-                
-                {/* Action Buttons */}
-                <div className="space-y-3">
-                  <button
-                    onClick={() => handleLoginPromptAction('login')}
-                    className="w-full px-4 py-3 bg-gradient-to-r from-blue-600 to-cyan-500 text-white rounded-lg font-bold hover:shadow-lg hover:shadow-blue-500/30 transition-all flex items-center justify-center gap-2"
-                  >
-                    <LogIn className="h-5 w-5" />
-                    <span>Login Now</span>
-                  </button>
-                  
-                  <button
-                    onClick={() => handleLoginPromptAction('register')}
-                    className="w-full px-4 py-3 bg-gradient-to-r from-green-600 to-emerald-500 text-white rounded-lg font-bold hover:shadow-lg hover:shadow-green-500/30 transition-all flex items-center justify-center gap-2"
-                  >
-                    <UserPlus className="h-5 w-5" />
-                    <span>Create Account</span>
-                  </button>
-                  
-                  <button
-                    onClick={() => handleLoginPromptAction('cancel')}
-                    className="w-full px-4 py-3 bg-gray-100 text-gray-700 rounded-lg font-semibold hover:bg-gray-200 transition-colors"
-                  >
-                    Maybe Later
-                  </button>
-                </div>
-                
-                {/* Guest Info */}
-                <div className="mt-4 pt-4 border-t border-gray-200">
-                  <p className="text-xs text-gray-500 text-center">
-                    You can continue browsing as guest, but some features will be limited.
-                  </p>
+                <div className="flex items-center gap-2">
+                  <CheckCircle className="h-3.5 w-3.5 text-green-500" />
+                  Track requests & history
                 </div>
               </div>
+
+              {/* Buttons */}
+              <div className="space-y-2">
+                <button
+                  onClick={() => handleLoginPromptAction("login")}
+                  className="w-full py-2.5 bg-gradient-to-r from-blue-600 to-cyan-500 text-white rounded-lg text-sm font-semibold hover:shadow-lg transition-all"
+                >
+                  Login
+                </button>
+
+                <button
+                  onClick={() => handleLoginPromptAction("register")}
+                  className="w-full py-2.5 bg-gray-100 text-gray-700 rounded-lg text-sm font-semibold hover:bg-gray-200 transition-all"
+                >
+                  Create Account
+                </button>
+              </div>
+
+              {/* Cancel */}
+              <p
+                onClick={() => handleLoginPromptAction("cancel")}
+                className="text-center text-xs text-gray-400 hover:text-gray-600 cursor-pointer transition-colors"
+              >
+                Maybe later
+              </p>
             </div>
           </div>
         </div>
@@ -2009,56 +2321,83 @@ const Navbar = () => {
       )}
 
       {/* Responsive Spacer for fixed navbar */}
-      <div className={`
-        ${isMobile ? 'pt-16 pb-16' : ''}
-        ${isTablet ? 'pt-14' : ''}
-        ${isDesktop ? 'pt-20' : ''}
-      `}></div>
+      <div
+        className={`
+        ${isMobile ? "pt-16 pb-16" : ""}
+        ${isTablet ? "pt-14" : ""}
+        ${isDesktop ? "pt-20" : ""}
+      `}
+      ></div>
 
       <style jsx global>{`
         @keyframes fadeIn {
-          from { opacity: 0; transform: translateY(-10px); }
-          to { opacity: 1; transform: translateY(0); }
+          from {
+            opacity: 0;
+            transform: translateY(-10px);
+          }
+          to {
+            opacity: 1;
+            transform: translateY(0);
+          }
         }
-        
+
         @keyframes slideIn {
-          from { transform: translateX(100%); opacity: 0; }
-          to { transform: translateX(0); opacity: 1; }
+          from {
+            transform: translateX(100%);
+            opacity: 0;
+          }
+          to {
+            transform: translateX(0);
+            opacity: 1;
+          }
         }
-        
+
         @keyframes spin {
-          from { transform: rotate(0deg); }
-          to { transform: rotate(360deg); }
+          from {
+            transform: rotate(0deg);
+          }
+          to {
+            transform: rotate(360deg);
+          }
         }
-        
+
         .animate-fadeIn {
           animation: fadeIn 0.2s ease-out;
         }
-        
+
         .animate-slideIn {
           animation: slideIn 0.3s ease-out;
         }
-        
+
         .animate-spin {
           animation: spin 1s linear infinite;
         }
-        
+
         .animation-delay-500 {
           animation-delay: 500ms;
         }
-        
+
         @keyframes pulse {
-          0%, 100% { opacity: 1; transform: scale(1); }
-          50% { opacity: 0.7; transform: scale(1.05); }
+          0%,
+          100% {
+            opacity: 1;
+            transform: scale(1);
+          }
+          50% {
+            opacity: 0.7;
+            transform: scale(1.05);
+          }
         }
-        
+
         .animate-pulse {
           animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
         }
 
         /* Smooth transitions */
         * {
-          transition-property: background-color, border-color, color, fill, stroke, opacity, box-shadow, transform;
+          transition-property:
+            background-color, border-color, color, fill, stroke, opacity,
+            box-shadow, transform;
           transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
           transition-duration: 150ms;
         }
@@ -2067,17 +2406,17 @@ const Navbar = () => {
         .overflow-y-auto::-webkit-scrollbar {
           width: 4px;
         }
-        
+
         .overflow-y-auto::-webkit-scrollbar-track {
           background: #f1f1f1;
           border-radius: 4px;
         }
-        
+
         .overflow-y-auto::-webkit-scrollbar-thumb {
           background: #888;
           border-radius: 4px;
         }
-        
+
         .overflow-y-auto::-webkit-scrollbar-thumb:hover {
           background: #555;
         }
