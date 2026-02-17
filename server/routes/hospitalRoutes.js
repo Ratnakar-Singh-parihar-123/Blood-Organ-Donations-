@@ -16,13 +16,12 @@ router.post("/register", register);
 // Login hospital
 router.post("/login", login);
 
-// logout 
+// logout
 router.post("/logout", logout);
 
 router.post("/forgot-password", forgotPassword);
 router.post("/verify-otp", verifyOTP);
 router.post("/reset-password", resetPassword);
 router.post("/resend-otp", resendOTP);
-
 
 module.exports = router;

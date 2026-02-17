@@ -5,17 +5,18 @@ const sendEmail = require("../utils/sendEmail");
 // Hospital Register
 const register = async (req, res) => {
   try {
-    const {
-      hospitalName,
-      registrationNumber,
-      email,
-      phone,
-      city,
-      password,
-    } = req.body;
+    const { hospitalName, registrationNumber, email, phone, city, password } =
+      req.body;
 
     // 1️⃣ Validate required fields
-    if (!hospitalName || !registrationNumber || !email || !phone || !city || !password) {
+    if (
+      !hospitalName ||
+      !registrationNumber ||
+      !email ||
+      !phone ||
+      !city ||
+      !password
+    ) {
       return res.status(400).json({
         success: false,
         message: "All fields are required",
@@ -30,7 +31,8 @@ const register = async (req, res) => {
     if (existingHospital) {
       return res.status(400).json({
         success: false,
-        message: "Hospital already exists with this email or registration number",
+        message:
+          "Hospital already exists with this email or registration number",
       });
     }
 
@@ -60,12 +62,11 @@ const register = async (req, res) => {
         isVerified: hospital.isVerified || false,
       },
     });
-
   } catch (error) {
     console.error("Hospital Registration error:", error);
 
     if (error.name === "ValidationError") {
-      const messages = Object.values(error.errors).map(val => val.message);
+      const messages = Object.values(error.errors).map((val) => val.message);
       return res.status(400).json({
         success: false,
         message: messages.join(", "),
@@ -127,7 +128,6 @@ const login = async (req, res) => {
         isVerified: hospital.isVerified,
       },
     });
-
   } catch (error) {
     console.error("Hospital Login error:", error);
     res.status(500).json({
@@ -142,7 +142,7 @@ const logout = (req, res) => {
   // Since JWT is stateless, we just inform the client to delete the token
   res.status(200).json({
     success: true,
-    message: 'Logged out successfully. Please delete the token on client side.'
+    message: "Logged out successfully. Please delete the token on client side.",
   });
 };
 
@@ -158,10 +158,7 @@ const forgotPassword = async (req, res) => {
 
     const otp = Math.floor(100000 + Math.random() * 900000).toString();
 
-    const hashedOTP = crypto
-      .createHash("sha256")
-      .update(otp)
-      .digest("hex");
+    const hashedOTP = crypto.createHash("sha256").update(otp).digest("hex");
 
     hospital.resetOTP = hashedOTP;
     hospital.resetOTPExpire = Date.now() + 10 * 60 * 1000; // 10 min
@@ -173,7 +170,7 @@ const forgotPassword = async (req, res) => {
     await sendEmail(
       email,
       "Password Reset OTP",
-      `Your OTP is ${otp}. It will expire in 10 minutes.`
+      `Your OTP is ${otp}. It will expire in 10 minutes.`,
     );
 
     res.json({ message: "OTP sent to email" });
@@ -183,16 +180,12 @@ const forgotPassword = async (req, res) => {
   }
 };
 
-
 // VERIFY OTP
 const verifyOTP = async (req, res) => {
   try {
     const { email, otp } = req.body;
 
-    const hashedOTP = crypto
-      .createHash("sha256")
-      .update(otp)
-      .digest("hex");
+    const hashedOTP = crypto.createHash("sha256").update(otp).digest("hex");
 
     const hospital = await Hospital.findOne({
       email,
@@ -267,10 +260,7 @@ const resendOTP = async (req, res) => {
 
     const otp = Math.floor(100000 + Math.random() * 900000).toString();
 
-    const hashedOTP = crypto
-      .createHash("sha256")
-      .update(otp)
-      .digest("hex");
+    const hashedOTP = crypto.createHash("sha256").update(otp).digest("hex");
 
     hospital.resetOTP = hashedOTP;
     hospital.resetOTPExpire = Date.now() + 10 * 60 * 1000;
@@ -282,7 +272,7 @@ const resendOTP = async (req, res) => {
     await sendEmail(
       email,
       "Resend Password Reset OTP",
-      `Your new OTP is ${otp}. It will expire in 10 minutes.`
+      `Your new OTP is ${otp}. It will expire in 10 minutes.`,
     );
 
     res.json({ message: "OTP resent successfully" });
@@ -292,7 +282,6 @@ const resendOTP = async (req, res) => {
   }
 };
 
-
 module.exports = {
   register,
   login,
@@ -300,5 +289,5 @@ module.exports = {
   forgotPassword,
   verifyOTP,
   resendOTP,
-  resetPassword
+  resetPassword,
 };

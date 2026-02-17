@@ -11,7 +11,6 @@ router.get("/", notificationController.getNotifications);
 // Mark as read
 router.put("/:id/read", notificationController.markAsRead);
 
-
 // Mark ALL notifications as read
 router.put("/read-all", notificationController.markAllAsRead);
 
@@ -20,5 +19,8 @@ router.delete("/:id", notificationController.deleteNotification);
 
 // Delete all notifications
 router.delete("/", notificationController.deleteAllNotifications);
+
+// count notifications
+router.get("/count/:userId", notificationController.notificationCount);
 
 module.exports = router;

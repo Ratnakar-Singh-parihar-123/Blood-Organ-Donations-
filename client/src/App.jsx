@@ -78,7 +78,6 @@ function App() {
             <ProtectedRoute>
               <PatientMatches />
             </ProtectedRoute>
-
           }
         />
         <Route

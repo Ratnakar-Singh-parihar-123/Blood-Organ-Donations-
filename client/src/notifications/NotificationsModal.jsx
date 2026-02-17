@@ -1,11 +1,11 @@
 import { useEffect, useState, useRef, useCallback } from "react";
-import { 
-  Bell, 
-  X, 
-  CheckCircle, 
-  Trash2, 
-  Volume2, 
-  VolumeX, 
+import {
+  Bell,
+  X,
+  CheckCircle,
+  Trash2,
+  Volume2,
+  VolumeX,
   RefreshCw,
   Search,
   AlertCircle,
@@ -38,7 +38,7 @@ import {
   Grid,
   List,
   Sliders,
-  Pin
+  Pin,
 } from "lucide-react";
 
 const NotificationsModal = ({ isOpen, onClose }) => {
@@ -47,7 +47,9 @@ const NotificationsModal = ({ isOpen, onClose }) => {
   const [hasNew, setHasNew] = useState(false);
   const [filter, setFilter] = useState("all");
   const [searchQuery, setSearchQuery] = useState("");
-  const [isMuted, setIsMuted] = useState(() => localStorage.getItem('notifications_muted') === 'true');
+  const [isMuted, setIsMuted] = useState(
+    () => localStorage.getItem("notifications_muted") === "true",
+  );
   const [selectedNotification, setSelectedNotification] = useState(null);
   const [showSettings, setShowSettings] = useState(false);
   const [viewMode, setViewMode] = useState("compact");
@@ -55,7 +57,7 @@ const NotificationsModal = ({ isOpen, onClose }) => {
     total: 0,
     unread: 0,
     urgent: 0,
-    today: 0
+    today: 0,
   });
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [notificationSound, setNotificationSound] = useState("default");
@@ -89,7 +91,7 @@ const NotificationsModal = ({ isOpen, onClose }) => {
   // Handle escape key
   useEffect(() => {
     const handleEscape = (e) => {
-      if (e.key === 'Escape') {
+      if (e.key === "Escape") {
         if (selectedNotification) {
           setSelectedNotification(null);
         } else {
@@ -98,20 +100,20 @@ const NotificationsModal = ({ isOpen, onClose }) => {
       }
     };
 
-    document.addEventListener('keydown', handleEscape);
-    return () => document.removeEventListener('keydown', handleEscape);
+    document.addEventListener("keydown", handleEscape);
+    return () => document.removeEventListener("keydown", handleEscape);
   }, [selectedNotification]);
 
   // Prevent body scroll when modal is open
   useEffect(() => {
     if (isOpen) {
-      document.body.style.overflow = 'hidden';
+      document.body.style.overflow = "hidden";
       fetchNotifications();
     }
-    
+
     return () => {
       if (!isOpen) {
-        document.body.style.overflow = 'auto';
+        document.body.style.overflow = "auto";
       }
     };
   }, [isOpen]);
@@ -133,7 +135,7 @@ const NotificationsModal = ({ isOpen, onClose }) => {
 
   // Vibration function for mobile
   const vibrate = useCallback(() => {
-    if (vibration && 'vibrate' in navigator) {
+    if (vibration && "vibrate" in navigator) {
       navigator.vibrate([100, 50, 100]);
     }
   }, [vibration]);
@@ -141,14 +143,14 @@ const NotificationsModal = ({ isOpen, onClose }) => {
   const handleMuteToggle = () => {
     const newMuted = !isMuted;
     setIsMuted(newMuted);
-    localStorage.setItem('notifications_muted', newMuted.toString());
+    localStorage.setItem("notifications_muted", newMuted.toString());
     if (!newMuted) playNotificationSound();
   };
 
   const handleVibrationToggle = () => {
     const newVibration = !vibration;
     setVibration(newVibration);
-    localStorage.setItem('notifications_vibration', newVibration.toString());
+    localStorage.setItem("notifications_vibration", newVibration.toString());
   };
 
   // Fetch notifications
@@ -157,7 +159,7 @@ const NotificationsModal = ({ isOpen, onClose }) => {
       setLoading(true);
       const res = await fetch(`${import.meta.env.VITE_API_URL}/notifications`, {
         headers: {
-          "Authorization": `Bearer ${token}`,
+          Authorization: `Bearer ${token}`,
           "Content-Type": "application/json",
         },
         cache: "no-cache",
@@ -165,13 +167,13 @@ const NotificationsModal = ({ isOpen, onClose }) => {
       const data = await res.json();
       if (data.success) {
         const sorted = (data.notifications || []).sort(
-          (a, b) => new Date(b.createdAt) - new Date(a.createdAt)
+          (a, b) => new Date(b.createdAt) - new Date(a.createdAt),
         );
         setNotifications(sorted);
 
-        const unreadCount = sorted.filter(n => !n.isRead).length;
-        const urgentCount = sorted.filter(n => n.priority === 'high').length;
-        const todayCount = sorted.filter(n => {
+        const unreadCount = sorted.filter((n) => !n.isRead).length;
+        const urgentCount = sorted.filter((n) => n.priority === "high").length;
+        const todayCount = sorted.filter((n) => {
           const date = new Date(n.createdAt);
           const today = new Date();
           return date.toDateString() === today.toDateString();
@@ -181,10 +183,12 @@ const NotificationsModal = ({ isOpen, onClose }) => {
           total: sorted.length,
           unread: unreadCount,
           urgent: urgentCount,
-          today: todayCount
+          today: todayCount,
         });
 
-        const prevUnread = parseInt(localStorage.getItem("unread_count") || "0");
+        const prevUnread = parseInt(
+          localStorage.getItem("unread_count") || "0",
+        );
         if (unreadCount > prevUnread) {
           setHasNew(true);
           playUrgentSound();
@@ -202,15 +206,22 @@ const NotificationsModal = ({ isOpen, onClose }) => {
   // Mark as read
   const markAsRead = async (id) => {
     try {
-      const res = await fetch(`${import.meta.env.VITE_API_URL}/notifications/${id}/read`, {
-        method: "PUT",
-        headers: { "Authorization": `Bearer ${token}` },
-      });
+      const res = await fetch(
+        `${import.meta.env.VITE_API_URL}/notifications/${id}/read`,
+        {
+          method: "PUT",
+          headers: { Authorization: `Bearer ${token}` },
+        },
+      );
       const data = await res.json();
       if (data.success) {
-        setNotifications(prev => prev.map(n => n._id === id ? { ...n, isRead: true } : n));
-        const newUnread = notifications.filter(n => !n.isRead && n._id !== id).length;
-        setStats(prev => ({ ...prev, unread: newUnread }));
+        setNotifications((prev) =>
+          prev.map((n) => (n._id === id ? { ...n, isRead: true } : n)),
+        );
+        const newUnread = notifications.filter(
+          (n) => !n.isRead && n._id !== id,
+        ).length;
+        setStats((prev) => ({ ...prev, unread: newUnread }));
         localStorage.setItem("unread_count", newUnread.toString());
       }
     } catch (err) {
@@ -220,14 +231,17 @@ const NotificationsModal = ({ isOpen, onClose }) => {
 
   const markAllAsRead = async () => {
     try {
-      const res = await fetch(`${import.meta.env.VITE_API_URL}/notifications/read-all`, {
-        method: "PUT",
-        headers: { "Authorization": `Bearer ${token}` },
-      });
+      const res = await fetch(
+        `${import.meta.env.VITE_API_URL}/notifications/read-all`,
+        {
+          method: "PUT",
+          headers: { Authorization: `Bearer ${token}` },
+        },
+      );
       const data = await res.json();
       if (data.success) {
-        setNotifications(prev => prev.map(n => ({ ...n, isRead: true })));
-        setStats(prev => ({ ...prev, unread: 0 }));
+        setNotifications((prev) => prev.map((n) => ({ ...n, isRead: true })));
+        setStats((prev) => ({ ...prev, unread: 0 }));
         setHasNew(false);
         localStorage.setItem("unread_count", "0");
       }
@@ -238,17 +252,24 @@ const NotificationsModal = ({ isOpen, onClose }) => {
 
   const deleteNotification = async (id) => {
     try {
-      const res = await fetch(`${import.meta.env.VITE_API_URL}/notifications/${id}`, {
-        method: "DELETE",
-        headers: { "Authorization": `Bearer ${token}` },
-      });
+      const res = await fetch(
+        `${import.meta.env.VITE_API_URL}/notifications/${id}`,
+        {
+          method: "DELETE",
+          headers: { Authorization: `Bearer ${token}` },
+        },
+      );
       const data = await res.json();
       if (data.success) {
-        setNotifications(prev => prev.filter(n => n._id !== id));
-        const newUnread = notifications.filter(n => !n.isRead && n._id !== id).length;
-        const newTotal = notifications.filter(n => n._id !== id).length;
-        const newUrgent = notifications.filter(n => n.priority === 'high' && n._id !== id).length;
-        const newToday = notifications.filter(n => {
+        setNotifications((prev) => prev.filter((n) => n._id !== id));
+        const newUnread = notifications.filter(
+          (n) => !n.isRead && n._id !== id,
+        ).length;
+        const newTotal = notifications.filter((n) => n._id !== id).length;
+        const newUrgent = notifications.filter(
+          (n) => n.priority === "high" && n._id !== id,
+        ).length;
+        const newToday = notifications.filter((n) => {
           const date = new Date(n.createdAt);
           const today = new Date();
           return date.toDateString() === today.toDateString() && n._id !== id;
@@ -258,7 +279,7 @@ const NotificationsModal = ({ isOpen, onClose }) => {
           total: newTotal,
           unread: newUnread,
           urgent: newUrgent,
-          today: newToday
+          today: newToday,
         });
       }
     } catch (err) {
@@ -268,10 +289,13 @@ const NotificationsModal = ({ isOpen, onClose }) => {
 
   const deleteAllNotifications = async () => {
     try {
-      const res = await fetch(`${import.meta.env.VITE_API_URL}/notifications/`, {
-        method: "DELETE",
-        headers: { "Authorization": `Bearer ${token}` },
-      });
+      const res = await fetch(
+        `${import.meta.env.VITE_API_URL}/notifications/`,
+        {
+          method: "DELETE",
+          headers: { Authorization: `Bearer ${token}` },
+        },
+      );
       const data = await res.json();
       if (data.success) {
         setNotifications([]);
@@ -287,56 +311,61 @@ const NotificationsModal = ({ isOpen, onClose }) => {
   // Helper functions
   const getNotificationIcon = (type, priority) => {
     const icons = {
-      'blood': { 
-        icon: <Droplets className="h-5 w-5" />, 
-        color: priority === 'high' ? "text-red-600" : "text-red-500",
-        bg: priority === 'high' ? "bg-gradient-to-br from-red-100 to-red-50" : "bg-red-50",
-        ring: priority === 'high' ? "ring-2 ring-red-200" : ""
+      blood: {
+        icon: <Droplets className="h-5 w-5" />,
+        color: priority === "high" ? "text-red-600" : "text-red-500",
+        bg:
+          priority === "high"
+            ? "bg-gradient-to-br from-red-100 to-red-50"
+            : "bg-red-50",
+        ring: priority === "high" ? "ring-2 ring-red-200" : "",
       },
-      'organ': { 
-        icon: <Heart className="h-5 w-5" />, 
+      organ: {
+        icon: <Heart className="h-5 w-5" />,
         color: "text-purple-600",
         bg: "bg-gradient-to-br from-purple-100 to-purple-50",
-        ring: "ring-2 ring-purple-100"
+        ring: "ring-2 ring-purple-100",
       },
-      'emergency': { 
-        icon: <AlertTriangle className="h-5 w-5" />, 
+      emergency: {
+        icon: <AlertTriangle className="h-5 w-5" />,
         color: "text-amber-600",
         bg: "bg-gradient-to-br from-amber-100 to-amber-50",
-        ring: "ring-2 ring-amber-100"
+        ring: "ring-2 ring-amber-100",
       },
-      'message': { 
-        icon: <MessageSquare className="h-5 w-5" />, 
+      message: {
+        icon: <MessageSquare className="h-5 w-5" />,
         color: "text-blue-600",
         bg: "bg-gradient-to-br from-blue-100 to-blue-50",
-        ring: "ring-2 ring-blue-100"
+        ring: "ring-2 ring-blue-100",
       },
-      'system': { 
-        icon: <Shield className="h-5 w-5" />, 
+      system: {
+        icon: <Shield className="h-5 w-5" />,
         color: "text-gray-600",
         bg: "bg-gradient-to-br from-gray-100 to-gray-50",
-        ring: "ring-2 ring-gray-100"
+        ring: "ring-2 ring-gray-100",
       },
-      'event': { 
-        icon: <Calendar className="h-5 w-5" />, 
+      event: {
+        icon: <Calendar className="h-5 w-5" />,
         color: "text-indigo-600",
         bg: "bg-gradient-to-br from-indigo-100 to-indigo-50",
-        ring: "ring-2 ring-indigo-100"
+        ring: "ring-2 ring-indigo-100",
       },
-      'appointment': { 
-        icon: <Clock className="h-5 w-5" />, 
+      appointment: {
+        icon: <Clock className="h-5 w-5" />,
         color: "text-teal-600",
         bg: "bg-gradient-to-br from-teal-100 to-teal-50",
-        ring: "ring-2 ring-teal-100"
+        ring: "ring-2 ring-teal-100",
+      },
+    };
+
+    return (
+      icons[type] || {
+        icon: <Bell className="h-5 w-5" />,
+        color: "text-gray-600",
+        bg: "bg-gradient-to-br from-gray-100 to-gray-50",
+        ring: "ring-2 ring-gray-100",
       }
-    };
-    
-    return icons[type] || { 
-      icon: <Bell className="h-5 w-5" />, 
-      color: "text-gray-600",
-      bg: "bg-gradient-to-br from-gray-100 to-gray-50",
-      ring: "ring-2 ring-gray-100"
-    };
+    );
   };
 
   const getTimeAgo = (dateString) => {
@@ -351,14 +380,14 @@ const NotificationsModal = ({ isOpen, onClose }) => {
     if (diffMins < 60) return `${diffMins}m ago`;
     if (diffHours < 24) return `${diffHours}h ago`;
     if (diffDays < 7) return `${diffDays}d ago`;
-    return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+    return date.toLocaleDateString("en-US", { month: "short", day: "numeric" });
   };
 
-  const filteredNotifications = notifications.filter(n => {
-    if (filter === 'all') return true;
-    if (filter === 'unread') return !n.isRead;
-    if (filter === 'urgent') return n.priority === 'high';
-    if (filter === 'today') {
+  const filteredNotifications = notifications.filter((n) => {
+    if (filter === "all") return true;
+    if (filter === "unread") return !n.isRead;
+    if (filter === "urgent") return n.priority === "high";
+    if (filter === "today") {
       const date = new Date(n.createdAt);
       const today = new Date();
       return date.toDateString() === today.toDateString();
@@ -366,10 +395,11 @@ const NotificationsModal = ({ isOpen, onClose }) => {
     return n.type === filter;
   });
 
-  const searchedNotifications = searchQuery 
-    ? filteredNotifications.filter(n => 
-        n.title?.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        n.message?.toLowerCase().includes(searchQuery.toLowerCase())
+  const searchedNotifications = searchQuery
+    ? filteredNotifications.filter(
+        (n) =>
+          n.title?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+          n.message?.toLowerCase().includes(searchQuery.toLowerCase()),
       )
     : filteredNotifications;
 
@@ -396,7 +426,7 @@ const NotificationsModal = ({ isOpen, onClose }) => {
 
       {/* Modal */}
       <div className="fixed inset-0 z-50 flex items-center justify-center p-2 sm:p-4 md:p-6">
-        <div 
+        <div
           ref={modalRef}
           className="bg-gradient-to-br from-white via-white to-gray-50/50 backdrop-blur-xl rounded-2xl sm:rounded-3xl shadow-2xl border border-white/50 w-full max-w-4xl max-h-[95vh] sm:max-h-[90vh] overflow-hidden animate-scaleIn"
         >
@@ -411,7 +441,7 @@ const NotificationsModal = ({ isOpen, onClose }) => {
                   </div>
                   {stats.unread > 0 && (
                     <span className="absolute -top-1 -right-1 h-4 w-4 sm:h-6 sm:w-6 bg-gradient-to-r from-red-500 to-pink-500 text-white text-[10px] sm:text-xs rounded-full flex items-center justify-center font-bold shadow-lg animate-pulse">
-                      {stats.unread > 99 ? '99+' : stats.unread}
+                      {stats.unread > 99 ? "99+" : stats.unread}
                     </span>
                   )}
                 </div>
@@ -419,10 +449,12 @@ const NotificationsModal = ({ isOpen, onClose }) => {
                   <h2 className="text-lg sm:text-2xl font-bold bg-gradient-to-r from-gray-900 to-gray-700 bg-clip-text text-transparent">
                     Notifications
                   </h2>
-                  <p className="text-xs sm:text-sm text-gray-500 hidden sm:block">Stay updated with important alerts</p>
+                  <p className="text-xs sm:text-sm text-gray-500 hidden sm:block">
+                    Stay updated with important alerts
+                  </p>
                 </div>
               </div>
-              
+
               <div className="flex items-center gap-1 sm:gap-2">
                 {/* Mobile menu button */}
                 <button
@@ -444,7 +476,7 @@ const NotificationsModal = ({ isOpen, onClose }) => {
                     <Volume2 className="h-4 w-4 sm:h-5 sm:w-5 text-gray-600" />
                   )}
                 </button>
-                
+
                 <button
                   onClick={() => setShowSettings(!showSettings)}
                   className="p-2 hover:bg-gray-100 rounded-xl transition-all duration-200 hover:scale-105 hidden sm:block"
@@ -452,7 +484,7 @@ const NotificationsModal = ({ isOpen, onClose }) => {
                 >
                   <Settings className="h-4 w-4 sm:h-5 sm:w-5 text-gray-600" />
                 </button>
-                
+
                 <button
                   onClick={handleClose}
                   className="p-2 hover:bg-gray-100 rounded-xl transition-all duration-200 hover:scale-105"
@@ -469,20 +501,36 @@ const NotificationsModal = ({ isOpen, onClose }) => {
                 <div className="flex items-center justify-between gap-2 mb-3">
                   <button
                     onClick={handleMuteToggle}
-                    className={`flex-1 flex items-center justify-center gap-2 px-3 py-2 rounded-lg ${isMuted ? 'bg-gray-200' : 'bg-green-100 text-green-700'}`}
+                    className={`flex-1 flex items-center justify-center gap-2 px-3 py-2 rounded-lg ${isMuted ? "bg-gray-200" : "bg-green-100 text-green-700"}`}
                   >
-                    {isMuted ? <VolumeX className="h-4 w-4" /> : <Volume2 className="h-4 w-4" />}
-                    <span className="text-xs font-medium">{isMuted ? "Muted" : "Sound On"}</span>
+                    {isMuted ? (
+                      <VolumeX className="h-4 w-4" />
+                    ) : (
+                      <Volume2 className="h-4 w-4" />
+                    )}
+                    <span className="text-xs font-medium">
+                      {isMuted ? "Muted" : "Sound On"}
+                    </span>
                   </button>
-                  
+
                   <button
-                    onClick={() => setViewMode(viewMode === "compact" ? "detailed" : "compact")}
+                    onClick={() =>
+                      setViewMode(
+                        viewMode === "compact" ? "detailed" : "compact",
+                      )
+                    }
                     className="flex-1 flex items-center justify-center gap-2 px-3 py-2 bg-blue-100 text-blue-700 rounded-lg"
                   >
-                    {viewMode === "compact" ? <List className="h-4 w-4" /> : <Grid className="h-4 w-4" />}
-                    <span className="text-xs font-medium">{viewMode === "compact" ? "List" : "Grid"}</span>
+                    {viewMode === "compact" ? (
+                      <List className="h-4 w-4" />
+                    ) : (
+                      <Grid className="h-4 w-4" />
+                    )}
+                    <span className="text-xs font-medium">
+                      {viewMode === "compact" ? "List" : "Grid"}
+                    </span>
                   </button>
-                  
+
                   <button
                     onClick={() => setShowSettings(!showSettings)}
                     className="flex-1 flex items-center justify-center gap-2 px-3 py-2 bg-purple-100 text-purple-700 rounded-lg"
@@ -491,16 +539,18 @@ const NotificationsModal = ({ isOpen, onClose }) => {
                     <span className="text-xs font-medium">Settings</span>
                   </button>
                 </div>
-                
+
                 <div className="flex gap-2">
                   <button
                     onClick={fetchNotifications}
                     className="flex-1 px-3 py-2 bg-gradient-to-r from-blue-500 to-cyan-500 text-white rounded-lg text-sm font-medium flex items-center justify-center gap-2"
                   >
-                    <RefreshCw className={`h-4 w-4 ${loading ? 'animate-spin' : ''}`} />
+                    <RefreshCw
+                      className={`h-4 w-4 ${loading ? "animate-spin" : ""}`}
+                    />
                     <span>Refresh</span>
                   </button>
-                  
+
                   <button
                     onClick={markAllAsRead}
                     disabled={stats.unread === 0}
@@ -517,19 +567,27 @@ const NotificationsModal = ({ isOpen, onClose }) => {
             <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 sm:gap-3 mb-4 sm:mb-6">
               <div className="bg-gradient-to-br from-blue-50/80 to-blue-100/30 backdrop-blur-sm rounded-lg sm:rounded-xl p-3 border border-blue-200/50">
                 <div className="text-xs text-blue-600 mb-1">Total</div>
-                <div className="text-lg sm:text-xl font-bold text-gray-900">{stats.total}</div>
+                <div className="text-lg sm:text-xl font-bold text-gray-900">
+                  {stats.total}
+                </div>
               </div>
               <div className="bg-gradient-to-br from-amber-50/80 to-amber-100/30 backdrop-blur-sm rounded-lg sm:rounded-xl p-3 border border-amber-200/50">
                 <div className="text-xs text-amber-600 mb-1">Unread</div>
-                <div className="text-lg sm:text-xl font-bold text-gray-900">{stats.unread}</div>
+                <div className="text-lg sm:text-xl font-bold text-gray-900">
+                  {stats.unread}
+                </div>
               </div>
               <div className="bg-gradient-to-br from-red-50/80 to-red-100/30 backdrop-blur-sm rounded-lg sm:rounded-xl p-3 border border-red-200/50">
                 <div className="text-xs text-red-600 mb-1">Urgent</div>
-                <div className="text-lg sm:text-xl font-bold text-gray-900">{stats.urgent}</div>
+                <div className="text-lg sm:text-xl font-bold text-gray-900">
+                  {stats.urgent}
+                </div>
               </div>
               <div className="bg-gradient-to-br from-green-50/80 to-green-100/30 backdrop-blur-sm rounded-lg sm:rounded-xl p-3 border border-green-200/50">
                 <div className="text-xs text-green-600 mb-1">Today</div>
-                <div className="text-lg sm:text-xl font-bold text-gray-900">{stats.today}</div>
+                <div className="text-lg sm:text-xl font-bold text-gray-900">
+                  {stats.today}
+                </div>
               </div>
             </div>
 
@@ -548,17 +606,19 @@ const NotificationsModal = ({ isOpen, onClose }) => {
                 />
                 {searchQuery && (
                   <button
-                    onClick={() => setSearchQuery('')}
+                    onClick={() => setSearchQuery("")}
                     className="absolute right-3 sm:right-4 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600"
                   >
                     <X className="h-4 w-4" />
                   </button>
                 )}
               </div>
-              
+
               <div className="flex gap-2">
                 <button
-                  onClick={() => setViewMode(viewMode === "compact" ? "detailed" : "compact")}
+                  onClick={() =>
+                    setViewMode(viewMode === "compact" ? "detailed" : "compact")
+                  }
                   className="px-3 sm:px-4 py-2.5 sm:py-3 bg-white border border-gray-300/50 rounded-xl sm:rounded-2xl text-sm font-medium hover:bg-gray-50 transition-colors flex items-center gap-2"
                 >
                   {viewMode === "compact" ? (
@@ -573,12 +633,14 @@ const NotificationsModal = ({ isOpen, onClose }) => {
                     </>
                   )}
                 </button>
-                
+
                 <button
                   onClick={fetchNotifications}
                   className="px-3 sm:px-4 py-2.5 sm:py-3 bg-gradient-to-r from-blue-50 to-cyan-50 border border-blue-200/50 rounded-xl sm:rounded-2xl text-sm font-medium hover:from-blue-100 hover:to-cyan-100 transition-all flex items-center gap-2"
                 >
-                  <RefreshCw className={`h-4 w-4 ${loading ? 'animate-spin' : ''}`} />
+                  <RefreshCw
+                    className={`h-4 w-4 ${loading ? "animate-spin" : ""}`}
+                  />
                   <span className="hidden sm:inline">Refresh</span>
                 </button>
               </div>
@@ -590,25 +652,33 @@ const NotificationsModal = ({ isOpen, onClose }) => {
             <div className="absolute top-20 sm:top-24 right-2 sm:right-6 z-20 w-56 sm:w-64 bg-white/95 backdrop-blur-xl rounded-xl sm:rounded-2xl shadow-2xl border border-gray-200/50 p-3 sm:p-4 animate-slideDown">
               <div className="space-y-4">
                 <div className="flex items-center justify-between">
-                  <span className="text-sm font-medium text-gray-700">Sounds</span>
+                  <span className="text-sm font-medium text-gray-700">
+                    Sounds
+                  </span>
                   <button
                     onClick={handleMuteToggle}
-                    className={`w-10 h-5 flex items-center rounded-full p-1 transition-colors ${isMuted ? 'bg-gray-300' : 'bg-green-500'}`}
+                    className={`w-10 h-5 flex items-center rounded-full p-1 transition-colors ${isMuted ? "bg-gray-300" : "bg-green-500"}`}
                   >
-                    <div className={`w-3 h-3 bg-white rounded-full transition-transform ${isMuted ? 'translate-x-0' : 'translate-x-5'}`} />
+                    <div
+                      className={`w-3 h-3 bg-white rounded-full transition-transform ${isMuted ? "translate-x-0" : "translate-x-5"}`}
+                    />
                   </button>
                 </div>
-                
+
                 <div className="flex items-center justify-between">
-                  <span className="text-sm font-medium text-gray-700">Vibration</span>
+                  <span className="text-sm font-medium text-gray-700">
+                    Vibration
+                  </span>
                   <button
                     onClick={handleVibrationToggle}
-                    className={`w-10 h-5 flex items-center rounded-full p-1 transition-colors ${!vibration ? 'bg-gray-300' : 'bg-blue-500'}`}
+                    className={`w-10 h-5 flex items-center rounded-full p-1 transition-colors ${!vibration ? "bg-gray-300" : "bg-blue-500"}`}
                   >
-                    <div className={`w-3 h-3 bg-white rounded-full transition-transform ${!vibration ? 'translate-x-0' : 'translate-x-5'}`} />
+                    <div
+                      className={`w-3 h-3 bg-white rounded-full transition-transform ${!vibration ? "translate-x-0" : "translate-x-5"}`}
+                    />
                   </button>
                 </div>
-                
+
                 <div className="pt-3 border-t border-gray-200">
                   <div className="flex gap-2">
                     <button
@@ -639,7 +709,9 @@ const NotificationsModal = ({ isOpen, onClose }) => {
                     <Bell className="h-6 w-6 sm:h-8 sm:w-8 text-blue-500 animate-pulse" />
                   </div>
                 </div>
-                <p className="mt-4 text-gray-600 text-sm sm:text-base">Loading notifications...</p>
+                <p className="mt-4 text-gray-600 text-sm sm:text-base">
+                  Loading notifications...
+                </p>
               </div>
             ) : searchedNotifications.length === 0 ? (
               <div className="flex flex-col items-center justify-center h-48 sm:h-64">
@@ -651,10 +723,10 @@ const NotificationsModal = ({ isOpen, onClose }) => {
                   )}
                 </div>
                 <h3 className="text-lg sm:text-xl font-bold text-gray-700 mb-2">
-                  {searchQuery ? 'No matches found' : 'All caught up!'}
+                  {searchQuery ? "No matches found" : "All caught up!"}
                 </h3>
                 <p className="text-gray-500 text-center max-w-sm text-sm sm:text-base">
-                  {searchQuery 
+                  {searchQuery
                     ? `No notifications match "${searchQuery}"`
                     : "You're all caught up with your notifications"}
                 </p>
@@ -671,22 +743,49 @@ const NotificationsModal = ({ isOpen, onClose }) => {
                 )}
 
                 {/* Filter Tabs */}
-                <div className="flex items-center gap-2 mb-4 overflow-x-auto pb-2" ref={filterRef}>
+                <div
+                  className="flex items-center gap-2 mb-4 overflow-x-auto pb-2"
+                  ref={filterRef}
+                >
                   {[
-                    { id: 'all', label: 'All', icon: <Bell className="h-3 w-3" /> },
-                    { id: 'unread', label: 'Unread', icon: <AlertCircle className="h-3 w-3" /> },
-                    { id: 'urgent', label: 'Urgent', icon: <Zap className="h-3 w-3" /> },
-                    { id: 'today', label: 'Today', icon: <Calendar className="h-3 w-3" /> },
-                    { id: 'blood', label: 'Blood', icon: <Droplets className="h-3 w-3" /> },
-                    { id: 'emergency', label: 'Emergency', icon: <AlertTriangle className="h-3 w-3" /> },
+                    {
+                      id: "all",
+                      label: "All",
+                      icon: <Bell className="h-3 w-3" />,
+                    },
+                    {
+                      id: "unread",
+                      label: "Unread",
+                      icon: <AlertCircle className="h-3 w-3" />,
+                    },
+                    {
+                      id: "urgent",
+                      label: "Urgent",
+                      icon: <Zap className="h-3 w-3" />,
+                    },
+                    {
+                      id: "today",
+                      label: "Today",
+                      icon: <Calendar className="h-3 w-3" />,
+                    },
+                    {
+                      id: "blood",
+                      label: "Blood",
+                      icon: <Droplets className="h-3 w-3" />,
+                    },
+                    {
+                      id: "emergency",
+                      label: "Emergency",
+                      icon: <AlertTriangle className="h-3 w-3" />,
+                    },
                   ].map((tab) => (
                     <button
                       key={tab.id}
                       onClick={() => setFilter(tab.id)}
                       className={`flex items-center gap-2 px-3 sm:px-4 py-2 rounded-lg sm:rounded-xl text-xs sm:text-sm font-medium whitespace-nowrap transition-all duration-200 ${
-                        filter === tab.id 
-                          ? 'bg-gradient-to-r from-blue-500 to-cyan-500 text-white shadow-lg' 
-                          : 'bg-white border border-gray-300/50 text-gray-700 hover:bg-gray-50'
+                        filter === tab.id
+                          ? "bg-gradient-to-r from-blue-500 to-cyan-500 text-white shadow-lg"
+                          : "bg-white border border-gray-300/50 text-gray-700 hover:bg-gray-50"
                       }`}
                     >
                       {tab.icon}
@@ -698,21 +797,28 @@ const NotificationsModal = ({ isOpen, onClose }) => {
                 {/* Notifications List */}
                 <div className="grid gap-3">
                   {searchedNotifications.map((notification, index) => {
-                    const iconData = getNotificationIcon(notification.type, notification.priority);
-                    const isUrgent = notification.priority === 'high';
-                    
+                    const iconData = getNotificationIcon(
+                      notification.type,
+                      notification.priority,
+                    );
+                    const isUrgent = notification.priority === "high";
+
                     return (
                       <div
                         key={notification._id}
                         className={`group bg-white rounded-xl sm:rounded-2xl border transition-all duration-300 hover:shadow-lg cursor-pointer transform hover:-translate-y-0.5 ${
-                          notification.isRead ? 'border-gray-200' : 'border-blue-200'
-                        } ${isUrgent ? 'border-l-4 border-l-red-500 shadow-lg shadow-red-500/10' : ''}`}
+                          notification.isRead
+                            ? "border-gray-200"
+                            : "border-blue-200"
+                        } ${isUrgent ? "border-l-4 border-l-red-500 shadow-lg shadow-red-500/10" : ""}`}
                         onClick={() => handleNotificationClick(notification)}
                       >
                         <div className="p-3 sm:p-4">
                           <div className="flex items-start gap-3">
                             {/* Icon */}
-                            <div className={`relative ${iconData.bg} ${iconData.ring} p-2.5 sm:p-3 rounded-lg sm:rounded-xl flex-shrink-0`}>
+                            <div
+                              className={`relative ${iconData.bg} ${iconData.ring} p-2.5 sm:p-3 rounded-lg sm:rounded-xl flex-shrink-0`}
+                            >
                               <div className={iconData.color}>
                                 {iconData.icon}
                               </div>
@@ -726,7 +832,9 @@ const NotificationsModal = ({ isOpen, onClose }) => {
                               <div className="flex items-start justify-between mb-2">
                                 <div className="flex-1">
                                   <div className="flex items-center gap-2 mb-1">
-                                    <h4 className={`font-bold text-sm sm:text-base ${notification.isRead ? 'text-gray-700' : 'text-gray-900'}`}>
+                                    <h4
+                                      className={`font-bold text-sm sm:text-base ${notification.isRead ? "text-gray-700" : "text-gray-900"}`}
+                                    >
                                       {notification.title}
                                     </h4>
                                     {isUrgent && (
@@ -735,17 +843,18 @@ const NotificationsModal = ({ isOpen, onClose }) => {
                                       </span>
                                     )}
                                   </div>
-                                  
-                                  {viewMode === "detailed" && notification.sender?.name && (
-                                    <div className="flex items-center gap-2 mb-2">
-                                      <UserCircle className="w-3 h-3 sm:w-3.5 sm:h-3.5 text-gray-400" />
-                                      <p className="text-xs text-gray-500">
-                                        From: {notification.sender.name}
-                                      </p>
-                                    </div>
-                                  )}
+
+                                  {viewMode === "detailed" &&
+                                    notification.sender?.name && (
+                                      <div className="flex items-center gap-2 mb-2">
+                                        <UserCircle className="w-3 h-3 sm:w-3.5 sm:h-3.5 text-gray-400" />
+                                        <p className="text-xs text-gray-500">
+                                          From: {notification.sender.name}
+                                        </p>
+                                      </div>
+                                    )}
                                 </div>
-                                
+
                                 <div className="flex items-center gap-2">
                                   <span className="text-xs text-gray-500 bg-gray-100 px-2 py-1 rounded-lg">
                                     {getTimeAgo(notification.createdAt)}
@@ -753,27 +862,31 @@ const NotificationsModal = ({ isOpen, onClose }) => {
                                 </div>
                               </div>
 
-                              <p className={`text-gray-600 mb-3 text-xs sm:text-sm line-clamp-2 ${notification.isRead ? 'opacity-80' : ''}`}>
+                              <p
+                                className={`text-gray-600 mb-3 text-xs sm:text-sm line-clamp-2 ${notification.isRead ? "opacity-80" : ""}`}
+                              >
                                 {notification.message}
                               </p>
 
                               {/* Meta info */}
-                              {viewMode === "detailed" && (notification.bloodGroup || notification.location) && (
-                                <div className="flex items-center gap-2 mb-3 flex-wrap">
-                                  {notification.bloodGroup && (
-                                    <span className="inline-flex items-center gap-1 px-2 py-1 bg-red-50 text-red-700 rounded-lg text-xs">
-                                      <Droplets className="h-3 w-3" />
-                                      {notification.bloodGroup}
-                                    </span>
-                                  )}
-                                  {notification.location && (
-                                    <span className="inline-flex items-center gap-1 px-2 py-1 bg-blue-50 text-blue-700 rounded-lg text-xs">
-                                      <MapPin className="h-3 w-3" />
-                                      {notification.location}
-                                    </span>
-                                  )}
-                                </div>
-                              )}
+                              {viewMode === "detailed" &&
+                                (notification.bloodGroup ||
+                                  notification.location) && (
+                                  <div className="flex items-center gap-2 mb-3 flex-wrap">
+                                    {notification.bloodGroup && (
+                                      <span className="inline-flex items-center gap-1 px-2 py-1 bg-red-50 text-red-700 rounded-lg text-xs">
+                                        <Droplets className="h-3 w-3" />
+                                        {notification.bloodGroup}
+                                      </span>
+                                    )}
+                                    {notification.location && (
+                                      <span className="inline-flex items-center gap-1 px-2 py-1 bg-blue-50 text-blue-700 rounded-lg text-xs">
+                                        <MapPin className="h-3 w-3" />
+                                        {notification.location}
+                                      </span>
+                                    )}
+                                  </div>
+                                )}
 
                               {/* Quick Actions */}
                               <div className="flex items-center justify-between pt-3 border-t border-gray-100">
@@ -787,16 +900,18 @@ const NotificationsModal = ({ isOpen, onClose }) => {
                                       className="px-3 py-1.5 bg-gradient-to-r from-green-500 to-emerald-500 text-white rounded-lg text-xs font-medium hover:shadow-lg transition-colors flex items-center gap-2"
                                     >
                                       <CheckCircle className="h-3 w-3" />
-                                      <span className="hidden sm:inline">Mark Read</span>
+                                      <span className="hidden sm:inline">
+                                        Mark Read
+                                      </span>
                                     </button>
                                   )}
                                 </div>
-                                
+
                                 <div className="flex items-center gap-2">
                                   {notification.pinned && (
                                     <Pin className="h-4 w-4 text-amber-500" />
                                   )}
-                                  
+
                                   <button
                                     onClick={(e) => {
                                       e.stopPropagation();
@@ -807,8 +922,8 @@ const NotificationsModal = ({ isOpen, onClose }) => {
                                   >
                                     <Trash2 className="h-4 w-4" />
                                   </button>
-                                  
-                                  <button 
+
+                                  <button
                                     onClick={(e) => {
                                       e.stopPropagation();
                                       handleNotificationClick(notification);
@@ -834,7 +949,9 @@ const NotificationsModal = ({ isOpen, onClose }) => {
           <div className="sticky bottom-0 bg-gradient-to-t from-white via-white to-white/95 backdrop-blur-sm border-t border-gray-200/50 p-3 sm:p-4">
             <div className="flex items-center justify-between flex-col sm:flex-row gap-3 sm:gap-0">
               <div className="text-sm text-gray-600 flex items-center gap-2">
-                <span className="font-medium">{searchedNotifications.length}</span> 
+                <span className="font-medium">
+                  {searchedNotifications.length}
+                </span>
                 <span>notifications</span>
                 {stats.unread > 0 && (
                   <span className="px-2 py-1 bg-gradient-to-r from-blue-500 to-cyan-500 text-white text-xs rounded-full">
@@ -842,7 +959,7 @@ const NotificationsModal = ({ isOpen, onClose }) => {
                   </span>
                 )}
               </div>
-              
+
               <div className="flex items-center gap-2 w-full sm:w-auto">
                 <button
                   onClick={markAllAsRead}
@@ -853,7 +970,7 @@ const NotificationsModal = ({ isOpen, onClose }) => {
                   <span className="hidden sm:inline">Mark All Read</span>
                   <span className="sm:hidden">Read All</span>
                 </button>
-                
+
                 <button
                   onClick={deleteAllNotifications}
                   disabled={notifications.length === 0}
@@ -872,26 +989,36 @@ const NotificationsModal = ({ isOpen, onClose }) => {
       {/* Notification Detail Modal */}
       {selectedNotification && (
         <div className="fixed inset-0 z-[60] flex items-center justify-center p-2 sm:p-4">
-          <div className="absolute inset-0 bg-black/60 backdrop-blur-sm animate-fadeIn" onClick={() => setSelectedNotification(null)} />
-          
+          <div
+            className="absolute inset-0 bg-black/60 backdrop-blur-sm animate-fadeIn"
+            onClick={() => setSelectedNotification(null)}
+          />
+
           <div className="relative bg-gradient-to-br from-white via-white to-gray-50/50 backdrop-blur-xl rounded-2xl sm:rounded-3xl shadow-2xl border border-white/50 w-full max-w-md max-h-[90vh] sm:max-h-[80vh] overflow-hidden animate-scaleIn">
             <div className="p-4 sm:p-6">
               {/* Header */}
               <div className="flex items-center justify-between mb-4 sm:mb-6">
                 <div className="flex items-center gap-2 sm:gap-3">
                   {(() => {
-                    const iconData = getNotificationIcon(selectedNotification.type, selectedNotification.priority);
+                    const iconData = getNotificationIcon(
+                      selectedNotification.type,
+                      selectedNotification.priority,
+                    );
                     return (
-                      <div className={`p-2 sm:p-3 rounded-lg sm:rounded-xl ${iconData.bg} ${iconData.ring}`}>
-                        <div className={iconData.color}>
-                          {iconData.icon}
-                        </div>
+                      <div
+                        className={`p-2 sm:p-3 rounded-lg sm:rounded-xl ${iconData.bg} ${iconData.ring}`}
+                      >
+                        <div className={iconData.color}>{iconData.icon}</div>
                       </div>
                     );
                   })()}
                   <div>
-                    <h3 className="text-base sm:text-lg font-bold text-gray-900 line-clamp-1">{selectedNotification.title}</h3>
-                    <p className="text-xs sm:text-sm text-gray-500">{getTimeAgo(selectedNotification.createdAt)}</p>
+                    <h3 className="text-base sm:text-lg font-bold text-gray-900 line-clamp-1">
+                      {selectedNotification.title}
+                    </h3>
+                    <p className="text-xs sm:text-sm text-gray-500">
+                      {getTimeAgo(selectedNotification.createdAt)}
+                    </p>
                   </div>
                 </div>
                 <button
@@ -905,7 +1032,9 @@ const NotificationsModal = ({ isOpen, onClose }) => {
               {/* Content */}
               <div className="space-y-4">
                 <div className="bg-gray-50 rounded-xl p-4">
-                  <p className="text-gray-700 text-sm sm:text-base">{selectedNotification.message}</p>
+                  <p className="text-gray-700 text-sm sm:text-base">
+                    {selectedNotification.message}
+                  </p>
                 </div>
 
                 {/* Sender Info */}
@@ -913,8 +1042,8 @@ const NotificationsModal = ({ isOpen, onClose }) => {
                   <div className="bg-gradient-to-r from-blue-50 to-cyan-50 rounded-xl p-4">
                     <div className="flex items-center gap-3">
                       {selectedNotification.sender.avatar ? (
-                        <img 
-                          src={selectedNotification.sender.avatar} 
+                        <img
+                          src={selectedNotification.sender.avatar}
                           alt={selectedNotification.sender.name}
                           className="w-8 h-8 sm:w-10 sm:h-10 rounded-full"
                         />
@@ -922,26 +1051,35 @@ const NotificationsModal = ({ isOpen, onClose }) => {
                         <UserCircle className="w-8 h-8 sm:w-10 sm:h-10 text-blue-600" />
                       )}
                       <div>
-                        <p className="font-medium text-gray-900 text-sm sm:text-base">{selectedNotification.sender.name}</p>
-                        <p className="text-xs sm:text-sm text-gray-500">Sender</p>
+                        <p className="font-medium text-gray-900 text-sm sm:text-base">
+                          {selectedNotification.sender.name}
+                        </p>
+                        <p className="text-xs sm:text-sm text-gray-500">
+                          Sender
+                        </p>
                       </div>
                     </div>
                   </div>
                 )}
 
                 {/* Additional Info */}
-                {(selectedNotification.bloodGroup || selectedNotification.location) && (
+                {(selectedNotification.bloodGroup ||
+                  selectedNotification.location) && (
                   <div className="grid grid-cols-2 gap-2 sm:gap-3">
                     {selectedNotification.bloodGroup && (
                       <div className="bg-gradient-to-r from-red-50 to-red-100 rounded-xl p-3">
                         <p className="text-xs text-gray-600">Blood Group</p>
-                        <p className="font-bold text-red-700 text-sm sm:text-base">{selectedNotification.bloodGroup}</p>
+                        <p className="font-bold text-red-700 text-sm sm:text-base">
+                          {selectedNotification.bloodGroup}
+                        </p>
                       </div>
                     )}
                     {selectedNotification.location && (
                       <div className="bg-gradient-to-r from-blue-50 to-blue-100 rounded-xl p-3">
                         <p className="text-xs text-gray-600">Location</p>
-                        <p className="font-medium text-blue-700 text-sm sm:text-base">{selectedNotification.location}</p>
+                        <p className="font-medium text-blue-700 text-sm sm:text-base">
+                          {selectedNotification.location}
+                        </p>
                       </div>
                     )}
                   </div>
@@ -978,18 +1116,28 @@ const NotificationsModal = ({ isOpen, onClose }) => {
 
       {/* Audio elements */}
       <audio ref={notificationSoundRef} preload="auto">
-        <source src="https://assets.mixkit.co/sfx/preview/mixkit-correct-answer-tone-2870.mp3" type="audio/mpeg" />
+        <source
+          src="https://assets.mixkit.co/sfx/preview/mixkit-correct-answer-tone-2870.mp3"
+          type="audio/mpeg"
+        />
       </audio>
       <audio ref={urgentSoundRef} preload="auto">
-        <source src="https://assets.mixkit.co/sfx/preview/mixkit-alarm-digital-clock-beep-989.mp3" type="audio/mpeg" />
+        <source
+          src="https://assets.mixkit.co/sfx/preview/mixkit-alarm-digital-clock-beep-989.mp3"
+          type="audio/mpeg"
+        />
       </audio>
 
       <style jsx global>{`
         @keyframes fadeIn {
-          from { opacity: 0; }
-          to { opacity: 1; }
+          from {
+            opacity: 0;
+          }
+          to {
+            opacity: 1;
+          }
         }
-        
+
         @keyframes scaleIn {
           from {
             transform: scale(0.95) translateY(10px);
@@ -1000,7 +1148,7 @@ const NotificationsModal = ({ isOpen, onClose }) => {
             opacity: 1;
           }
         }
-        
+
         @keyframes slideDown {
           from {
             transform: translateY(-10px);
@@ -1011,28 +1159,33 @@ const NotificationsModal = ({ isOpen, onClose }) => {
             opacity: 1;
           }
         }
-        
+
         .animate-fadeIn {
           animation: fadeIn 0.2s ease-out;
         }
-        
+
         .animate-scaleIn {
           animation: scaleIn 0.3s cubic-bezier(0.16, 1, 0.3, 1);
         }
-        
+
         .animate-slideDown {
           animation: slideDown 0.2s ease-out;
         }
-        
+
         .animate-bounce {
           animation: bounce 1s infinite;
         }
-        
+
         @keyframes bounce {
-          0%, 100% { transform: translateY(0); }
-          50% { transform: translateY(-3px); }
+          0%,
+          100% {
+            transform: translateY(0);
+          }
+          50% {
+            transform: translateY(-3px);
+          }
         }
-        
+
         /* Line clamp utility */
         .line-clamp-1 {
           overflow: hidden;
@@ -1040,34 +1193,34 @@ const NotificationsModal = ({ isOpen, onClose }) => {
           -webkit-box-orient: vertical;
           -webkit-line-clamp: 1;
         }
-        
+
         .line-clamp-2 {
           overflow: hidden;
           display: -webkit-box;
           -webkit-box-orient: vertical;
           -webkit-line-clamp: 2;
         }
-        
+
         /* Smooth scrollbar */
         .overflow-y-auto::-webkit-scrollbar {
           width: 6px;
         }
-        
+
         .overflow-y-auto::-webkit-scrollbar-track {
           background: rgba(241, 241, 241, 0.5);
           border-radius: 10px;
           margin: 4px;
         }
-        
+
         .overflow-y-auto::-webkit-scrollbar-thumb {
           background: linear-gradient(to bottom, #3b82f6, #06b6d4);
           border-radius: 10px;
         }
-        
+
         .overflow-y-auto::-webkit-scrollbar-thumb:hover {
           background: linear-gradient(to bottom, #2563eb, #0891b2);
         }
-        
+
         /* Mobile optimizations */
         @media (max-width: 640px) {
           .overflow-y-auto::-webkit-scrollbar {

@@ -93,11 +93,13 @@ exports.markAsRead = async (req, res) => {
     const notification = await Notification.findByIdAndUpdate(
       req.params.id,
       { isRead: true },
-      { new: true }
+      { new: true },
     );
 
     if (!notification) {
-      return res.status(404).json({ success: false, message: "Notification not found" });
+      return res
+        .status(404)
+        .json({ success: false, message: "Notification not found" });
     }
 
     res.json({ success: true, notification });
@@ -113,7 +115,7 @@ exports.markAllAsRead = async (req, res) => {
   try {
     const result = await Notification.updateMany(
       { isRead: false },
-      { $set: { isRead: true } }
+      { $set: { isRead: true } },
     );
 
     res.json({
@@ -133,7 +135,9 @@ exports.deleteNotification = async (req, res) => {
     const notification = await Notification.findByIdAndDelete(req.params.id);
 
     if (!notification) {
-      return res.status(404).json({ success: false, message: "Notification not found" });
+      return res
+        .status(404)
+        .json({ success: false, message: "Notification not found" });
     }
 
     res.json({ success: true, message: "Notification deleted successfully" });
@@ -148,7 +152,10 @@ exports.deleteNotification = async (req, res) => {
 exports.deleteAllNotifications = async (req, res) => {
   try {
     await Notification.deleteMany({});
-    res.json({ success: true, message: "All notifications deleted successfully" });
+    res.json({
+      success: true,
+      message: "All notifications deleted successfully",
+    });
   } catch (error) {
     res.status(500).json({ success: false, message: error.message });
   }
@@ -172,4 +179,16 @@ exports.emitNewUserNotification = (data) => {
   };
 
   io.emit("new-notification", notification);
+};
+
+exports.notificationCount = async (req, res) => {
+  try {
+    const count = await Notification.countDocuments({
+      title: req.params.title,
+      isRead: false,
+    });
+    res.json({ count });
+  } catch (error) {
+    res.status(500).json({ success: false, message: error.message });
+  }
 };

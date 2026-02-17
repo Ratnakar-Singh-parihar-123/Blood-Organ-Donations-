@@ -165,7 +165,7 @@ const Navbar = () => {
   const [activeTab, setActiveTab] = useState("home");
   const [isScrolled, setIsScrolled] = useState(false);
   const [showNotifications, setShowNotifications] = useState(false);
-  const [notificationCount, setNotificationCount] = useState(5);
+  const [notificationCount, setNotificationCount] = useState(0);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [isSearchOpen, setIsSearchOpen] = useState(false);
   const [isProfileOpen, setIsProfileOpen] = useState(false);
@@ -213,7 +213,7 @@ const Navbar = () => {
       borderColor: "border-red-200",
       shadowColor: "shadow-red-500/20",
       badgeColor: "bg-red-500",
-      dashboardPath: (id) => `/donor/dashboard?type=blood&id=${id || ""}`,
+      dashboardPath: (id) => `/donor-dashboard?type=blood&id=${id || ""}`,
     },
     {
       key: "organDonor",
@@ -226,7 +226,7 @@ const Navbar = () => {
       borderColor: "border-green-200",
       shadowColor: "shadow-green-500/20",
       badgeColor: "bg-green-500",
-      dashboardPath: (id) => `/donor/dashboard?type=organ&id=${id || ""}`,
+      dashboardPath: (id) => `/donor-dashboard?type=organ&id=${id || ""}`,
     },
     {
       key: "patient",
@@ -239,7 +239,7 @@ const Navbar = () => {
       borderColor: "border-blue-200",
       shadowColor: "shadow-blue-500/20",
       badgeColor: "bg-blue-500",
-      dashboardPath: (id) => `/patient/dashboard?id=${id || ""}`,
+      dashboardPath: (id) => `/patient-dashboard?id=${id || ""}`,
     },
     {
       key: "user",
@@ -252,7 +252,7 @@ const Navbar = () => {
       borderColor: "border-indigo-200",
       shadowColor: "shadow-purple-500/20",
       badgeColor: "bg-purple-500",
-      dashboardPath: (id) => `/user/dashboard?id=${id || ""}`,
+      dashboardPath: (id) => `/user-dashboard?id=${id || ""}`,
     },
     {
       key: "hospital",
@@ -265,7 +265,7 @@ const Navbar = () => {
       borderColor: "border-purple-200",
       shadowColor: "shadow-purple-500/20",
       badgeColor: "bg-purple-500",
-      dashboardPath: (id) => `/hospital/dashboard?id=${id || ""}`,
+      dashboardPath: (id) => `/hospital-dashboard?id=${id || ""}`,
     },
   ];
 
@@ -566,12 +566,13 @@ const Navbar = () => {
     else if (path.includes("/blood")) setActiveTab("blood");
     else if (path.includes("/organ")) setActiveTab("organ");
     else if (
-      path.includes("/patient") ||
+      path.includes("/urgent") ||
       path.includes("/matches") ||
       path.includes("/requests")
     )
       setActiveTab("urgent");
-    else if (path.includes("/hospital")) setActiveTab("hospitals");
+    else if (path.includes("/hospital") || path.includes("/hospitals"))
+      setActiveTab("hospitals");
     else if (path.includes("/profile")) setActiveTab("profile");
     else if (
       path.includes("/auth") ||
@@ -675,53 +676,59 @@ const Navbar = () => {
     isMobileMenuOpen,
   ]);
 
-  // Helper function to get correct donor dashboard path
-  const getDonorDashboardPath = () => {
-    if (userType === "bloodDonor") {
-      return `/donor/dashboard?type=blood&id=${donorId}`;
-    } else if (userType === "organDonor") {
-      return `/donor/dashboard?type=organ&id=${donorId}`;
-    }
-    return "/donor/dashboard";
-  };
+  // ================ FIXED NAVIGATION FUNCTIONS ================
 
   // Helper function to get correct blood donation path
   const getBloodDonationPath = () => {
-    if (userType === "bloodDonor") {
-      return `/donor/dashboard?type=blood&id=${donorId}`;
-    }
-    return "/blood-donation";
+    // Always return /blood for the blood donation page
+    // The donor dashboard should only be accessible via /donor-dashboard or profile menu
+    return "/blood";
   };
 
   // Helper function to get correct organ donation path
   const getOrganDonationPath = () => {
-    if (userType === "organDonor") {
-      return `/donor/dashboard?type=organ&id=${donorId}`;
-    }
-    return "/organ-donation";
+    // Always return /organ for the organ donation page
+    return "/organ";
   };
 
   // Helper function to get correct urgent requests path
   const getUrgentRequestsPath = () => {
-    if (userType === "patient") {
-      return `/patient/matches?id=${patientId}`;
-    }
-    if (userType === "bloodDonor" || userType === "organDonor") {
-      return `/donor/requests?id=${donorId}`;
-    }
-    if (userType === "hospital") {
-      return `/hospital/requests?id=${hospitalId}`;
-    }
+    // Always return /urgent-requests for the urgent requests page
     return "/urgent-requests";
   };
 
   // Helper function to get correct hospitals path
   const getHospitalsPath = () => {
-    if (userType === "hospital") {
-      return `/hospital/dashboard?id=${hospitalId}`;
-    }
+    // Always return /hospitals for the hospitals page
     return "/hospitals";
   };
+
+  // Helper function to get donor dashboard path (for profile/dropdown only)
+  const getDonorDashboardPath = () => {
+    if (userType === "bloodDonor") {
+      return `/donor-dashboard?type=blood&id=${donorId}`;
+    } else if (userType === "organDonor") {
+      return `/donor-dashboard?type=organ&id=${donorId}`;
+    }
+    return "/donor-dashboard";
+  };
+
+  // Helper function to get patient dashboard path
+  const getPatientDashboardPath = () => {
+    return `/patient-dashboard?id=${patientId}`;
+  };
+
+  // Helper function to get hospital dashboard path
+  const getHospitalDashboardPath = () => {
+    return `/hospital-dashboard?id=${hospitalId}`;
+  };
+
+  // Helper function to get user dashboard path
+  const getUserDashboardPath = () => {
+    return `/user-dashboard?id=${userId}`;
+  };
+
+  // ============================================================
 
   // Responsive navigation items
   const getMainNavItems = () => {
@@ -768,7 +775,7 @@ const Navbar = () => {
           ? userType === "patient"
             ? "Matches"
             : userType === "hospital"
-              ? "Hospital"
+              ? "Requests"
               : "Urgent"
           : userType === "patient"
             ? "My Matches"
@@ -807,23 +814,13 @@ const Navbar = () => {
       },
       {
         id: "hospitals",
-        label:
-          userType === "hospital"
-            ? isMobile
-              ? "Dashboard"
-              : "Dashboard"
-            : isMobile
-              ? "Hospitals"
-              : "Hospitals",
-        icon: userType === "hospital" ? Building2 : HospitalIcon,
-        description:
-          userType === "hospital"
-            ? "Hospital management dashboard"
-            : "Find hospitals & clinics",
-        badge: userType === "hospital" ? "Admin" : null,
+        label: isMobile ? "Hospitals" : "Hospitals",
+        icon: HospitalIcon,
+        description: "Find hospitals & clinics",
+        badge: null,
         getPath: getHospitalsPath,
-        requiresAuth: userType === "hospital",
-        showLoginPrompt: userType === "hospital",
+        requiresAuth: false,
+        showLoginPrompt: false,
         loginPrompt: {
           title: "Hospital Login Required",
           message:
@@ -946,7 +943,7 @@ const Navbar = () => {
         userType === "patient"
           ? "Matches"
           : userType === "hospital"
-            ? "Hospital"
+            ? "Requests"
             : "Urgent",
       icon: AlertCircle,
       color: "text-amber-600",
@@ -969,9 +966,7 @@ const Navbar = () => {
       color: "text-purple-600",
       bgColor: "bg-purple-50",
       gradient: "from-purple-500 to-violet-500",
-      getPath: () => {
-        return "/profile";
-      },
+      getPath: () => "/profile",
       requiresAuth: false,
       showLoginPrompt: false,
     },
@@ -1182,8 +1177,8 @@ const Navbar = () => {
         return "bg-gradient-to-r from-green-600 to-emerald-600 text-white shadow-lg shadow-green-500/30";
       if (itemId === "urgent")
         return "bg-gradient-to-r from-amber-600 to-orange-600 text-white shadow-lg shadow-amber-500/30";
-      if (itemId === "hospitals" && userType === "hospital")
-        return "bg-gradient-to-r from-purple-600 to-violet-600 text-white shadow-lg shadow-purple-500/30";
+      if (itemId === "hospitals")
+        return "bg-gradient-to-r from-blue-600 to-cyan-600 text-white shadow-lg shadow-blue-500/30";
       return "bg-gradient-to-r from-blue-600 to-cyan-600 text-white shadow-lg shadow-blue-500/30";
     }
 
@@ -1193,8 +1188,8 @@ const Navbar = () => {
       return "text-gray-700 hover:text-green-600 hover:bg-green-50 border border-transparent hover:border-green-200";
     if (itemId === "urgent")
       return "text-gray-700 hover:text-amber-600 hover:bg-amber-50 border border-transparent hover:border-amber-200";
-    if (itemId === "hospitals" && userType === "hospital")
-      return "text-gray-700 hover:text-purple-600 hover:bg-purple-50 border border-transparent hover:border-purple-200";
+    if (itemId === "hospitals")
+      return "text-gray-700 hover:text-blue-600 hover:bg-blue-50 border border-transparent hover:border-blue-200";
     return "text-gray-700 hover:text-blue-600 hover:bg-blue-50 border border-transparent hover:border-blue-200";
   };
 
@@ -1559,7 +1554,7 @@ const Navbar = () => {
 
                         {/* User Type Specific Links */}
                         {userType && (
-                          <div className="border-t border-gray-100 pt-3">
+                          <div className="border-t border-gray-100 pt-3 space-y-1">
                             <button
                               onClick={() => {
                                 if (
@@ -1568,15 +1563,11 @@ const Navbar = () => {
                                 ) {
                                   navigate(getDonorDashboardPath());
                                 } else if (userType === "patient") {
-                                  navigate(
-                                    `/patient/dashboard?id=${patientId}`,
-                                  );
+                                  navigate(getPatientDashboardPath());
                                 } else if (userType === "hospital") {
-                                  navigate(
-                                    `/hospital/dashboard?id=${hospitalId}`,
-                                  );
+                                  navigate(getHospitalDashboardPath());
                                 } else if (userType === "user") {
-                                  navigate(`/user/dashboard?id=${userId}`);
+                                  navigate(getUserDashboardPath());
                                 }
                                 setIsProfileOpen(false);
                               }}
@@ -1587,6 +1578,33 @@ const Navbar = () => {
                               )}
                               <span>{userTypeConfig?.label} Dashboard</span>
                             </button>
+
+                            {/* Additional quick links based on user type */}
+                            {userType === "bloodDonor" && (
+                              <button
+                                onClick={() => {
+                                  navigate("/donor-request");
+                                  setIsProfileOpen(false);
+                                }}
+                                className="w-full flex items-center gap-2 p-2 text-sm text-gray-700 hover:bg-gray-50 rounded-lg transition-colors"
+                              >
+                                <Droplets className="h-4 w-4 text-red-500" />
+                                <span>Create Donation Request</span>
+                              </button>
+                            )}
+
+                            {userType === "patient" && (
+                              <button
+                                onClick={() => {
+                                  navigate("/emergency-request");
+                                  setIsProfileOpen(false);
+                                }}
+                                className="w-full flex items-center gap-2 p-2 text-sm text-gray-700 hover:bg-gray-50 rounded-lg transition-colors"
+                              >
+                                <AlertCircle className="h-4 w-4 text-amber-500" />
+                                <span>Emergency Request</span>
+                              </button>
+                            )}
                           </div>
                         )}
                       </div>
@@ -1975,6 +1993,97 @@ const Navbar = () => {
                 </div>
               </div>
 
+              {/* Dashboard Links (if logged in) */}
+              {isLoggedIn && userType && (
+                <div className="mb-4">
+                  <h3 className="font-bold text-gray-900 mb-3 text-sm">
+                    Your Dashboard
+                  </h3>
+                  <div className="space-y-1">
+                    <button
+                      onClick={() => {
+                        if (
+                          userType === "bloodDonor" ||
+                          userType === "organDonor"
+                        ) {
+                          navigate(getDonorDashboardPath());
+                        } else if (userType === "patient") {
+                          navigate(getPatientDashboardPath());
+                        } else if (userType === "hospital") {
+                          navigate(getHospitalDashboardPath());
+                        } else if (userType === "user") {
+                          navigate(getUserDashboardPath());
+                        }
+                        setIsMobileMenuOpen(false);
+                      }}
+                      className="w-full flex items-center gap-3 p-3 rounded-lg hover:bg-gray-50 transition-all border border-gray-100"
+                    >
+                      <div
+                        className={`p-2 rounded-lg ${userTypeConfig?.bgColor}`}
+                      >
+                        {userTypeConfig?.icon && (
+                          <userTypeConfig.icon
+                            className={`h-4 w-4 ${userTypeConfig?.textColor}`}
+                          />
+                        )}
+                      </div>
+                      <div className="text-left">
+                        <div className="font-semibold text-gray-900">
+                          {userTypeConfig?.label} Dashboard
+                        </div>
+                        <div className="text-xs text-gray-500">
+                          Manage your account
+                        </div>
+                      </div>
+                    </button>
+
+                    {userType === "bloodDonor" && (
+                      <button
+                        onClick={() => {
+                          navigate("/donor-request");
+                          setIsMobileMenuOpen(false);
+                        }}
+                        className="w-full flex items-center gap-3 p-3 rounded-lg hover:bg-gray-50 transition-all border border-gray-100"
+                      >
+                        <div className="p-2 rounded-lg bg-red-50">
+                          <Droplets className="h-4 w-4 text-red-600" />
+                        </div>
+                        <div className="text-left">
+                          <div className="font-semibold text-gray-900">
+                            Create Donation Request
+                          </div>
+                          <div className="text-xs text-gray-500">
+                            Post a new donation request
+                          </div>
+                        </div>
+                      </button>
+                    )}
+
+                    {userType === "patient" && (
+                      <button
+                        onClick={() => {
+                          navigate("/emergency-request");
+                          setIsMobileMenuOpen(false);
+                        }}
+                        className="w-full flex items-center gap-3 p-3 rounded-lg hover:bg-gray-50 transition-all border border-gray-100"
+                      >
+                        <div className="p-2 rounded-lg bg-amber-50">
+                          <AlertCircle className="h-4 w-4 text-amber-600" />
+                        </div>
+                        <div className="text-left">
+                          <div className="font-semibold text-gray-900">
+                            Emergency Request
+                          </div>
+                          <div className="text-xs text-gray-500">
+                            Request urgent blood/organ
+                          </div>
+                        </div>
+                      </button>
+                    )}
+                  </div>
+                </div>
+              )}
+
               {/* Emergency Section */}
               <div className="mb-4">
                 <div className="bg-gradient-to-r from-red-50 to-red-100 rounded-xl p-3 border border-red-200">
@@ -2083,13 +2192,13 @@ const Navbar = () => {
                       label: "Blood Donation",
                       icon: Droplets,
                       color: "red",
-                      path: "/blood-donation",
+                      path: "/blood",
                     },
                     {
                       label: "Organ Donation",
                       icon: ActivityIcon,
                       color: "green",
-                      path: "/organ-donation",
+                      path: "/organ",
                     },
                     {
                       label: "Find Hospitals",
@@ -2162,9 +2271,12 @@ const Navbar = () => {
                         </div>
                       </div>
                     </div>
-                    <button className="px-3 py-1 bg-red-600 text-white rounded-lg text-sm font-semibold hover:bg-red-700 transition-colors">
+                    <a
+                      href="tel:108"
+                      className="px-3 py-1 bg-red-600 text-white rounded-lg text-sm font-semibold hover:bg-red-700 transition-colors"
+                    >
                       Call Now
-                    </button>
+                    </a>
                   </div>
 
                   <div className="flex items-center justify-between p-3 bg-blue-50 rounded-xl border border-blue-200">
@@ -2177,9 +2289,12 @@ const Navbar = () => {
                         </div>
                       </div>
                     </div>
-                    <button className="px-3 py-1 bg-blue-600 text-white rounded-lg text-sm font-semibold hover:bg-blue-700 transition-colors">
+                    <a
+                      href="tel:102"
+                      className="px-3 py-1 bg-blue-600 text-white rounded-lg text-sm font-semibold hover:bg-blue-700 transition-colors"
+                    >
                       Call Now
-                    </button>
+                    </a>
                   </div>
 
                   <div className="p-3 bg-gray-50 rounded-xl border border-gray-200">
