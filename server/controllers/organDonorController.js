@@ -2,6 +2,7 @@ const OrganDonor = require("../models/OrganDonor");
 const { generateToken } = require("../utils/jwt");
 const sendEmail = require("../utils/sendEmail");
 const crypto = require("crypto");
+const cloudinary = require("cloudinary").v2;
 
 // ================= REGISTER =================
 const register = async (req, res) => {
@@ -301,6 +302,108 @@ const resendOTP = async (req, res) => {
   }
 };
 
+// update organ donor profile
+const updateOrganDonorProfile = async (req, res) => {
+  try {
+    if (req.user.role !== "organDonor") {
+      return res.status(403).json({
+        success: false,
+        message: "Access denied",
+      });
+    }
+
+    const { name, phone, organType, bloodGroup, location } = req.body;
+
+    const updateData = {};
+    if (name) updateData.name = name;
+    if (phone) updateData.phone = phone;
+    if (organType) updateData.organType = organType;
+    if (bloodGroup) updateData.bloodGroup = bloodGroup;
+    if (location) updateData.location = location;
+
+    const updatedDonor = await OrganDonor.findByIdAndUpdate(
+      req.user.id,
+      updateData,
+      { new: true, runValidators: true },
+    ).select("-password");
+
+    if (!updatedDonor) {
+      return res.status(404).json({
+        success: false,
+        message: "Organ donor not found",
+      });
+    }
+
+    res.status(200).json({
+      success: true,
+      message: "Organ donor profile updated successfully",
+      donor: updatedDonor,
+    });
+  } catch (error) {
+    console.error("Update organ donor profile error:", error);
+    res.status(500).json({
+      success: false,
+      message: "Server error",
+    });
+  }
+};
+
+const updateOrganDonorProfilePic = async (req, res) => {
+  try {
+    if (req.user.role !== "organDonor") {
+      return res.status(403).json({
+        success: false,
+        message: "Access denied",
+      });
+    }
+
+    if (!req.file) {
+      return res.status(400).json({
+        success: false,
+        message: "No file uploaded",
+      });
+    }
+
+    // 🔎 Fetch donor first
+    const donor = await OrganDonor.findById(req.user.id);
+
+    if (!donor) {
+      return res.status(404).json({
+        success: false,
+        message: "Organ donor not found",
+      });
+    }
+
+    // 🔥 Delete old image if exists
+    if (donor.profilePicPublicId) {
+      await cloudinary.uploader.destroy(donor.profilePicPublicId);
+    }
+
+    // 📤 Upload new image
+    const result = await cloudinary.uploader.upload(req.file.path, {
+      folder: "organ_donor_profile_pictures",
+    });
+
+    // 📝 Update fields
+    donor.profilePic = result.secure_url;
+    donor.profilePicPublicId = result.public_id;
+
+    await donor.save();
+
+    res.status(200).json({
+      success: true,
+      message: "Organ donor profile picture updated successfully",
+      donor,
+    });
+  } catch (error) {
+    console.error("Update organ donor pic error:", error);
+    res.status(500).json({
+      success: false,
+      message: "Server error",
+    });
+  }
+};
+
 module.exports = {
   register,
   login,
@@ -309,4 +412,6 @@ module.exports = {
   verifyOTP,
   resetPassword,
   resendOTP,
+  updateOrganDonorProfile,
+  updateOrganDonorProfilePic,
 };

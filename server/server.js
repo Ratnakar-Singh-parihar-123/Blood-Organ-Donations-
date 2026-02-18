@@ -18,7 +18,6 @@ const hospotalRoutes = require("./routes/hospitalRoutes");
 
 // ================= DB =================
 const connectDB = require("./config/database");
-
 // ================= APP INIT =================
 const app = express();
 const server = http.createServer(app);

@@ -45,8 +45,16 @@ const patientSchema = new mongoose.Schema(
     // 🫀 Organ related
     organRequired: {
       type: String,
-      enum: ['Heart', 'Kidney', 'Liver', 'Lungs', 'Pancreas', 
-    'Cornea', 'Bone Marrow', 'Skin'],
+      enum: [
+        "Heart",
+        "Kidney",
+        "Liver",
+        "Lungs",
+        "Pancreas",
+        "Cornea",
+        "Bone Marrow",
+        "Skin",
+      ],
       default: "",
     },
 
@@ -81,9 +89,23 @@ const patientSchema = new mongoose.Schema(
     // 📍 VERY IMPORTANT for matching
     city: {
       type: String,
-      enum: ['Mumbai', 'Delhi', 'Bangalore', 'Chennai', 'Kolkata',
-        'Hyderabad', 'Pune', 'Ahmedabad', 'Jaipur', 'Lucknow',
-        'Indore', 'Bhopal', 'Chandigarh', 'Dehradun', 'Nagpur'],
+      enum: [
+        "Mumbai",
+        "Delhi",
+        "Bangalore",
+        "Chennai",
+        "Kolkata",
+        "Hyderabad",
+        "Pune",
+        "Ahmedabad",
+        "Jaipur",
+        "Lucknow",
+        "Indore",
+        "Bhopal",
+        "Chandigarh",
+        "Dehradun",
+        "Nagpur",
+      ],
       required: [true, "City is required"],
     },
 
@@ -96,12 +118,16 @@ const patientSchema = new mongoose.Schema(
       type: String,
       required: [true, "Address is required"],
     },
+    profilePic: {
+      type: String,
+      default: "",
+    },
 
     // 🔐 OTP reset
     resetOTP: String,
     resetOTPExpire: Date,
   },
-  { timestamps: true }
+  { timestamps: true },
 );
 
 // 🔒 Password hashing

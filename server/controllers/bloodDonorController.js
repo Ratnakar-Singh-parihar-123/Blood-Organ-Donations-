@@ -2,6 +2,7 @@ const BloodDonor = require("../models/BloodDonor");
 const { generateToken } = require("../utils/jwt");
 const crypto = require("crypto");
 const sendEmail = require("../utils/sendEmail");
+const cloudinary = require("cloudinary").v2;
 
 // Blood Donor register
 const register = async (req, res) => {
@@ -260,6 +261,183 @@ const resendOTP = async (req, res) => {
   }
 };
 
+// update blood donor profile
+const updateDonorProfile = async (req, res) => {
+  try {
+    const { name, phone, bloodGroup, location } = req.body;
+
+    // only update provided fields
+    const updateData = {};
+    if (name) updateData.name = name;
+    if (phone) updateData.phone = phone;
+    if (bloodGroup) updateData.bloodGroup = bloodGroup;
+    if (location) updateData.location = location;
+
+    const updatedDonor = await BloodDonor.findByIdAndUpdate(
+      req.user.id, // logged in donor id
+      updateData,
+      { new: true, runValidators: true },
+    ).select("-password");
+
+    if (!updatedDonor) {
+      return res.status(404).json({
+        success: false,
+        message: "Donor not found",
+      });
+    }
+
+    res.status(200).json({
+      success: true,
+      message: "Donor profile updated successfully",
+      donor: updatedDonor,
+    });
+  } catch (error) {
+    console.error("Update donor profile error:", error);
+    res.status(500).json({ message: "Server error" });
+  }
+};
+
+// update donor profile picture
+const updateDonorProfilePic = async (req, res) => {
+  try {
+    const donorId = req.user.id;
+
+    if (!req.file) {
+      return res.status(400).json({
+        success: false,
+        message: "No file uploaded",
+      });
+    }
+
+    // Upload to Cloudinary
+    const result = await cloudinary.uploader.upload(req.file.path, {
+      folder: "donor_profile_pictures",
+    });
+
+    const updatedDonor = await BloodDonor.findByIdAndUpdate(
+      donorId,
+      { profilePic: result.secure_url },
+      { new: true },
+    ).select("-password");
+
+    if (!updatedDonor) {
+      return res.status(404).json({
+        success: false,
+        message: "Donor not found",
+      });
+    }
+
+    res.status(200).json({
+      success: true,
+      message: "Donor profile picture updated successfully",
+      donor: updatedDonor,
+    });
+  } catch (error) {
+    console.error("Update donor profile pic error:", error);
+    res.status(500).json({ message: "Server error" });
+  }
+};
+
+// all show blood donor
+const getAllBloodDonors = async (req, res) => {
+  try {
+    const donors = await BloodDonor.find({ isActive: true })
+      .select("-password -resetOTP -resetOTPExpire")
+      .sort({ createdAt: -1 });
+
+    res.status(200).json({
+      success: true,
+      total: donors.length,
+      donors,
+    });
+  } catch (error) {
+    console.error("Get donors error:", error);
+    res.status(500).json({
+      success: false,
+      message: "Server error",
+    });
+  }
+};
+
+// filter blood donors by blood group
+const getFilteredBloodDonors = async (req, res) => {
+  try {
+    const { bloodGroup, city } = req.query;
+
+    let filter = { isActive: true };
+
+    if (bloodGroup) {
+      filter.bloodGroup = bloodGroup;
+    }
+
+    if (city) {
+      filter.city = city;
+    }
+
+    const donors = await BloodDonor.find(filter)
+      .select("-password -resetOTP -resetOTPExpire")
+      .sort({ urgencyScore: -1, createdAt: -1 });
+
+    res.status(200).json({
+      success: true,
+      total: donors.length,
+      donors,
+    });
+  } catch (error) {
+    console.error("Filter donors error:", error);
+    res.status(500).json({
+      success: false,
+      message: "Server error",
+    });
+  }
+};
+
+// get single donor by id
+const getSingleDonor = async (req, res) => {
+  try {
+    const donor = await BloodDonor.findById(req.params.id).select(
+      "-password -resetOTP -resetOTPExpire",
+    );
+
+    if (!donor) {
+      return res.status(404).json({
+        success: false,
+        message: "Donor not found",
+      });
+    }
+
+    res.status(200).json({
+      success: true,
+      donor,
+    });
+  } catch (error) {
+    console.error("Get donor error:", error);
+    res.status(500).json({
+      success: false,
+      message: "Server error",
+    });
+  }
+};
+
+// blood donor count
+// Get total active blood donors count
+const getBloodDonorCount = async (req, res) => {
+  try {
+    const count = await BloodDonor.countDocuments({ isAvailable: true });
+
+    res.status(200).json({
+      success: true,
+      totalDonors: count,
+    });
+  } catch (error) {
+    console.error("Count error:", error);
+    res.status(500).json({
+      success: false,
+      message: "Server error",
+    });
+  }
+};
+
 module.exports = {
   register,
   login,
@@ -268,4 +446,10 @@ module.exports = {
   verifyOTP,
   resetPassword,
   resendOTP,
+  updateDonorProfile,
+  updateDonorProfilePic,
+  getAllBloodDonors,
+  getFilteredBloodDonors,
+  getSingleDonor,
+  getBloodDonorCount,
 };

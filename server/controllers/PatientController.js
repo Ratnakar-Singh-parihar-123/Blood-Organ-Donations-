@@ -2,6 +2,7 @@ const Patient = require("../models/Patient");
 const { generateToken } = require("../utils/jwt");
 const crypto = require("crypto");
 const sendEmail = require("../utils/sendEmail");
+const cloudinary = require("cloudinary").v2;
 
 // register
 const register = async (req, res) => {
@@ -300,6 +301,128 @@ const resendOTP = async (req, res) => {
 
 //  macth donor
 
+const updatePatientProfile = async (req, res) => {
+  try {
+    // Optional role check
+    if (req.user.role !== "patient") {
+      return res.status(403).json({
+        success: false,
+        message: "Access denied",
+      });
+    }
+
+    const patient = await Patient.findById(req.user.id);
+
+    if (!patient) {
+      return res.status(404).json({
+        success: false,
+        message: "Patient not found",
+      });
+    }
+
+    const {
+      name,
+      phone,
+      patientType,
+      bloodGroup,
+      organRequired,
+      needType,
+      medicalCondition,
+      urgencyLevel,
+      hospitalName,
+      doctorName,
+      city,
+      emergencyContact,
+      address,
+    } = req.body;
+
+    // Update only provided fields
+    if (name) patient.name = name;
+    if (phone) patient.phone = phone;
+    if (patientType) patient.patientType = patientType;
+    if (bloodGroup) patient.bloodGroup = bloodGroup;
+    if (organRequired) patient.organRequired = organRequired;
+    if (needType) patient.needType = needType;
+    if (medicalCondition) patient.medicalCondition = medicalCondition;
+    if (urgencyLevel) patient.urgencyLevel = urgencyLevel;
+    if (hospitalName) patient.hospitalName = hospitalName;
+    if (doctorName) patient.doctorName = doctorName;
+    if (city) patient.city = city;
+    if (emergencyContact) patient.emergencyContact = emergencyContact;
+    if (address) patient.address = address;
+
+    await patient.save();
+
+    patient.password = undefined;
+
+    res.status(200).json({
+      success: true,
+      message: "Patient profile updated successfully",
+      patient,
+    });
+  } catch (error) {
+    console.error("Update patient profile error:", error);
+    res.status(500).json({
+      success: false,
+      message: "Server error",
+    });
+  }
+};
+
+const updatePatientProfilePic = async (req, res) => {
+  try {
+    if (req.user.role !== "patient") {
+      return res.status(403).json({
+        success: false,
+        message: "Access denied",
+      });
+    }
+
+    if (!req.file) {
+      return res.status(400).json({
+        success: false,
+        message: "No file uploaded",
+      });
+    }
+
+    const patient = await Patient.findById(req.user.id);
+
+    if (!patient) {
+      return res.status(404).json({
+        success: false,
+        message: "Patient not found",
+      });
+    }
+
+    // 🔥 Delete old image if exists
+    if (patient.profilePicPublicId) {
+      await cloudinary.uploader.destroy(patient.profilePicPublicId);
+    }
+
+    // 🔥 Upload new image
+    const result = await cloudinary.uploader.upload(req.file.path, {
+      folder: "patient_profile_pictures",
+    });
+
+    patient.profilePic = result.secure_url;
+    patient.profilePicPublicId = result.public_id;
+
+    await patient.save();
+
+    res.status(200).json({
+      success: true,
+      message: "Profile picture updated successfully",
+      profilePic: patient.profilePic,
+    });
+  } catch (error) {
+    console.error("Update patient profile pic error:", error);
+    res.status(500).json({
+      success: false,
+      message: "Server error",
+    });
+  }
+};
+
 module.exports = {
   register,
   login,
@@ -308,4 +431,6 @@ module.exports = {
   verifyOTP,
   resetPassword,
   resendOTP,
+  updatePatientProfile,
+  updatePatientProfilePic,
 };

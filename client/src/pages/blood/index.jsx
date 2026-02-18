@@ -1,12 +1,9 @@
 import React, { useEffect } from "react";
+import { Routes, Route } from "react-router-dom";
 import BloodHeroSection from "./components/BloodHeroSection";
-// import BloodTypes from "./components/BloodTypes";
-// import BloodDonationEligibility from "./components/BloodDonationEligibility";
-// import HowBloodDonationWorks from "./components/HowBloodDonationWorks";
-// import UrgentBloodRequests from "./components/UrgentBloodRequests";
-// import BenefitsOfDonation from "./components/BenefitsOfDonation";
-// import BloodDonationFAQ from "./components/BloodDonationFAQ";
-// import BloodRequestForm from "./components/BloodRequestForm";
+import BloodDonorList from "./components/BloodDonorList";
+import BloodDonorProfile from "./components/BloodDonorProfile";
+import HomeBloodSection from "./components/HomeBloodSection";
 
 function BloodPages() {
   useEffect(() => {
@@ -16,13 +13,15 @@ function BloodPages() {
   return (
     <>
       <BloodHeroSection />
-      {/* <BloodTypes />
-      <BloodRequestForm />
-      <BloodDonationEligibility />
-      <HowBloodDonationWorks />
-      <UrgentBloodRequests />
-      <BenefitsOfDonation />
-      <BloodDonationFAQ /> */}
+      <HomeBloodSection />
+
+      <Routes>
+        {/* Donor List */}
+        <Route path="/" element={<BloodDonorList />} />
+
+        {/* Single Donor Profile */}
+        <Route path="donor/:id" element={<BloodDonorProfile />} />
+      </Routes>
     </>
   );
 }

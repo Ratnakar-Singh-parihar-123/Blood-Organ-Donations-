@@ -1,17 +1,20 @@
-import axios from 'axios';
+import axios from "axios";
 
 const BASE_URL = import.meta.env.VITE_API_URL || "http://localhost:5000/api";
-
 
 const bloodDonorAuthAPI = {
   register: async (data) => {
     try {
-      const response = await axios.post(`${BASE_URL}/blood-donors/register`, data, {
-        headers: { 'Content-Type': 'application/json' }
-      });
+      const response = await axios.post(
+        `${BASE_URL}/blood-donors/register`,
+        data,
+        {
+          headers: { "Content-Type": "application/json" },
+        },
+      );
       return response.data;
     } catch (error) {
-      throw error.response?.data || { message: 'Registration failed' };
+      throw error.response?.data || { message: "Registration failed" };
     }
   },
 
@@ -23,13 +26,13 @@ const bloodDonorAuthAPI = {
       });
       return response.data;
     } catch (error) {
-      throw error.response?.data || { message: 'Login failed' };
+      throw error.response?.data || { message: "Login failed" };
     }
   },
 
   verifyToken: async () => {
-    const token = localStorage.getItem('bloodDonorToken');
-    if (!token) throw new Error('No token found');
+    const token = localStorage.getItem("bloodDonorToken");
+    if (!token) throw new Error("No token found");
 
     try {
       const response = await axios.get(`${BASE_URL}/blood-donors/verify`, {
@@ -37,18 +40,21 @@ const bloodDonorAuthAPI = {
       });
       return response.data;
     } catch (error) {
-      throw error.response?.data || { message: 'Token verification failed' };
+      throw error.response?.data || { message: "Token verification failed" };
     }
   },
 
   forgotPassword: async (email) => {
     try {
-      const response = await axios.post(`${BASE_URL}/blood-donors/forgot-password`, { email });
+      const response = await axios.post(
+        `${BASE_URL}/blood-donors/forgot-password`,
+        { email },
+      );
       return response.data;
     } catch (error) {
-      throw error.response?.data || { message: 'Password reset failed' };
+      throw error.response?.data || { message: "Password reset failed" };
     }
-  }
+  },
 };
 
-export {bloodDonorAuthAPI , BASE_URL };
+export { bloodDonorAuthAPI, BASE_URL };

@@ -1,6 +1,7 @@
 const Hospital = require("../models/Hospital");
 const { generateToken } = require("../utils/jwt");
 const sendEmail = require("../utils/sendEmail");
+const cloudinary = require("cloudinary").v2;
 
 // Hospital Register
 const register = async (req, res) => {
@@ -282,6 +283,107 @@ const resendOTP = async (req, res) => {
   }
 };
 
+const updateHospitalProfile = async (req, res) => {
+  try {
+    if (req.user.role !== "hospital") {
+      return res.status(403).json({
+        success: false,
+        message: "Access denied",
+      });
+    }
+
+    const { name, phone, address, city, state, pincode } = req.body;
+
+    const updateData = {};
+    if (name) updateData.name = name;
+    if (phone) updateData.phone = phone;
+    if (address) updateData.address = address;
+    if (city) updateData.city = city;
+    if (state) updateData.state = state;
+    if (pincode) updateData.pincode = pincode;
+
+    const updatedHospital = await Hospital.findByIdAndUpdate(
+      req.user.id,
+      updateData,
+      { new: true, runValidators: true },
+    ).select("-password");
+
+    if (!updatedHospital) {
+      return res.status(404).json({
+        success: false,
+        message: "Hospital not found",
+      });
+    }
+
+    res.status(200).json({
+      success: true,
+      message: "Hospital profile updated successfully",
+      hospital: updatedHospital,
+    });
+  } catch (error) {
+    console.error("Update hospital profile error:", error);
+    res.status(500).json({
+      success: false,
+      message: "Server error",
+    });
+  }
+};
+
+const updateHospitalProfilePic = async (req, res) => {
+  try {
+    if (req.user.role !== "hospital") {
+      return res.status(403).json({
+        success: false,
+        message: "Access denied",
+      });
+    }
+
+    if (!req.file) {
+      return res.status(400).json({
+        success: false,
+        message: "No file uploaded",
+      });
+    }
+
+    // 🔎 Fetch hospital first
+    const hospital = await Hospital.findById(req.user.id);
+
+    if (!hospital) {
+      return res.status(404).json({
+        success: false,
+        message: "Hospital not found",
+      });
+    }
+
+    // 🔥 Delete old logo if exists
+    if (hospital.profilePicPublicId) {
+      await cloudinary.uploader.destroy(hospital.profilePicPublicId);
+    }
+
+    // 📤 Upload new logo
+    const result = await cloudinary.uploader.upload(req.file.path, {
+      folder: "hospital_profile_pictures",
+    });
+
+    hospital.profilePic = result.secure_url;
+    hospital.profilePicPublicId = result.public_id;
+
+    await hospital.save();
+
+    res.status(200).json({
+      success: true,
+      message: "Hospital profile picture updated successfully",
+      hospital,
+    });
+  } catch (error) {
+    console.error("Update hospital pic error:", error);
+    res.status(500).json({
+      success: false,
+      message: "Server error",
+    });
+  }
+};
+
 module.exports = {
   register,
   login,
@@ -290,4 +392,6 @@ module.exports = {
   verifyOTP,
   resendOTP,
   resetPassword,
+  updateHospitalProfile,
+  updateHospitalProfilePic,
 };

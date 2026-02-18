@@ -192,3 +192,21 @@ exports.notificationCount = async (req, res) => {
     res.status(500).json({ success: false, message: error.message });
   }
 };
+
+// Get unread notification count
+exports.getUnreadCount = async (req, res) => {
+  try {
+    const count = await Notification.countDocuments({ isRead: false });
+
+    res.status(200).json({
+      success: true,
+      count,
+    });
+  } catch (error) {
+    console.error("Unread count error:", error);
+    res.status(500).json({
+      success: false,
+      message: "Server error",
+    });
+  }
+};

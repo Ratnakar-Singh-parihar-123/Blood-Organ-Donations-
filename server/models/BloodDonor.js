@@ -29,9 +29,9 @@ const bloodDonorSchema = new mongoose.Schema(
     },
     password: {
       type: String,
-      required: [true, 'Password is required'],
+      required: [true, "Password is required"],
       minlength: 6,
-      select: false
+      select: false,
     },
     donationDate: {
       type: Date,
@@ -39,19 +39,22 @@ const bloodDonorSchema = new mongoose.Schema(
     address: {
       type: String,
     },
+    profilePic: {
+      type: String,
+      default: "",
+    },
     // BloodDonor & OrganDonor schema
     isAvailable: { type: Boolean, default: true },
     resetOTP: String,
     resetOTPExpire: Date,
   },
-  { timestamps: true }
+  { timestamps: true },
 );
-
 
 // 🔐 PASSWORD HASH (before save)
 // 🔹 Pre-save hook without next()
-bloodDonorSchema.pre('save', async function () {
-  if (!this.isModified('password')) return; // Only hash if password changed
+bloodDonorSchema.pre("save", async function () {
+  if (!this.isModified("password")) return; // Only hash if password changed
   const salt = await bcrypt.genSalt(10);
   this.password = await bcrypt.hash(this.password, salt);
 });
@@ -60,6 +63,5 @@ bloodDonorSchema.pre('save', async function () {
 bloodDonorSchema.methods.comparePassword = async function (candidatePassword) {
   return await bcrypt.compare(candidatePassword, this.password);
 };
-
 
 module.exports = mongoose.model("BloodDonor", bloodDonorSchema);

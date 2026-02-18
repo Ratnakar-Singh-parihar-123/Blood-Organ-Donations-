@@ -82,18 +82,24 @@ const organDonorSchema = new mongoose.Schema(
       minlength: 6,
       select: false,
     },
+    profilePic: {
+      type: String,
+      default: "",
+    },
+
+    profilePicPublicId: String,
     // BloodDonor & OrganDonor schema
     isAvailable: { type: Boolean, default: true },
 
     resetOTP: String,
     resetOTPExpire: Date,
   },
-  { timestamps: true }
+  { timestamps: true },
 );
 
 // 🔹 Pre-save hook without next()
-organDonorSchema.pre('save', async function () {
-  if (!this.isModified('password')) return; // Only hash if password changed
+organDonorSchema.pre("save", async function () {
+  if (!this.isModified("password")) return; // Only hash if password changed
   const salt = await bcrypt.genSalt(10);
   this.password = await bcrypt.hash(this.password, salt);
 });

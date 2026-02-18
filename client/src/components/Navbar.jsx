@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect, useRef, useCallback } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import {
   Home,
@@ -200,6 +200,9 @@ const Navbar = () => {
   const isDesktop = windowWidth >= 1024;
   const isLargeDesktop = windowWidth >= 1280;
 
+  // API URL from environment
+  const API_URL = import.meta.env.VITE_API_URL || "http://localhost:5000";
+
   // User type configurations
   const userTypesConfig = [
     {
@@ -269,8 +272,116 @@ const Navbar = () => {
     },
   ];
 
+  // ==================== NOTIFICATION COUNT FUNCTIONS ====================
+
+  // Fetch unread notification count
+  const fetchNotificationCount = useCallback(async () => {
+    if (!isLoggedIn) {
+      setNotificationCount(0);
+      return;
+    }
+
+    try {
+      const token =
+        localStorage.getItem("token") ||
+        localStorage.getItem("currentUserToken") ||
+        localStorage.getItem(`${userType}Token`);
+
+      if (!token) return;
+
+      const res = await fetch(`${API_URL}/notifications/unread-count`, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json",
+        },
+      });
+
+      if (!res.ok) throw new Error("Failed to fetch count");
+
+      const data = await res.json();
+      if (data.success) {
+        const count = data.count || 0;
+        setNotificationCount(count);
+        // Store in localStorage for persistence
+        localStorage.setItem("unread_notifications_count", count.toString());
+      }
+    } catch (err) {
+      console.error("Error fetching notification count:", err);
+      // Fallback to localStorage
+      const savedCount = localStorage.getItem("unread_notifications_count");
+      if (savedCount) {
+        setNotificationCount(parseInt(savedCount));
+      }
+    }
+  }, [isLoggedIn, userType, API_URL]);
+
+  // Set up polling for notification count
+  useEffect(() => {
+    if (!isLoggedIn) return;
+
+    // Initial fetch
+    fetchNotificationCount();
+
+    // Poll every 30 seconds
+    const interval = setInterval(fetchNotificationCount, 30000);
+
+    return () => clearInterval(interval);
+  }, [isLoggedIn, fetchNotificationCount]);
+
+  // Listen for notification updates from the modal
+  useEffect(() => {
+    const handleNotificationUpdate = (e) => {
+      if (e.detail && typeof e.detail.count !== "undefined") {
+        setNotificationCount(e.detail.count);
+        localStorage.setItem(
+          "unread_notifications_count",
+          e.detail.count.toString(),
+        );
+      } else {
+        // Refresh count
+        fetchNotificationCount();
+      }
+    };
+
+    const handleNotificationRead = () => {
+      fetchNotificationCount();
+    };
+
+    const handleNewNotification = (e) => {
+      if (e.detail && e.detail.count) {
+        setNotificationCount(e.detail.count);
+        localStorage.setItem(
+          "unread_notifications_count",
+          e.detail.count.toString(),
+        );
+      }
+    };
+
+    window.addEventListener("notificationUpdate", handleNotificationUpdate);
+    window.addEventListener("notificationRead", handleNotificationRead);
+    window.addEventListener("newNotification", handleNewNotification);
+    window.addEventListener("notificationsUpdated", fetchNotificationCount);
+    window.addEventListener("focus", fetchNotificationCount);
+
+    return () => {
+      window.removeEventListener(
+        "notificationUpdate",
+        handleNotificationUpdate,
+      );
+      window.removeEventListener("notificationRead", handleNotificationRead);
+      window.removeEventListener("newNotification", handleNewNotification);
+      window.removeEventListener(
+        "notificationsUpdated",
+        fetchNotificationCount,
+      );
+      window.removeEventListener("focus", fetchNotificationCount);
+    };
+  }, [fetchNotificationCount]);
+
+  // ============================================================
+
   // Enhanced authentication check
-  const checkUserAuth = () => {
+  const checkUserAuth = useCallback(() => {
     console.log("🔄 Navbar - Checking authentication...");
 
     let foundUser = false;
@@ -398,11 +509,16 @@ const Navbar = () => {
           break;
         }
       }
+
+      // Fetch notification count after login
+      setTimeout(fetchNotificationCount, 500);
     } else {
       setIsLoggedIn(false);
       setUserData(null);
       setUserType("");
       setUserTypeConfig(null);
+      setNotificationCount(0);
+      localStorage.removeItem("unread_notifications_count");
 
       // Generate guest IDs (preserve if exist)
       const guestId =
@@ -429,7 +545,7 @@ const Navbar = () => {
     }
 
     setIsLoading(false);
-  };
+  }, [fetchNotificationCount]);
 
   // Load user data on mount
   useEffect(() => {
@@ -440,7 +556,7 @@ const Navbar = () => {
     }, 100);
 
     return () => clearTimeout(timer);
-  }, []);
+  }, [checkUserAuth]);
 
   // Listen for storage changes and auth events
   useEffect(() => {
@@ -538,6 +654,9 @@ const Navbar = () => {
           }
         }
 
+        // Fetch notification count after login
+        setTimeout(fetchNotificationCount, 500);
+
         // Close any open modals
         setIsProfileOpen(false);
         setIsMobileMenuOpen(false);
@@ -556,7 +675,7 @@ const Navbar = () => {
       window.removeEventListener("authChange", handleAuthChange);
       window.removeEventListener("authSuccess", handleAuthSuccess);
     };
-  }, []);
+  }, [checkUserAuth, fetchNotificationCount]);
 
   // Update active tab based on route
   useEffect(() => {
@@ -680,26 +799,21 @@ const Navbar = () => {
 
   // Helper function to get correct blood donation path
   const getBloodDonationPath = () => {
-    // Always return /blood for the blood donation page
-    // The donor dashboard should only be accessible via /donor-dashboard or profile menu
     return "/blood";
   };
 
   // Helper function to get correct organ donation path
   const getOrganDonationPath = () => {
-    // Always return /organ for the organ donation page
     return "/organ";
   };
 
   // Helper function to get correct urgent requests path
   const getUrgentRequestsPath = () => {
-    // Always return /urgent-requests for the urgent requests page
     return "/urgent-requests";
   };
 
   // Helper function to get correct hospitals path
   const getHospitalsPath = () => {
-    // Always return /hospitals for the hospitals page
     return "/hospitals";
   };
 
@@ -1066,7 +1180,8 @@ const Navbar = () => {
         key === "organDonor" ||
         key === "patient" ||
         key === "user" ||
-        key === "hospital"
+        key === "hospital" ||
+        key === "unread_notifications_count"
       ) {
         keysToRemove.push(key);
       }
@@ -1097,6 +1212,7 @@ const Navbar = () => {
     setUserTypeConfig(null);
     setIsProfileOpen(false);
     setIsMobileMenuOpen(false);
+    setNotificationCount(0);
 
     // Set guest IDs
     setPatientId(localStorage.getItem("guestPatientId") || guestId);
@@ -1453,13 +1569,22 @@ const Navbar = () => {
                 {/* Notifications */}
                 <div className="relative">
                   <button
-                    onClick={() => setShowNotifications(true)}
+                    onClick={() => {
+                      setShowNotifications(true);
+                      // Mark as seen when opened
+                      if (notificationCount > 0) {
+                        // Don't reset count immediately, let the modal handle it
+                      }
+                    }}
                     className="relative p-2 hover:bg-gray-100 rounded-xl transition-all duration-300 group"
+                    aria-label={`Notifications ${notificationCount > 0 ? `(${notificationCount} unread)` : ""}`}
                   >
                     <Bell className="h-5 w-5 text-gray-600 group-hover:text-blue-600 transition-colors" />
-                    <span className="absolute -top-1 -right-1 w-5 h-5 bg-gradient-to-r from-red-600 to-pink-600 text-white text-xs font-bold rounded-full flex items-center justify-center animate-pulse shadow-lg">
-                      {notificationCount}
-                    </span>
+                    {notificationCount > 0 && (
+                      <span className="absolute -top-1 -right-1 min-w-[20px] h-5 px-1 bg-gradient-to-r from-red-600 to-pink-600 text-white text-xs font-bold rounded-full flex items-center justify-center animate-pulse shadow-lg">
+                        {notificationCount > 99 ? "99+" : notificationCount}
+                      </span>
+                    )}
                   </button>
                 </div>
 
@@ -1713,9 +1838,11 @@ const Navbar = () => {
                   className="relative p-2 hover:bg-gray-100 rounded-lg transition-colors"
                 >
                   <Bell className="h-4 w-4 text-gray-600" />
-                  <span className="absolute -top-1 -right-1 w-4 h-4 bg-red-500 text-white text-[10px] font-bold rounded-full flex items-center justify-center animate-pulse">
-                    {notificationCount}
-                  </span>
+                  {notificationCount > 0 && (
+                    <span className="absolute -top-1 -right-1 min-w-[18px] h-4 px-1 bg-red-500 text-white text-[10px] font-bold rounded-full flex items-center justify-center animate-pulse">
+                      {notificationCount > 99 ? "99+" : notificationCount}
+                    </span>
+                  )}
                 </button>
 
                 {isLoggedIn && userData ? (
@@ -1799,9 +1926,11 @@ const Navbar = () => {
                     className="relative p-1.5 hover:bg-gray-100 rounded-lg transition-colors"
                   >
                     <Bell className="h-4 w-4 text-gray-600" />
-                    <span className="absolute -top-0.5 -right-0.5 w-4 h-4 bg-red-500 text-white text-[10px] font-bold rounded-full flex items-center justify-center animate-pulse">
-                      {notificationCount}
-                    </span>
+                    {notificationCount > 0 && (
+                      <span className="absolute -top-0.5 -right-0.5 min-w-[18px] h-4 px-1 bg-red-500 text-white text-[10px] font-bold rounded-full flex items-center justify-center animate-pulse">
+                        {notificationCount > 99 ? "99+" : notificationCount}
+                      </span>
+                    )}
                   </button>
 
                   {isLoggedIn && userData ? (
@@ -1854,6 +1983,13 @@ const Navbar = () => {
                       <Icon
                         className={`h-4 w-4 ${isActive ? "text-white" : item.color}`}
                       />
+                      {item.id === "urgent" &&
+                        notificationCount > 0 &&
+                        !isActive && (
+                          <span className="absolute -top-1 -right-1 w-4 h-4 bg-red-500 text-white text-[8px] rounded-full flex items-center justify-center">
+                            {notificationCount > 9 ? "9+" : notificationCount}
+                          </span>
+                        )}
                     </div>
                     <span
                       className={`text-[10px] mt-1 font-semibold transition-colors ${
@@ -1861,6 +1997,13 @@ const Navbar = () => {
                       }`}
                     >
                       {item.label}
+                      {item.id === "urgent" &&
+                        notificationCount > 0 &&
+                        isActive && (
+                          <span className="ml-1 text-red-500">
+                            ({notificationCount})
+                          </span>
+                        )}
                     </span>
                   </button>
                 );
@@ -1899,6 +2042,12 @@ const Navbar = () => {
                     <h1 className="font-bold text-lg bg-gradient-to-r from-blue-600 to-cyan-500 bg-clip-text text-transparent">
                       JeevanDaan
                     </h1>
+                    {notificationCount > 0 && (
+                      <span className="text-xs text-red-500 font-medium">
+                        {notificationCount} unread notification
+                        {notificationCount !== 1 ? "s" : ""}
+                      </span>
+                    )}
                   </div>
                 </div>
                 <button
@@ -1987,6 +2136,11 @@ const Navbar = () => {
                           </div>
                         </div>
                       </div>
+                      {item.id === "urgent" && notificationCount > 0 && (
+                        <span className="px-2 py-1 bg-red-100 text-red-600 rounded-full text-xs font-bold">
+                          {notificationCount}
+                        </span>
+                      )}
                       <ChevronRight className="h-4 w-4 text-gray-400" />
                     </button>
                   ))}
@@ -2419,7 +2573,13 @@ const Navbar = () => {
       {showNotifications && (
         <NotificationsModal
           isOpen={showNotifications}
-          onClose={() => setShowNotifications(false)}
+          onClose={() => {
+            setShowNotifications(false);
+            // Refresh count when modal closes
+            fetchNotificationCount();
+          }}
+          onNotificationRead={fetchNotificationCount}
+          onNotificationDelete={fetchNotificationCount}
         />
       )}
 
@@ -2476,6 +2636,17 @@ const Navbar = () => {
           }
         }
 
+        @keyframes scaleIn {
+          from {
+            transform: scale(0.95);
+            opacity: 0;
+          }
+          to {
+            transform: scale(1);
+            opacity: 1;
+          }
+        }
+
         .animate-fadeIn {
           animation: fadeIn 0.2s ease-out;
         }
@@ -2486,6 +2657,10 @@ const Navbar = () => {
 
         .animate-spin {
           animation: spin 1s linear infinite;
+        }
+
+        .animate-scaleIn {
+          animation: scaleIn 0.2s ease-out;
         }
 
         .animation-delay-500 {

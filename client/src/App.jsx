@@ -42,7 +42,7 @@ function App() {
       <Routes>
         {/* Public Routes */}
         <Route path="/" element={<HomePage />} />
-        <Route path="/blood" element={<BloodPages />} />
+        <Route path="/blood/*" element={<BloodPages />} />
         <Route path="/organ" element={<OrganPages />} />
         <Route path="/auth" element={<UserTypeSelectionPage />} />
         <Route path="/about" element={<AboutPage />} />

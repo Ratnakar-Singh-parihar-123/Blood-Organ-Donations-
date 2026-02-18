@@ -8,6 +8,8 @@ const {
   verifyOTP,
   resetPassword,
   resendOTP,
+  updateHospitalProfile,
+  updateHospitalProfilePic,
 } = require("../controllers/hospitalController");
 
 // Register hospital
@@ -23,5 +25,11 @@ router.post("/forgot-password", forgotPassword);
 router.post("/verify-otp", verifyOTP);
 router.post("/reset-password", resetPassword);
 router.post("/resend-otp", resendOTP);
+
+// update hospital profile
+router.put("/update-profile", updateHospitalProfile);
+
+// update hospital profile picture
+router.put("/update-profile-pic", updateHospitalProfilePic);
 
 module.exports = router;
