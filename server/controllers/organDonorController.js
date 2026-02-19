@@ -404,6 +404,142 @@ const updateOrganDonorProfilePic = async (req, res) => {
   }
 };
 
+//  all show organ donor
+const getAllOrganDonors = async (req, res) => {
+  try {
+    const { page = 1, limit = 10 } = req.query;
+
+    const organDonor = await OrganDonor.find({ isActive: true })
+      .select("-password -resetOTP -resetOTPExpire")
+      .sort({ createdAt: -1 })
+      .skip((page - 1) * limit)
+      .limit(Number(limit));
+
+    const total = await OrganDonor.countDocuments({ isActive: true });
+
+    res.status(200).json({
+      success: true,
+      total,
+      page: Number(page),
+      count: organDonor.length,
+      donors: organDonor,
+    });
+  } catch (error) {
+    console.error("Get all organ donors error:", error);
+    res.status(500).json({
+      success: false,
+      message: "Server error",
+    });
+  }
+};
+
+// filter organ donors by organ type
+const getFilteredOrganDonors = async (req, res) => {
+  try {
+    const { organType, city, bloodGroup } = req.query;
+
+    const query = { isActive: true };
+
+    if (organType) {
+      query.organType = { $regex: organType, $options: "i" };
+    }
+
+    if (city) {
+      query.city = { $regex: city, $options: "i" };
+    }
+
+    if (bloodGroup) {
+      query.bloodGroup = bloodGroup;
+    }
+
+    const organDonors = await OrganDonor.find(query)
+      .select("-password -resetOTP -resetOTPExpire")
+      .sort({ createdAt: -1 });
+
+    res.status(200).json({
+      success: true,
+      count: organDonors.length,
+      donors: organDonors,
+    });
+  } catch (error) {
+    console.error("Filter organ donors error:", error);
+    res.status(500).json({
+      success: false,
+      message: "Server error",
+    });
+  }
+};
+
+// get single donor by id
+
+const getSingleDonor = async (req, res) => {
+  try {
+    const { id } = req.params;
+
+    // ✅ Check valid MongoDB ObjectId
+    if (!mongoose.Types.ObjectId.isValid(id)) {
+      return res.status(400).json({
+        success: false,
+        message: "Invalid donor ID",
+      });
+    }
+
+    const donor = await OrganDonor.findOne({
+      _id: id,
+      isActive: true,
+    }).select("-password -resetOTP -resetOTPExpire");
+
+    if (!donor) {
+      return res.status(404).json({
+        success: false,
+        message: "Organ donor not found",
+      });
+    }
+
+    res.status(200).json({
+      success: true,
+      donor,
+    });
+  } catch (error) {
+    console.error("Get single organ donor error:", error);
+    res.status(500).json({
+      success: false,
+      message: "Server error",
+    });
+  }
+};
+
+// organ donor count
+// get total active organ donors
+const getOrganDonorCount = async (req, res) => {
+  try {
+    const total = await OrganDonor.countDocuments({ isAvailable: true });
+
+    const organWiseCount = await OrganDonor.aggregate([
+      { $match: { isAvailable: true } },
+      { $unwind: "$organsToDonate" },
+      {
+        $group: {
+          _id: "$organsToDonate",
+          count: { $sum: 1 },
+        },
+      },
+    ]);
+
+    return res.status(200).json({
+      success: true,
+      totalDonors: total,
+      organWiseCount,
+    });
+  } catch (error) {
+    console.error("Get organ donor count error:", error);
+    return res.status(500).json({
+      success: false,
+      message: "Server error",
+    });
+  }
+};
+
 module.exports = {
   register,
   login,
@@ -414,4 +550,8 @@ module.exports = {
   resendOTP,
   updateOrganDonorProfile,
   updateOrganDonorProfilePic,
+  getAllOrganDonors,
+  getFilteredOrganDonors,
+  getSingleDonor,
+  getOrganDonorCount,
 };

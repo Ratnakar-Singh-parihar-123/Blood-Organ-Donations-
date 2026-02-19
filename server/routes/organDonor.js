@@ -11,7 +11,12 @@ const {
   resendOTP,
   updateOrganDonorProfile,
   updateOrganDonorProfilePic,
+  getFilteredOrganDonors,
+  getOrganDonorCount,
+  getSingleDonor,
+  getAllOrganDonors,
 } = require("../controllers/organDonorController");
+// const { getBloodDonorCount } = require("../controllers/bloodDonorController");
 
 // Public routes
 router.post("/register", register);
@@ -30,5 +35,17 @@ router.put("/update-profile", updateOrganDonorProfile);
 
 // update profile picture
 router.put("/update-profile-pic", updateOrganDonorProfilePic);
+
+// get all donors
+router.get("/", getAllOrganDonors);
+
+// Filter donors
+router.get("/search", getFilteredOrganDonors);
+
+// pahle specific route
+router.get("/count", getOrganDonorCount);
+
+// phir dynamic rotes
+router.get("/:id", getSingleDonor);
 
 module.exports = router;

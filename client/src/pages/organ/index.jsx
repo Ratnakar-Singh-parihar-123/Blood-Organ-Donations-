@@ -1,5 +1,6 @@
 import React, { useEffect } from "react";
 import OrganHeroSections from "./components/OrganHeroSection";
+import HomeOrganSection from "./components/HomeOrganSection";
 // import OrgansList from "./components/OrgansList";
 // import EligibilitySection from "./components/EligibilitySection";
 // import HowOrganDonationWorks from "./components/HowOrganDonationWorks";
@@ -17,6 +18,7 @@ function OrganPages() {
   return (
     <>
       <OrganHeroSections />
+      <HomeOrganSection />
       {/* <OrgansList />
       <OrganRequestForm />
       <EligibilitySection />
